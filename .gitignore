@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# material bruto de curadoria (fotos originais do IG)
+/_fotos-ig/

@@ -1,0 +1,397 @@
+import type { Product } from "@/types"
+
+// ATENÇÃO: catálogo DEMONSTRATIVO. Fotos reais do Instagram da PR Grife;
+// nomes, preços, tamanhos, cores e disponibilidade são exemplos editáveis.
+// TODO_CONFIRMAR — substituir por dados reais fornecidos pelo proprietário.
+
+export const products: Product[] = [
+  {
+    id: "p01",
+    slug: "camiseta-essencial-branca",
+    name: "Camiseta essencial branca",
+    brand: "Tommy Jeans",
+    category: "camisetas",
+    shortDescription: "Camiseta de algodão com toque macio e caimento reto.",
+    fullDescription:
+      "A base de qualquer guarda-roupa bem montado. Algodão de fio penteado, gola firme e comprimento pensado para usar solta ou por dentro da calça.",
+    price: 199, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/camiseta-branca.jpg"],
+    thumbnail: "/images/products/camiseta-branca.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [{ name: "Branco", hex: "#FFFFFF" }],
+    stockStatus: "available",
+    productCode: "PRG-0001",
+    material: "100% algodão",
+    fit: "Regular",
+    newArrival: true,
+  },
+  {
+    id: "p02",
+    slug: "polo-piquet-branca",
+    name: "Polo piquet branca",
+    brand: "US Polo",
+    category: "polos",
+    shortDescription: "Polo clássica em piquet, do trabalho ao fim de semana.",
+    price: 249, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/polo-branca.jpg"],
+    thumbnail: "/images/products/polo-branca.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [
+      { name: "Branco", hex: "#FFFFFF" },
+      { name: "Marinho", hex: "#1F2A44" },
+    ],
+    stockStatus: "available",
+    productCode: "PRG-0002",
+    material: "Piquet de algodão",
+    fit: "Regular",
+    newArrival: true,
+  },
+  {
+    id: "p03",
+    slug: "camisa-linho-terracota",
+    name: "Camisa de linho terracota",
+    brand: "Reserva",
+    category: "camisas",
+    shortDescription: "Linho leve com cor de presença, para dias quentes.",
+    fullDescription:
+      "Linho com caimento natural e cor que valoriza pele bronzeada. Fica bem aberta sobre camiseta ou fechada com calça de alfaiataria leve.",
+    price: 399, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/camisa-linho-terracota.jpg"],
+    thumbnail: "/images/products/camisa-linho-terracota.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [{ name: "Terracota", hex: "#C05A33" }],
+    stockStatus: "low_stock",
+    badges: ["escolha_da_semana"],
+    productCode: "PRG-0003",
+    material: "Linho e viscose",
+    fit: "Relaxed",
+    featured: true,
+  },
+  {
+    id: "p04",
+    slug: "camisa-listrada-azul",
+    name: "Camisa listrada azul",
+    brand: "US Polo",
+    category: "camisas",
+    shortDescription: "Listras finas e colarinho estruturado para compromissos.",
+    price: 329, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/camisa-listrada.jpg"],
+    thumbnail: "/images/products/camisa-listrada.jpg",
+    availableSizes: ["M", "G", "GG"],
+    availableColors: [{ name: "Azul e branco", hex: "#7FA0C8" }],
+    stockStatus: "available",
+    productCode: "PRG-0004",
+    material: "Algodão",
+    fit: "Slim",
+  },
+  {
+    id: "p05",
+    slug: "calca-jeans-reta",
+    name: "Calça jeans lavagem clara",
+    brand: "Tommy Jeans",
+    category: "calcas",
+    shortDescription: "Jeans de corte reto com lavagem clara e barra dobrável.",
+    price: 449, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/calca-jeans.jpg"],
+    thumbnail: "/images/products/calca-jeans.jpg",
+    availableSizes: ["38", "40", "42", "44", "46"],
+    availableColors: [{ name: "Jeans claro", hex: "#9DB6D0" }],
+    stockStatus: "available",
+    badges: ["novo"],
+    productCode: "PRG-0005",
+    material: "Denim de algodão",
+    fit: "Reto",
+    newArrival: true,
+  },
+  {
+    id: "p06",
+    slug: "shorts-rosa-verao",
+    name: "Shorts rosé de verão",
+    brand: "Reserva",
+    category: "shorts",
+    shortDescription: "Shorts leve com cós elástico e cadarço aparente.",
+    price: 229, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/shorts-rosa.jpg"],
+    thumbnail: "/images/products/shorts-rosa.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [{ name: "Rosé", hex: "#D98A8A" }],
+    stockStatus: "available",
+    productCode: "PRG-0006",
+    material: "Sarja leve",
+    fit: "Regular",
+    newArrival: true,
+  },
+  {
+    id: "p07",
+    slug: "shorts-moletom-cru",
+    name: "Shorts de moletom cru",
+    brand: "Ankor",
+    category: "shorts",
+    shortDescription: "Moletom felpudo em tom cru, conforto para o dia todo.",
+    price: 189, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/shorts-cru.jpg"],
+    thumbnail: "/images/products/shorts-cru.jpg",
+    availableSizes: ["P", "M", "G"],
+    availableColors: [{ name: "Cru", hex: "#EDE5D6" }],
+    stockStatus: "available",
+    productCode: "PRG-0007",
+    material: "Moletom de algodão",
+    fit: "Regular",
+  },
+  {
+    id: "p08",
+    slug: "shorts-sarja-caqui",
+    name: "Shorts de sarja caqui",
+    brand: "Colcci",
+    category: "shorts",
+    shortDescription: "Sarja encorpada e cadarço interno, versátil e neutro.",
+    price: 219, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/shorts-caqui.jpg"],
+    thumbnail: "/images/products/shorts-caqui.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [{ name: "Caqui", hex: "#C8A878" }],
+    stockStatus: "available",
+    productCode: "PRG-0008",
+    material: "Sarja de algodão",
+    fit: "Regular",
+  },
+  {
+    id: "p09",
+    slug: "shorts-agua-preto",
+    name: "Shorts d'água preto",
+    brand: "Reserva",
+    category: "shorts",
+    shortDescription: "Secagem rápida e visual limpo, da piscina para a rua.",
+    price: 249, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/shorts-preto.jpg"],
+    thumbnail: "/images/products/shorts-preto.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [{ name: "Preto", hex: "#171716" }],
+    stockStatus: "on_request",
+    productCode: "PRG-0009",
+    material: "Poliamida",
+    fit: "Regular",
+  },
+  {
+    id: "p10",
+    slug: "jaqueta-track-tommy",
+    name: "Jaqueta track preta",
+    brand: "Tommy Jeans",
+    category: "jaquetas",
+    shortDescription: "Jaqueta esportiva com vivos contrastantes e zíper frontal.",
+    fullDescription:
+      "Referência noventista da Tommy Jeans: corpo preto, vivos brancos e logo bordado. Combina com jeans claro e tênis branco.",
+    price: 649, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/jaqueta-track.jpg"],
+    thumbnail: "/images/products/jaqueta-track.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [{ name: "Preto", hex: "#171716" }],
+    stockStatus: "low_stock",
+    badges: ["mais_procurado"],
+    productCode: "PRG-0010",
+    material: "Poliéster reciclado",
+    fit: "Regular",
+    featured: true,
+  },
+  {
+    id: "p11",
+    slug: "bomber-off-white",
+    name: "Bomber off-white",
+    brand: "Colcci",
+    category: "jaquetas",
+    shortDescription: "Bomber leve em tom claro, terceira peça sem esforço.",
+    price: 549, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/bomber-off-white.jpg"],
+    thumbnail: "/images/products/bomber-off-white.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [{ name: "Off-white", hex: "#F3EFE7" }],
+    stockStatus: "available",
+    badges: ["escolha_da_semana"],
+    productCode: "PRG-0011",
+    material: "Nylon acetinado",
+    fit: "Regular",
+    featured: true,
+  },
+  {
+    id: "p12",
+    slug: "puffer-off-white",
+    name: "Jaqueta puffer off-white",
+    brand: "Ankor",
+    category: "jaquetas",
+    shortDescription: "Acolchoada, leve e quente para os dias frios do Sul.",
+    price: 699, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/puffer-off-white.jpg"],
+    thumbnail: "/images/products/puffer-off-white.jpg",
+    availableSizes: ["M", "G", "GG"],
+    availableColors: [{ name: "Off-white", hex: "#F3EFE7" }],
+    stockStatus: "available",
+    badges: ["novo"],
+    productCode: "PRG-0012",
+    material: "Nylon com enchimento térmico",
+    fit: "Regular",
+    newArrival: true,
+  },
+  {
+    id: "p13",
+    slug: "jaqueta-harrington-caqui",
+    name: "Jaqueta harrington caqui",
+    brand: "Reserva",
+    category: "jaquetas",
+    shortDescription: "Colarinho baixo e caimento limpo, clássico atemporal.",
+    price: 599, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/jaqueta-harrington.jpg"],
+    thumbnail: "/images/products/jaqueta-harrington.jpg",
+    availableSizes: ["P", "M", "G"],
+    availableColors: [{ name: "Caqui", hex: "#C3AB84" }],
+    stockStatus: "available",
+    productCode: "PRG-0013",
+    material: "Sarja com forro leve",
+    fit: "Regular",
+  },
+  {
+    id: "p14",
+    slug: "trico-gola-v-marinho",
+    name: "Tricô gola V marinho",
+    brand: "Colcci",
+    category: "moletons-tricos",
+    shortDescription: "Tricô de toque macio para sobrepor camisas e camisetas.",
+    price: 379, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/trico-marinho.jpg"],
+    thumbnail: "/images/products/trico-marinho.jpg",
+    availableSizes: ["P", "M", "G", "GG"],
+    availableColors: [{ name: "Marinho", hex: "#1F2A44" }],
+    stockStatus: "available",
+    productCode: "PRG-0014",
+    material: "Tricô de algodão",
+    fit: "Regular",
+  },
+  {
+    id: "p15",
+    slug: "tenis-hilfiger-branco",
+    name: "Tênis branco com detalhe marinho",
+    brand: "Tommy Hilfiger",
+    category: "tenis",
+    shortDescription: "Couro branco com recortes em camurça e sola baixa.",
+    fullDescription:
+      "O tênis que resolve o look: branco de base, detalhes marinho e construção em couro. Vai de calça de alfaiataria a shorts de sarja.",
+    price: 799, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/tenis-hilfiger.jpg", "/images/products/tenis-hilfiger-box.jpg"],
+    thumbnail: "/images/products/tenis-hilfiger.jpg",
+    availableSizes: ["38", "39", "40", "41", "42", "43", "44"],
+    availableColors: [{ name: "Branco e marinho", hex: "#F5F5F2" }],
+    stockStatus: "available",
+    badges: ["mais_procurado"],
+    productCode: "PRG-0015",
+    material: "Couro e camurça",
+    featured: true,
+  },
+  {
+    id: "p16",
+    slug: "tenis-hilfiger-listras",
+    name: "Tênis branco com listras assinatura",
+    brand: "Tommy Hilfiger",
+    category: "tenis",
+    shortDescription: "Base branca com as listras assinatura da marca.",
+    price: 749, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/tenis-hilfiger-box.jpg"],
+    thumbnail: "/images/products/tenis-hilfiger-box.jpg",
+    availableSizes: ["39", "40", "41", "42", "43"],
+    availableColors: [{ name: "Branco", hex: "#FFFFFF" }],
+    stockStatus: "low_stock",
+    badges: ["ultimas_unidades"],
+    productCode: "PRG-0016",
+    material: "Couro sintético",
+    featured: true,
+  },
+  {
+    id: "p17",
+    slug: "bone-aba-curva-bege",
+    name: "Boné aba curva bege",
+    brand: "Ankor",
+    category: "bones",
+    shortDescription: "Boné neutro que finaliza qualquer look de dia.",
+    price: 149, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 2x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/bone-bege.jpg"],
+    thumbnail: "/images/products/bone-bege.jpg",
+    availableSizes: ["Único"],
+    availableColors: [{ name: "Bege", hex: "#D9CDB8" }],
+    stockStatus: "available",
+    productCode: "PRG-0017",
+    material: "Sarja de algodão",
+    featured: true,
+  },
+  {
+    id: "p18",
+    slug: "slide-preto-conforto",
+    name: "Slide preto de fivelas",
+    brand: "Biotwo",
+    category: "acessorios",
+    shortDescription: "Slide preto de duas fivelas, conforto com presença.",
+    price: 179, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 2x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/slides-212.jpg"],
+    thumbnail: "/images/products/slides-212.jpg",
+    availableSizes: ["38", "39", "40", "41", "42", "43"],
+    availableColors: [{ name: "Preto", hex: "#171716" }],
+    stockStatus: "on_request",
+    productCode: "PRG-0018",
+    material: "EVA e borracha",
+  },
+  {
+    id: "p19",
+    slug: "perfume-le-male-elixir",
+    name: "Le Male Elixir",
+    brand: "Jean Paul Gaultier",
+    category: "perfumes",
+    shortDescription: "Amadeirado intenso de assinatura, presença para a noite.",
+    fullDescription:
+      "Parfum concentrado com saída de lavanda e fundo de baunilha, mel e madeiras. Projeção alta — uma assinatura para ocasiões que pedem presença.",
+    price: 899, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/perfume-le-male.jpg"],
+    thumbnail: "/images/products/perfume-le-male.jpg",
+    availableSizes: ["75 ml", "125 ml"],
+    availableColors: [],
+    stockStatus: "available",
+    badges: ["mais_procurado"],
+    productCode: "PRG-0019",
+    featured: true,
+  },
+  {
+    id: "p20",
+    slug: "perfume-scandal-homme",
+    name: "Scandal Pour Homme",
+    brand: "Jean Paul Gaultier",
+    category: "perfumes",
+    shortDescription: "Doce equilibrado e versátil, do dia ao happy hour.",
+    price: 799, // TODO_CONFIRMAR — preço demonstrativo
+    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    images: ["/images/products/perfume-scandal.jpg"],
+    thumbnail: "/images/products/perfume-scandal.jpg",
+    availableSizes: ["100 ml"],
+    availableColors: [],
+    stockStatus: "available",
+    productCode: "PRG-0020",
+  },
+]
+
+export const featuredProducts = products.filter((p) => p.featured)
+export const newArrivals = products.filter((p) => p.newArrival)
+export const productById = (id: string) => products.find((p) => p.id === id)
