@@ -12,12 +12,13 @@ export const siteConfig = {
   yearsActive: 3,
   // TODO_CONFIRMAR — exibir somente marcas confirmadas pelo proprietário.
   // Destaques do Instagram confirmam: Reserva, Colcci, U.S Polo, Ankor, Tommy Jeans, Biotwo, Lacoste (post de 05/07/2026).
+  // Ordem de exibição: Tommy Hilfiger e Tommy Jeans separadas para não ficarem lado a lado.
   brands: [
     "Lacoste",
     "Tommy Hilfiger",
-    "Tommy Jeans",
     "Reserva",
     "Colcci",
+    "Tommy Jeans",
     "US Polo",
     "Ankor",
     "Biotwo",
