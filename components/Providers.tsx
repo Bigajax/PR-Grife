@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react"
 import { SelectionProvider } from "@/hooks/useSelection"
+import { FavoritesProvider } from "@/hooks/useFavorites"
 import { track } from "@/lib/tracking"
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -9,5 +10,9 @@ export function Providers({ children }: { children: ReactNode }) {
     track("page_view")
   }, [])
 
-  return <SelectionProvider>{children}</SelectionProvider>
+  return (
+    <FavoritesProvider>
+      <SelectionProvider>{children}</SelectionProvider>
+    </FavoritesProvider>
+  )
 }

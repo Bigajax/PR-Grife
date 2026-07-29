@@ -55,7 +55,8 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
   }
 
   return (
-    <main className="bg-white">
+    // pb no mobile reserva espaço para o CTA fixo do WhatsApp.
+    <main className="bg-white pb-24 lg:pb-0">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <div className="mx-auto max-w-6xl px-5 pt-8 sm:px-6">
@@ -82,7 +83,7 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
               <span className="hairline-gold w-16 shrink-0" aria-hidden="true" />
             </p>
             <h2 className="font-display mt-3 text-3xl font-medium text-black-soft">Você também pode gostar</h2>
-            <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-9 md:grid-cols-4 md:gap-x-5">
+            <div className="mt-8 grid grid-cols-2 gap-px border border-border-gray bg-border-gray md:grid-cols-4">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

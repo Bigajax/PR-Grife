@@ -36,7 +36,7 @@ export default async function CategoriaPage({
 
   return (
     <main className="bg-white">
-      <div className="mx-auto max-w-6xl px-5 pt-8 sm:px-6">
+      <div className="shell pt-8">
         <Breadcrumb
           items={[
             { label: "Início", href: "/" },
@@ -55,7 +55,7 @@ export default async function CategoriaPage({
       </div>
 
       <Suspense>
-        <CatalogView lockedCategory={cat.id} />
+        <CatalogView locked={{ categoria: cat.id }} />
       </Suspense>
     </main>
   )

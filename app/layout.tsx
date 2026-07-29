@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#f8f6f1",
+  themeColor: "#faf9f6",
 }
 
 // Dados estruturados básicos — somente informações presentes no perfil público da loja.

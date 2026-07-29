@@ -1,19 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Plus, Check, Share2, Truck, Store, PackageOpen } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { Plus, Check, Share2, Heart, Truck, Store, PackageOpen } from "lucide-react"
 import type { Product } from "@/types"
 import { formatPrice } from "@/lib/format"
 import { stockLabels } from "@/lib/badges"
-import { buildWhatsAppLink, templates } from "@/lib/whatsapp"
+import { isOnSale } from "@/lib/catalog"
+import { buildWhatsAppLink, buildOrderMessage, templates } from "@/lib/whatsapp"
+import { siteConfig } from "@/data/site.config"
 import { useUtm } from "@/hooks/useUtm"
 import { useSelection } from "@/hooks/useSelection"
+import { useFavorites } from "@/hooks/useFavorites"
 import { track } from "@/lib/tracking"
 
 export function ProductBuyBox({ product }: { product: Product }) {
   const utm = useUtm()
   const { add, has } = useSelection()
+  const favorites = useFavorites()
   const inSelection = has(product.id)
+  const isFavorite = favorites.has(product.id)
 
   const [size, setSize] = useState<string | null>(null)
   const [color, setColor] = useState<string | null>(
@@ -21,12 +26,30 @@ export function ProductBuyBox({ product }: { product: Product }) {
   )
   const [sizeHint, setSizeHint] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
+  const sizesRef = useRef<HTMLFieldSetElement>(null)
 
   useEffect(() => {
-    track("view_product", { product_id: product.id, product_name: product.name })
-  }, [product.id, product.name])
+    track("view_product", {
+      product_id: product.id,
+      product_name: product.name,
+      brand: product.brand,
+      category: product.category,
+      availability: product.stockStatus,
+    })
+  }, [product])
 
   const needsSize = product.availableSizes.length > 0
+  const needsColor = product.availableColors.length > 0
+  const soldOut = product.stockStatus === "out_of_stock"
+  const onRequest = product.stockStatus === "on_request"
+  const sale = isOnSale(product)
+
+  // Cor e tamanho são obrigatórios: sem os dois, o pedido chegaria incompleto
+  // no atendimento. O botão fica desabilitado até a escolha estar feita.
+  const missing = [needsSize && !size ? "o tamanho" : null, needsColor && !color ? "a cor" : null]
+    .filter(Boolean)
+    .join(" e ")
+  const ready = missing.length === 0
 
   const pickSize = (s: string) => {
     setSize(s)
@@ -39,16 +62,27 @@ export function ProductBuyBox({ product }: { product: Product }) {
   }
 
   const onConsult = (e: React.MouseEvent) => {
-    if (needsSize && !size) {
+    if (!soldOut && needsSize && !size) {
       e.preventDefault()
       setSizeHint(true)
+      sizesRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
       return
     }
-    track("product_whatsapp_click", { product_id: product.id, size, color })
+    track(soldOut ? "notify_me_whatsapp_click" : "product_whatsapp_click", {
+      product_id: product.id,
+      product_name: product.name,
+      brand: product.brand,
+      category: product.category,
+      availability: product.stockStatus,
+      page_origin: "produto",
+      size,
+      color,
+    })
   }
 
   const shareProduct = async () => {
     const url = typeof window !== "undefined" ? window.location.href : ""
+    track("share_product", { product_id: product.id })
     try {
       if (navigator.share) await navigator.share({ title: product.name, url })
       else await navigator.clipboard.writeText(url)
@@ -57,7 +91,32 @@ export function ProductBuyBox({ product }: { product: Product }) {
     }
   }
 
-  const url = typeof window !== "undefined" ? window.location.href : undefined
+  // URL só após a hidratação: evita divergir do HTML do servidor (o bloco
+  // LINK entra na mensagem assim que o cliente monta).
+  const [url, setUrl] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUrl(window.location.href)
+    // Tamanho escolhido no card da vitrine chega por ?tamanho= — a PDP abre
+    // já com ele marcado.
+    const wanted = new URLSearchParams(window.location.search).get("tamanho")
+    if (wanted && product.availableSizes.includes(wanted)) setSize(wanted)
+  }, [product.availableSizes])
+
+  // Rótulo do CTA acompanha a disponibilidade (regra do Guia Mestre).
+  const ctaLabel = soldOut
+    ? "Avise-me quando voltar"
+    : onRequest
+      ? "Encomendar no WhatsApp"
+      : "Pedir no WhatsApp"
+  const ctaHref = buildWhatsAppLink(
+    soldOut
+      ? templates.aviseMe(product, size ?? undefined, url)
+      : buildOrderMessage([
+          { product, size: size ?? undefined, color: color ?? undefined, url },
+        ]),
+    utm
+  )
 
   return (
     <div>
@@ -69,6 +128,11 @@ export function ProductBuyBox({ product }: { product: Product }) {
 
       {product.price != null && (
         <p className="mt-4 text-2xl font-bold text-black-soft">
+          {sale && product.oldPrice != null && (
+            <span className="mr-2 text-base font-normal text-text-gray line-through">
+              {formatPrice(product.oldPrice)}
+            </span>
+          )}
           {formatPrice(product.price)}
           {product.installmentText && (
             <span className="ml-2 text-sm font-normal text-text-gray">{product.installmentText}</span>
@@ -78,7 +142,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
       <p className="mt-1 text-xs text-text-gray">Valor demonstrativo — confirme no atendimento.</p>
 
       {needsSize && (
-        <fieldset className="mt-6">
+        <fieldset className="mt-6 scroll-mt-24" id="tamanhos" ref={sizesRef}>
           <div className="flex items-center justify-between">
             <legend className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black-soft">Tamanho</legend>
             <button
@@ -149,38 +213,80 @@ export function ProductBuyBox({ product }: { product: Product }) {
         </fieldset>
       )}
 
-      <p className="mt-5 text-sm font-medium text-gold-dark">{stockLabels[product.stockStatus]}</p>
+      <p className={`mt-5 text-sm font-medium ${soldOut ? "text-text-gray" : "text-gold-dark"}`}>
+        {stockLabels[product.stockStatus]}
+        {onRequest && ` — prazo estimado: ${siteConfig.leadTimeText}`}
+      </p>
 
       {/* CTAs */}
       <div className="mt-6 flex flex-col gap-2.5">
-        <a
-          href={buildWhatsAppLink(templates.produtoDetalhe(product, size ?? undefined, color ?? undefined, url), utm)}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={onConsult}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-black-soft px-6 text-sm font-semibold text-off-white transition-colors hover:bg-graphite"
-        >
-          Consultar disponibilidade
-        </a>
+        {soldOut || ready ? (
+          <a
+            href={ctaHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onConsult}
+            className={`inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold transition-colors ${
+              soldOut
+                ? "border border-black-soft bg-white text-black-soft hover:border-gold-dark hover:text-gold-dark"
+                : "bg-black-soft text-off-white hover:bg-graphite"
+            }`}
+          >
+            {ctaLabel}
+          </a>
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled
+              aria-describedby="cta-pendente"
+              className="inline-flex min-h-12 cursor-not-allowed items-center justify-center rounded-full bg-black-soft/40 px-6 text-sm font-semibold text-off-white"
+            >
+              {ctaLabel}
+            </button>
+            <p id="cta-pendente" className="text-[13px] font-medium text-gold-dark">
+              Escolha {missing} para pedir.
+            </p>
+          </>
+        )}
         <div className="flex gap-2.5">
+          {!soldOut && (
+            <button
+              type="button"
+              onClick={() => add(product.id, size ?? undefined, color ?? undefined)}
+              className={`inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors ${
+                inSelection
+                  ? "border-gold bg-gold/10 text-gold-dark"
+                  : "border-border-gray bg-white text-black-soft hover:border-gold"
+              }`}
+            >
+              {inSelection ? (
+                <>
+                  <Check className="h-4 w-4" aria-hidden="true" /> Na seleção
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" aria-hidden="true" /> Adicionar à seleção
+                </>
+              )}
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => add(product.id, size ?? undefined, color ?? undefined)}
+            onClick={() => favorites.toggle(product.id)}
+            aria-pressed={isFavorite}
             className={`inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors ${
-              inSelection
+              isFavorite
                 ? "border-gold bg-gold/10 text-gold-dark"
                 : "border-border-gray bg-white text-black-soft hover:border-gold"
             }`}
           >
-            {inSelection ? (
-              <>
-                <Check className="h-4 w-4" aria-hidden="true" /> Na seleção
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4" aria-hidden="true" /> Adicionar à seleção
-              </>
-            )}
+            <Heart
+              className="h-4 w-4"
+              fill={isFavorite ? "currentColor" : "none"}
+              aria-hidden="true"
+            />
+            {isFavorite ? "Nos favoritos" : "Salvar nos favoritos"}
           </button>
           <button
             type="button"
@@ -191,6 +297,28 @@ export function ProductBuyBox({ product }: { product: Product }) {
             <Share2 className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
+      </div>
+
+      {/* CTA fixo no mobile: some no desktop; respeita safe-area do iPhone. */}
+      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-border-gray bg-off-white/95 px-5 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+        {product.price != null && (
+          <span className="shrink-0 text-base font-bold text-black-soft">
+            {formatPrice(product.price)}
+          </span>
+        )}
+        <a
+          href={ctaHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onConsult}
+          className={`inline-flex min-h-12 flex-1 items-center justify-center rounded-full px-4 text-sm font-semibold ${
+            soldOut
+              ? "border border-black-soft bg-white text-black-soft"
+              : "bg-black-soft text-off-white"
+          }`}
+        >
+          {ctaLabel}
+        </a>
       </div>
 
       {/* Descrição e ficha */}

@@ -6,7 +6,7 @@ import { X, Trash2 } from "lucide-react"
 import { useSelection } from "@/hooks/useSelection"
 import { useFocusTrap } from "@/hooks/useFocusTrap"
 import { useUtm } from "@/hooks/useUtm"
-import { buildWhatsAppLink, templates } from "@/lib/whatsapp"
+import { buildWhatsAppLink, buildOrderMessage } from "@/lib/whatsapp"
 import { productById } from "@/data/products"
 import { formatPrice } from "@/lib/format"
 import { track } from "@/lib/tracking"
@@ -132,7 +132,16 @@ export function SelectionDrawer() {
 
             <div className="border-t border-border-gray px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
               <a
-                href={buildWhatsAppLink(templates.minhaSelecao(resolved), utm)}
+                href={buildWhatsAppLink(
+                  buildOrderMessage(
+                    resolved.map(({ item, product }) => ({
+                      product,
+                      size: item.size,
+                      color: item.color,
+                    }))
+                  ),
+                  utm
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => track("selection_whatsapp_click", { items: resolved.length })}

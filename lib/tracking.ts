@@ -25,6 +25,12 @@ export type TrackingEvent =
   | "instagram_click"
   | "location_click"
   | "faq_open"
+  | "view_banner"
+  | "click_banner"
+  | "add_favorite"
+  | "remove_favorite"
+  | "share_product"
+  | "notify_me_whatsapp_click"
 
 export const CONSENT_KEY = "prgrife-consent"
 
@@ -56,6 +62,8 @@ const metaEventMap: Partial<Record<TrackingEvent, string>> = {
   personalized_service_interest: "Contact",
   look_interest: "Contact",
   conditional_interest: "Contact",
+  add_favorite: "AddToWishlist",
+  notify_me_whatsapp_click: "Contact",
 }
 
 export function track(event: TrackingEvent, payload: Record<string, unknown> = {}): void {

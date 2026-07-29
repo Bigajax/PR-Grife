@@ -1,16 +1,44 @@
 @import "tailwindcss";
 
 @theme inline {
+  /* ── Paleta KISS v2 ────────────────────────────────────────────────────────
+     Regra de uso:
+     - Grafite (text-primary) só em texto, ícone e botão primário. Nunca como
+       fundo de seção inteira.
+     - Accent (dourado dessaturado) só em eyebrow, underline e hover. Nunca
+       como fundo cheio de botão.
+     - Alternância de seções: bg-base → bg-surface → bg-base. Nada mais.       */
+  --color-bg-base: #fbfaf7;
+  --color-bg-surface: #f3f1ec;
+  --color-bg-elevated: #ffffff;
+  --color-text-primary: #1c1c1a;
+  --color-text-secondary: #6b6862;
+  --color-border: #e6e2da;
+  /* Ouro rosé: só traço fino, eyebrow, underline de hover, borda de filtro
+     ativo e stroke de ícone. Nunca fundo de botão nem bloco cheio.
+     Texto em ouro rosé usa sempre accent-strong — o accent puro não alcança
+     4.5:1 sobre o creme. */
+  --color-accent: #b76e79;
+  --color-accent-strong: #8e5a63;
+  --color-accent-soft: #f2e2e0;
+  --color-alert: #b3261e;
+
+  /* ── Apelidos legados ──────────────────────────────────────────────────────
+     Páginas fora do escopo desta rodada (produto, catálogo por categoria,
+     políticas) ainda usam estes nomes. Todos apontam para a paleta acima, então
+     nenhuma superfície volta a ser preta. Ao encostar nessas páginas, migre o
+     nome e apague o apelido daqui.                                            */
   --color-white: #ffffff;
-  --color-off-white: #f8f6f1;
-  --color-beige-light: #efeae2;
-  --color-sand: #ddd2c3;
-  --color-gold: #c2a15d;
-  --color-gold-dark: #8f6f38;
-  --color-black-soft: #171716;
-  --color-graphite: #302f2c;
-  --color-text-gray: #5f5c55;
-  --color-border-gray: #e2ded7;
+  --color-off-white: #fbfaf7;
+  --color-beige-light: #f3f1ec;
+  --color-sand: #c9c2b4;
+  --color-gold: #b76e79;
+  --color-gold-dark: #8e5a63;
+  --color-success: #2e6b4f;
+  --color-black-soft: #1c1c1a;
+  --color-graphite: #1c1c1a;
+  --color-text-gray: #6b6862;
+  --color-border-gray: #e6e2da;
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-cormorant), ui-serif, Georgia, serif;
@@ -27,8 +55,8 @@ html {
 }
 
 body {
-  background: var(--color-off-white);
-  color: var(--color-black-soft);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
   font-family: var(--font-sans);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
@@ -41,20 +69,20 @@ body {
 
 /* Foco visível consistente em todo o site */
 :focus-visible {
-  outline: 2px solid var(--color-gold-dark);
+  outline: 2px solid var(--color-accent-strong);
   outline-offset: 2px;
 }
 
 /* Seleção de texto na cor da casa */
 ::selection {
-  background: var(--color-gold);
-  color: var(--color-black-soft);
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
 }
 
-/* Linha fina dourada usada como divisor editorial */
+/* Linha fina usada como divisor editorial */
 .hairline-gold {
   height: 1px;
-  background: linear-gradient(to right, var(--color-gold), transparent);
+  background: linear-gradient(to right, var(--color-accent), transparent);
 }
 
 /* Revelação sutil ao rolar (aplicada via IntersectionObserver) */
@@ -77,28 +105,69 @@ body {
   }
 }
 
-/* Faixa rotativa (marquee) de marcas abaixo do hero */
-@keyframes marquee {
-  from {
-    transform: translateX(0);
+/* ── Faixa do hero (components/Hero.tsx) ─────────────────────────────────────
+   A altura da faixa vem da proporção da própria foto (1792×690 = 2.5971), sem
+   teto em vh. É o que garante a foto inteira: largura total, nenhum corte e
+   nenhum fundo inventado para completar sobra.
+   A foto é panorâmica de propósito — é isso que deixa a faixa baixa o bastante
+   para caber na tela. Ao trocar por uma foto de outra proporção, atualize
+   --hero-ratio, senão volta a cortar ou a sobrar fundo.
+
+   No mobile a faixa vira retrato (3:4) e o texto pousa dentro da própria foto,
+   como na referência. Sem véu escuro: a tipografia vai em grafite, que é o que
+   se lê sobre esta parede clara.                                             */
+.hero-band {
+  --hero-ratio: 2.5971; /* 1792 / 690 */
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+
+.hero-band__photo {
+  position: absolute;
+  inset: 0;
+}
+
+@media (min-width: 1024px) {
+  .hero-band {
+    aspect-ratio: var(--hero-ratio);
   }
-  to {
-    transform: translateX(-50%);
+
+  .hero-band__photo {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
   }
 }
 
-.animate-marquee {
-  animation: marquee 36s linear infinite;
+/* ── Container do site ────────────────────────────────────────────────────────
+   Largura total com respiro lateral, sem coluna centralizada. Header, seções
+   da home e listagens usam este mesmo recuo, então tudo alinha na vertical.
+   A PDP fica de fora de propósito: texto corrido em 1900px não se lê.
+
+   O recuo lateral vive num token único (--shell-pad). O trilho do carrossel lê
+   o mesmo token para sangrar exatamente a borda direita, então tudo alinha na
+   vertical sem número mágico repetido.                                       */
+:root {
+  --shell-pad: 1.25rem;
 }
 
-.marquee-group:hover .animate-marquee {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
-    animation: none;
+@media (min-width: 640px) {
+  :root {
+    --shell-pad: 1.5rem;
   }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --shell-pad: 2.5rem;
+  }
+}
+
+.shell {
+  width: 100%;
+  padding-inline: var(--shell-pad);
 }
 
 /* Esconde a scrollbar dos carrosséis mantendo o gesto */
@@ -110,7 +179,7 @@ body {
   display: none;
 }
 
-/* Zoom máximo 1.03 em imagens, conforme direção visual */
+/* Zoom discreto em imagens de card */
 .img-zoom {
   transition: transform 0.4s ease;
 }
@@ -126,5 +195,112 @@ body {
   .group:hover .img-zoom {
     transition: none;
     transform: none;
+  }
+}
+
+/* ── Carrossel (components/Carousel.tsx) ──────────────────────────────────────
+   Trilho de rolagem horizontal com snap.
+
+   A sangria é só à direita: o trilho começa colado na borda de conteúdo do
+   container — então o primeiro card alinha com a primeira letra do título — e
+   estoura apenas do lado direito, onde o último card aparece cortado pelo
+   viewport sinalizando que há mais. `scroll-padding-left: 0` garante que o snap
+   pare com o card alinhado, nunca com meio card à esquerda.                  */
+.rail {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  margin-right: calc(-1 * var(--shell-pad));
+  padding-right: var(--shell-pad);
+  scroll-padding-left: 0;
+}
+
+.rail > * {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail {
+    scroll-behavior: auto;
+  }
+}
+
+/* ── Faixa rotativa de marcas (components/Brands.tsx) ─────────────────────────
+   Dois trilhos idênticos lado a lado, cada um deslizando -100% da própria
+   largura: quando o primeiro sai de cena, o segundo já ocupou o lugar, então o
+   laço não tem emenda. O segundo é aria-hidden e fora da ordem de tabulação,
+   senão o leitor de tela e o Tab veriam cada marca duas vezes.               */
+.marquee {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+.marquee__track {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4rem;
+  padding-inline: 2rem;
+  animation: marquee 40s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Pausa no hover para dar tempo de mirar e clicar num logo. */
+@media (hover: hover) {
+  .marquee:hover .marquee__track {
+    animation-play-state: paused;
+  }
+}
+
+/* Sem movimento: vira uma faixa de rolagem manual e o trilho duplicado some. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .marquee::-webkit-scrollbar {
+    display: none;
+  }
+
+  .marquee__track {
+    animation: none;
+  }
+
+  .marquee__track[aria-hidden="true"] {
+    display: none;
+  }
+}
+
+/* Entrada do hero */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise {
+    animation: none;
   }
 }

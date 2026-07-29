@@ -11,6 +11,7 @@ export const products: Product[] = [
     name: "Camiseta essencial branca",
     brand: "Tommy Jeans",
     category: "camisetas",
+    gender: "masculino",
     shortDescription: "Camiseta de algodão com toque macio e caimento reto.",
     fullDescription:
       "A base de qualquer guarda-roupa bem montado. Algodão de fio penteado, gola firme e comprimento pensado para usar solta ou por dentro da calça.",
@@ -32,6 +33,7 @@ export const products: Product[] = [
     name: "Polo piquet branca",
     brand: "US Polo",
     category: "polos",
+    gender: "masculino",
     shortDescription: "Polo clássica em piquet, do trabalho ao fim de semana.",
     price: 249, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
@@ -54,6 +56,7 @@ export const products: Product[] = [
     name: "Camisa de linho terracota",
     brand: "Reserva",
     category: "camisas",
+    gender: "masculino",
     shortDescription: "Linho leve com cor de presença, para dias quentes.",
     fullDescription:
       "Linho com caimento natural e cor que valoriza pele bronzeada. Fica bem aberta sobre camiseta ou fechada com calça de alfaiataria leve.",
@@ -76,6 +79,7 @@ export const products: Product[] = [
     name: "Camisa listrada azul",
     brand: "US Polo",
     category: "camisas",
+    gender: "masculino",
     shortDescription: "Listras finas e colarinho estruturado para compromissos.",
     price: 329, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
@@ -94,6 +98,7 @@ export const products: Product[] = [
     name: "Calça jeans lavagem clara",
     brand: "Tommy Jeans",
     category: "calcas",
+    gender: "masculino",
     shortDescription: "Jeans de corte reto com lavagem clara e barra dobrável.",
     price: 449, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
@@ -114,6 +119,7 @@ export const products: Product[] = [
     name: "Shorts rosé de verão",
     brand: "Reserva",
     category: "shorts",
+    gender: "masculino",
     shortDescription: "Shorts leve com cós elástico e cadarço aparente.",
     price: 229, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
@@ -133,6 +139,7 @@ export const products: Product[] = [
     name: "Shorts de moletom cru",
     brand: "Ankor",
     category: "shorts",
+    gender: "masculino",
     shortDescription: "Moletom felpudo em tom cru, conforto para o dia todo.",
     price: 189, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
@@ -151,6 +158,7 @@ export const products: Product[] = [
     name: "Shorts de sarja caqui",
     brand: "Colcci",
     category: "shorts",
+    gender: "masculino",
     shortDescription: "Sarja encorpada e cadarço interno, versátil e neutro.",
     price: 219, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
@@ -169,6 +177,7 @@ export const products: Product[] = [
     name: "Shorts d'água preto",
     brand: "Reserva",
     category: "shorts",
+    gender: "masculino",
     shortDescription: "Secagem rápida e visual limpo, da piscina para a rua.",
     price: 249, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 3x sem juros", // TODO_CONFIRMAR
@@ -187,6 +196,7 @@ export const products: Product[] = [
     name: "Jaqueta track preta",
     brand: "Tommy Jeans",
     category: "jaquetas",
+    gender: "masculino",
     shortDescription: "Jaqueta esportiva com vivos contrastantes e zíper frontal.",
     fullDescription:
       "Referência noventista da Tommy Jeans: corpo preto, vivos brancos e logo bordado. Combina com jeans claro e tênis branco.",
@@ -209,6 +219,7 @@ export const products: Product[] = [
     name: "Bomber off-white",
     brand: "Colcci",
     category: "jaquetas",
+    gender: "masculino",
     shortDescription: "Bomber leve em tom claro, terceira peça sem esforço.",
     price: 549, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
@@ -229,6 +240,7 @@ export const products: Product[] = [
     name: "Jaqueta puffer off-white",
     brand: "Ankor",
     category: "jaquetas",
+    gender: "masculino",
     shortDescription: "Acolchoada, leve e quente para os dias frios do Sul.",
     price: 699, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
@@ -249,6 +261,7 @@ export const products: Product[] = [
     name: "Jaqueta harrington caqui",
     brand: "Reserva",
     category: "jaquetas",
+    gender: "masculino",
     shortDescription: "Colarinho baixo e caimento limpo, clássico atemporal.",
     price: 599, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
@@ -267,6 +280,7 @@ export const products: Product[] = [
     name: "Tricô gola V marinho",
     brand: "Colcci",
     category: "moletons-tricos",
+    gender: "masculino",
     shortDescription: "Tricô de toque macio para sobrepor camisas e camisetas.",
     price: 379, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
@@ -285,6 +299,7 @@ export const products: Product[] = [
     name: "Tênis branco com detalhe marinho",
     brand: "Tommy Hilfiger",
     category: "tenis",
+    gender: "masculino",
     shortDescription: "Couro branco com recortes em camurça e sola baixa.",
     fullDescription:
       "O tênis que resolve o look: branco de base, detalhes marinho e construção em couro. Vai de calça de alfaiataria a shorts de sarja.",
@@ -306,6 +321,7 @@ export const products: Product[] = [
     name: "Tênis branco com listras assinatura",
     brand: "Tommy Hilfiger",
     category: "tenis",
+    gender: "masculino",
     shortDescription: "Base branca com as listras assinatura da marca.",
     price: 749, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
@@ -325,6 +341,7 @@ export const products: Product[] = [
     name: "Boné aba curva bege",
     brand: "Ankor",
     category: "bones",
+    gender: "masculino",
     shortDescription: "Boné neutro que finaliza qualquer look de dia.",
     price: 149, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 2x sem juros", // TODO_CONFIRMAR
@@ -343,6 +360,7 @@ export const products: Product[] = [
     name: "Slide preto de fivelas",
     brand: "Biotwo",
     category: "acessorios",
+    gender: "masculino",
     shortDescription: "Slide preto de duas fivelas, conforto com presença.",
     price: 179, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 2x sem juros", // TODO_CONFIRMAR
@@ -360,6 +378,7 @@ export const products: Product[] = [
     name: "Le Male Elixir",
     brand: "Jean Paul Gaultier",
     category: "perfumes",
+    gender: "masculino",
     shortDescription: "Amadeirado intenso de assinatura, presença para a noite.",
     fullDescription:
       "Parfum concentrado com saída de lavanda e fundo de baunilha, mel e madeiras. Projeção alta — uma assinatura para ocasiões que pedem presença.",
@@ -380,6 +399,7 @@ export const products: Product[] = [
     name: "Scandal Pour Homme",
     brand: "Jean Paul Gaultier",
     category: "perfumes",
+    gender: "masculino",
     shortDescription: "Doce equilibrado e versátil, do dia ao happy hour.",
     price: 799, // TODO_CONFIRMAR — preço demonstrativo
     installmentText: "em até 10x sem juros", // TODO_CONFIRMAR

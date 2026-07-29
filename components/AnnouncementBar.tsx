@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { siteConfig } from "@/data/site.config"
 
-// Barra fina de avisos. Desktop: mensagens distribuídas. Mobile: uma por vez.
+// Barra fina do topo, em superfície clara. Desktop: os três avisos numa linha.
+// Mobile: um por vez, para caber sem quebrar em duas linhas.
 export function AnnouncementBar() {
   const messages = siteConfig.announcements
   const [index, setIndex] = useState(0)
@@ -16,19 +17,18 @@ export function AnnouncementBar() {
   }, [messages.length])
 
   return (
-    <div className="bg-graphite text-off-white">
-      <div className="mx-auto hidden max-w-6xl items-center justify-between gap-6 px-6 py-2 md:flex">
-        {messages.map((msg) => (
-          <p key={msg} className="text-[11px] font-medium uppercase tracking-[0.18em] text-sand">
-            {msg}
-          </p>
-        ))}
-      </div>
-      <div className="relative flex h-8 items-center justify-center overflow-hidden md:hidden" aria-live="polite">
+    <div className="border-b border-border bg-bg-surface text-text-secondary">
+      <p className="shell hidden py-2 text-center text-xs md:block">
+        {messages.join(" · ")}
+      </p>
+      <div
+        className="relative flex h-8 items-center justify-center overflow-hidden md:hidden"
+        aria-live="polite"
+      >
         {messages.map((msg, i) => (
           <p
             key={msg}
-            className={`absolute text-[11px] font-medium uppercase tracking-[0.18em] text-sand transition-opacity duration-500 ${
+            className={`absolute text-xs transition-opacity duration-500 ${
               i === index ? "opacity-100" : "opacity-0"
             }`}
             aria-hidden={i !== index}

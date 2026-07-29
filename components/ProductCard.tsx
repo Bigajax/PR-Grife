@@ -2,109 +2,139 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Plus, Check } from "lucide-react"
+import { Eye } from "lucide-react"
 import type { Product } from "@/types"
 import { formatPrice } from "@/lib/format"
-import { badgeLabels, stockLabels } from "@/lib/badges"
-import { useSelection } from "@/hooks/useSelection"
+import { isOnSale } from "@/lib/catalog"
+import { FavoriteButton } from "@/components/FavoriteButton"
 
-export function ProductCard({ product }: { product: Product }) {
-  const { add, has } = useSelection()
-  const inSelection = has(product.id)
+// Um único badge por card, resolvido por hierarquia: desconto > últimas
+// unidades > novo. Destacar tudo é não destacar nada.
+function cardBadge(product: Product): string | null {
+  if (product.stockStatus === "out_of_stock") return "Esgotado"
+  if (isOnSale(product) && product.oldPrice && product.price) {
+    const off = Math.round((1 - product.price / product.oldPrice) * 100)
+    if (off > 0) return `-${off}%`
+  }
+  if (product.stockStatus === "low_stock") return "Últimas unidades"
+  if (product.newArrival || product.badges?.includes("novo")) return "Novo"
+  return null
+}
+
+// Rodapé do card: contagem de cores quando há variação, senão a faixa de
+// tamanhos. Nunca os dois — a PDP mostra o detalhe.
+function variantLine(product: Product): string | null {
+  const colors = product.availableColors.length
+  if (colors > 1) return `+${colors} cores`
+  const sizes = product.availableSizes
+  if (sizes.length > 1) return `${sizes[0]}–${sizes[sizes.length - 1]}`
+  return sizes[0] ?? null
+}
+
+export function ProductCard({
+  product,
+  compact = false,
+  onQuickView,
+}: {
+  product: Product
+  /** Versão de vitrine curta: sem coração e sem tamanhos no hover. */
+  compact?: boolean
+  /** Quando presente, mostra o botão "ver rápido" no canto da imagem. */
+  onQuickView?: (product: Product) => void
+}) {
+  const soldOut = product.stockStatus === "out_of_stock"
+  const sale = isOnSale(product)
+  const badge = cardBadge(product)
   const hoverImage = product.images[1]
+  const variant = variantLine(product)
   const href = `/produto/${product.slug}`
+  const sizes = compact || soldOut ? [] : product.availableSizes
 
   return (
     <article className="group relative flex flex-col">
-      {/* Controle de seleção: irmão do link (fica acima) para não navegar ao clicar. */}
-      <button
-        type="button"
-        onClick={() => add(product.id)}
-        aria-label={
-          inSelection ? `${product.name} já está na sua seleção` : `Adicionar ${product.name} à minha seleção`
-        }
-        title={inSelection ? "Na sua seleção" : "Adicionar à seleção"}
-        className={`absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${
-          inSelection
-            ? "border-gold bg-gold text-white"
-            : "border-border-gray bg-white/95 text-black-soft hover:border-gold hover:text-gold-dark"
-        }`}
-      >
-        {inSelection ? <Check className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
-      </button>
+      {/* Irmão do link, não filho: tocar no coração não navega. */}
+      {!compact && (
+        <div className="absolute right-1 top-1 z-20">
+          <FavoriteButton
+            productId={product.id}
+            productName={product.name}
+            className="rounded-full"
+          />
+        </div>
+      )}
 
-      <Link href={href} className="flex flex-1 flex-col">
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-beige-light transition-shadow duration-300 group-hover:shadow-[0_16px_40px_-20px_rgba(23,23,22,0.28)]">
+      <div className="relative aspect-square w-full overflow-hidden bg-bg-surface">
+        <Link href={href} className="absolute inset-0" aria-label={product.name}>
           <Image
             src={product.thumbnail}
-            alt={`${product.name} — ${product.brand}`}
+            alt={product.name}
             fill
-            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
-            className={`img-zoom object-cover ${hoverImage ? "transition-opacity duration-300 group-hover:opacity-0" : ""}`}
+            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 62vw"
+            className={`object-contain p-3 ${soldOut ? "opacity-60 saturate-0" : ""} ${
+              hoverImage && !soldOut ? "transition-opacity duration-300 group-hover:opacity-0" : ""
+            }`}
           />
-          {hoverImage && (
+          {hoverImage && !soldOut && (
             <Image
               src={hoverImage}
               alt=""
               fill
-              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
-              className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 62vw"
+              className="object-contain p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             />
           )}
-          {product.badges?.[0] && (
-            <span className="absolute left-3 top-3 bg-off-white/95 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-dark">
-              {badgeLabels[product.badges[0]]}
+          {badge && (
+            <span className="absolute bottom-0 left-0 z-10 bg-text-primary px-2 py-1 text-[11px] font-semibold text-white">
+              {badge}
             </span>
           )}
-        </div>
+        </Link>
 
-        <div className="flex flex-1 flex-col pt-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-gray">{product.brand}</p>
-          {/* Altura reservada para 2 linhas: mantém preço/cores/CTA alinhados entre cards vizinhos */}
-          <h3 className="mt-1.5 line-clamp-2 min-h-[2.7rem] text-[15px] font-medium leading-snug text-black-soft">
-            {product.name}
-          </h3>
-
-          {product.price != null && (
-            <p className="mt-2 text-base font-bold text-black-soft">
-              {formatPrice(product.price)}
-              {product.installmentText && (
-                <span className="ml-1.5 text-[13px] font-normal text-text-gray">{product.installmentText}</span>
-              )}
-            </p>
-          )}
-
-          <div className="mt-3 flex items-center gap-2">
-            {product.availableColors.slice(0, 4).map((color) => (
-              <span
-                key={color.name}
-                title={color.name}
-                className="h-3.5 w-3.5 rounded-full border border-border-gray"
-                style={{ backgroundColor: color.hex }}
-              />
+        {/* Tamanhos no hover: cada um leva à PDP já com ele escolhido.
+            Irmãos do link da imagem para não aninhar âncoras. */}
+        {sizes.length > 0 && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 hidden translate-y-1 flex-wrap justify-center gap-1.5 bg-bg-surface/95 p-2 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 lg:flex">
+            {sizes.map((size) => (
+              <Link
+                key={size}
+                href={`${href}?tamanho=${encodeURIComponent(size)}`}
+                aria-label={`${product.name} no tamanho ${size}`}
+                className="min-w-8 border border-border bg-bg-elevated px-2 py-1 text-center text-xs text-text-primary transition-colors hover:border-accent hover:text-accent-strong"
+              >
+                {size}
+              </Link>
             ))}
-            {product.availableSizes.length > 0 && (
-              <span className="ml-auto text-[13px] text-text-gray">
-                {product.availableSizes[0]}–{product.availableSizes[product.availableSizes.length - 1]}
+          </div>
+        )}
+
+        {/* Ver rápido: irmão do link da imagem, senão o clique navegaria. */}
+        {onQuickView && !soldOut && (
+          <button
+            type="button"
+            onClick={() => onQuickView(product)}
+            aria-label={`Ver rápido: ${product.name}`}
+            className="absolute bottom-0 right-0 z-10 flex h-10 w-10 items-center justify-center bg-text-primary text-white transition-opacity hover:opacity-90"
+          >
+            <Eye className="h-4 w-4" aria-hidden="true" strokeWidth={1.6} />
+          </button>
+        )}
+      </div>
+
+      <Link href={href} className="flex flex-1 flex-col pt-3">
+        {product.price != null && (
+          <p className="text-[15px] font-semibold text-text-primary">
+            {formatPrice(product.price)}
+            {sale && product.oldPrice != null && (
+              <span className="ml-2 text-[13px] font-normal text-text-secondary line-through">
+                {formatPrice(product.oldPrice)}
               </span>
             )}
-          </div>
-
-          <p
-            className={`mt-2 text-[13px] ${
-              product.stockStatus === "available" ? "text-text-gray" : "text-gold-dark"
-            }`}
-          >
-            {stockLabels[product.stockStatus]}
           </p>
+        )}
 
-          <span className="mt-auto inline-flex items-center gap-1.5 self-start border-b border-black-soft pb-0.5 pt-3 text-[13px] font-semibold text-black-soft transition-colors group-hover:border-gold group-hover:text-gold-dark">
-            Ver detalhes
-            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
-              →
-            </span>
-          </span>
-        </div>
+        <h3 className="mt-1 truncate text-sm text-text-primary">{product.name}</h3>
+
+        {variant && <p className="mt-1 text-xs text-text-secondary">{variant}</p>}
       </Link>
     </article>
   )

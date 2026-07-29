@@ -9,6 +9,7 @@ import {
   countActiveFilters,
   priceRanges,
   availabilityOptions,
+  genderOptions,
   allBrands,
   clothingSizes,
   shoeSizes,
@@ -18,34 +19,54 @@ import {
   type SortKey,
 } from "@/lib/catalog"
 import { ProductCard } from "@/components/ProductCard"
+import { ActiveFilters } from "@/components/ActiveFilters"
 import { useSelection } from "@/hooks/useSelection"
 import { track } from "@/lib/tracking"
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 24
 
-function readFilters(sp: URLSearchParams, locked?: string): CatalogFilters {
+function readFilters(sp: URLSearchParams, locked: CatalogFilters): CatalogFilters {
   return {
     q: sp.get("q") ?? undefined,
-    categoria: locked ?? sp.get("categoria") ?? undefined,
+    genero: sp.get("genero") ?? undefined,
+    categoria: sp.get("categoria") ?? undefined,
     marca: sp.get("marca") ?? undefined,
     tamanho: sp.get("tamanho") ?? undefined,
     cor: sp.get("cor") ?? undefined,
     preco: sp.get("preco") ?? undefined,
     disponibilidade: sp.get("disponibilidade") ?? undefined,
-    novidades: sp.get("novidades") === "1" || undefined,
-    destaque: sp.get("destaque") === "1" || undefined,
+    // `destaque` aceita duas formas: o flag antigo (=1) e o atalho por nome
+    // usado nos links do header e do bloco editorial
+    // (?destaque=novidades | ofertas | essenciais).
+    novidades: sp.get("novidades") === "1" || sp.get("destaque") === "novidades" || undefined,
+    oferta: sp.get("oferta") === "1" || sp.get("destaque") === "ofertas" || undefined,
+    destaque:
+      sp.get("destaque") === "1" || sp.get("destaque") === "essenciais" || undefined,
     sort: (sp.get("sort") as SortKey) ?? undefined,
+    // Filtros travados pela rota (/masculino, /novidades, /marca/[slug]...)
+    // sobrescrevem a query string e não aparecem na UI de filtros.
+    ...locked,
   }
 }
 
-export function CatalogView({ lockedCategory }: { lockedCategory?: string }) {
+// Rotas dedicadas passam `locked` para fixar um recorte do catálogo.
+export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const filters = useMemo(() => readFilters(searchParams, lockedCategory), [searchParams, lockedCategory])
+  const lockedKeys = useMemo(
+    () => Object.keys(locked) as (keyof CatalogFilters)[],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+  const filters = useMemo(
+    () => readFilters(searchParams, locked),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParams]
+  )
   const results = useMemo(() => queryCatalog(filters), [filters])
-  const activeCount = countActiveFilters(filters, Boolean(lockedCategory))
+  const activeCount = countActiveFilters(filters, lockedKeys)
 
   const { items: selection, openDrawer } = useSelection()
 
@@ -59,8 +80,13 @@ export function CatalogView({ lockedCategory }: { lockedCategory?: string }) {
     // Marca hidratação (para trocar o skeleton) e registra a visita ao catálogo.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setReady(true)
-    track("view_catalog", { categoria: lockedCategory ?? "todos" })
-  }, [lockedCategory])
+    track("view_catalog", {
+      categoria: locked.categoria ?? "todos",
+      genero: locked.genero ?? "todos",
+      marca: locked.marca ?? "todas",
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Sincroniza o campo de busca com a URL (fonte da verdade dos filtros).
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -111,11 +137,26 @@ export function CatalogView({ lockedCategory }: { lockedCategory?: string }) {
     [searchText, setParam]
   )
 
-  const quickCategories = lockedCategory ? [] : categories
+  const isLocked = (key: keyof CatalogFilters) => lockedKeys.includes(key)
+  const quickCategories = isLocked("categoria") ? [] : categories
 
   const filterPanel = (
     <div className="flex flex-col gap-6">
-      {!lockedCategory && (
+      {!isLocked("genero") && (
+        <FilterGroup legend="Gênero">
+          {genderOptions.map((g) => (
+            <Chip
+              key={g.id}
+              active={filters.genero === g.id}
+              onClick={() => toggleParam("genero", g.id)}
+            >
+              {g.label}
+            </Chip>
+          ))}
+        </FilterGroup>
+      )}
+
+      {!isLocked("categoria") && (
         <FilterGroup legend="Categoria">
           {categories.map((c) => (
             <Chip
@@ -129,13 +170,15 @@ export function CatalogView({ lockedCategory }: { lockedCategory?: string }) {
         </FilterGroup>
       )}
 
-      <FilterGroup legend="Marca">
-        {allBrands.map((b) => (
-          <Chip key={b} active={filters.marca === b} onClick={() => toggleParam("marca", b)}>
-            {b}
-          </Chip>
-        ))}
-      </FilterGroup>
+      {!isLocked("marca") && (
+        <FilterGroup legend="Marca">
+          {allBrands.map((b) => (
+            <Chip key={b} active={filters.marca === b} onClick={() => toggleParam("marca", b)}>
+              {b}
+            </Chip>
+          ))}
+        </FilterGroup>
+      )}
 
       <FilterGroup legend="Tamanho">
         {[...clothingSizes, ...shoeSizes].map((s) => (
@@ -189,9 +232,16 @@ export function CatalogView({ lockedCategory }: { lockedCategory?: string }) {
       </FilterGroup>
 
       <FilterGroup legend="Destaques">
-        <Chip active={Boolean(filters.novidades)} onClick={() => toggleParam("novidades", "1")}>
-          Novidades
-        </Chip>
+        {!isLocked("novidades") && (
+          <Chip active={Boolean(filters.novidades)} onClick={() => toggleParam("novidades", "1")}>
+            Novidades
+          </Chip>
+        )}
+        {!isLocked("oferta") && (
+          <Chip active={Boolean(filters.oferta)} onClick={() => toggleParam("oferta", "1")}>
+            Ofertas
+          </Chip>
+        )}
         <Chip active={Boolean(filters.destaque)} onClick={() => toggleParam("destaque", "1")}>
           Favoritos da loja
         </Chip>
@@ -200,7 +250,7 @@ export function CatalogView({ lockedCategory }: { lockedCategory?: string }) {
   )
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-28 pt-6 sm:px-6 lg:pb-20">
+    <div className="shell pb-28 pt-6 lg:pb-20">
       {/* Busca */}
       <form onSubmit={submitSearch} className="mt-6" role="search">
         <div className="flex items-center gap-2 border-b-2 border-black-soft pb-2">
@@ -327,32 +377,55 @@ export function CatalogView({ lockedCategory }: { lockedCategory?: string }) {
         </aside>
 
         <div>
+          <ActiveFilters
+            filters={filters}
+            lockedKeys={lockedKeys}
+            onRemove={(key) => setParam(key, null)}
+            onClear={clearFilters}
+          />
+
           {!ready ? (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-9 md:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="animate-pulse">
+                <div key={i} className="animate-pulse bg-white pb-5">
                   <div className="aspect-[4/5] w-full bg-beige-light" />
-                  <div className="mt-4 h-3 w-1/3 bg-beige-light" />
-                  <div className="mt-2 h-3 w-2/3 bg-beige-light" />
-                  <div className="mt-3 h-4 w-1/2 bg-beige-light" />
+                  <div className="mx-4 mt-4 h-3 w-1/3 bg-beige-light" />
+                  <div className="mx-4 mt-2 h-3 w-2/3 bg-beige-light" />
+                  <div className="mx-4 mt-3 h-4 w-1/2 bg-beige-light" />
                 </div>
               ))}
             </div>
           ) : results.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-9 md:grid-cols-3 md:gap-x-5 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {results.slice(0, visible).map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
               {visible < results.length && (
-                <div className="mt-12 flex justify-center">
+                <div className="mt-10 flex flex-col items-center gap-3">
+                  <p className="text-[13px] text-text-gray">
+                    Você viu {Math.min(visible, results.length)} de {results.length} peças
+                  </p>
+                  <div
+                    className="h-px w-40 overflow-hidden bg-border-gray"
+                    role="progressbar"
+                    aria-label="Progresso do catálogo"
+                    aria-valuenow={Math.min(visible, results.length)}
+                    aria-valuemin={0}
+                    aria-valuemax={results.length}
+                  >
+                    <div
+                      className="h-full bg-gold"
+                      style={{ width: `${Math.min(100, (visible / results.length) * 100)}%` }}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                    className="rounded-full border border-black-soft px-8 py-3 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
+                    className="mt-1 rounded-full border border-black-soft px-8 py-3 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
                   >
-                    Carregar mais ({results.length - visible})
+                    Ver mais produtos
                   </button>
                 </div>
               )}

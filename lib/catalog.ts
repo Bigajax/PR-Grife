@@ -22,13 +22,14 @@ export const priceRanges = [
 ]
 
 export const availabilityOptions = [
-  { id: "available", label: "Disponível" },
-  { id: "low_stock", label: "Poucas unidades" },
-  { id: "on_request", label: "Sob encomenda" },
+  { id: "available", label: "Pronta entrega" },
+  { id: "low_stock", label: "Últimas unidades" },
+  { id: "on_request", label: "Encomenda" },
 ]
 
 export type CatalogFilters = {
   q?: string
+  genero?: string
   categoria?: string
   marca?: string
   tamanho?: string
@@ -36,12 +37,46 @@ export type CatalogFilters = {
   preco?: string
   disponibilidade?: string
   novidades?: boolean
+  oferta?: boolean
   destaque?: boolean
   sort?: SortKey
 }
 
+export const genderOptions = [
+  { id: "masculino", label: "Masculino" },
+  { id: "feminino", label: "Feminino" },
+]
+
+// Oferta real: só existe quando o preço "de" cadastrado é maior que o atual.
+// Nunca inventar desconto (regra do Guia Mestre).
+export function isOnSale(p: Product): boolean {
+  return p.oldPrice != null && p.price != null && p.oldPrice > p.price
+}
+
+export const saleProducts = () => products.filter(isOnSale)
+
+// Slug de marca para a rota /marca/[slug].
+export function brandSlug(brand: string): string {
+  return brand
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+}
+
+export const brandBySlug = (slug: string) =>
+  siteConfig.brands.find((b) => brandSlug(b) === slug)
+
 // Facetas derivadas de todo o catálogo (independente dos filtros ativos).
 export const allBrands = siteConfig.brands
+
+// Marcas que têm ao menos uma peça cadastrada. A vitrine só linka para estas:
+// marca sem SKU abre um catálogo vazio, que é beco sem saída. Assim que a peça
+// entrar em data/products.ts, a marca volta a aparecer sozinha.
+export const brandsInCatalog = siteConfig.brands.filter((brand) =>
+  products.some((p) => p.brand === brand)
+)
 export const allSizes = ["P", "M", "G", "GG", "38", "39", "40", "41", "42", "43", "44", "46"]
 export const clothingSizes = ["P", "M", "G", "GG"]
 export const shoeSizes = ["38", "39", "40", "41", "42", "43", "44"]
@@ -51,24 +86,33 @@ export const allColors = Array.from(
   ).values()
 )
 
-function matchesSearch(product: Product, q: string): boolean {
-  const needle = q.trim().toLowerCase()
-  if (!needle) return true
-  const haystack = [
-    product.name,
-    product.brand,
-    categoryLabel(product.category),
-    product.productCode,
-    ...product.availableColors.map((c) => c.name),
-  ]
-    .join(" ")
+// Normaliza para busca: minúsculas e sem acentos ("calca" encontra "Calça").
+function normalize(text: string): string {
+  return text
     .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+}
+
+export function matchesSearch(product: Product, q: string): boolean {
+  const needle = normalize(q.trim())
+  if (!needle) return true
+  const haystack = normalize(
+    [
+      product.name,
+      product.brand,
+      categoryLabel(product.category),
+      product.productCode,
+      ...product.availableColors.map((c) => c.name),
+    ].join(" ")
+  )
   return needle.split(/\s+/).every((token) => haystack.includes(token))
 }
 
 export function filterProducts(list: Product[], f: CatalogFilters): Product[] {
   const range = priceRanges.find((r) => r.id === f.preco)
   return list.filter((p) => {
+    if (f.genero && p.gender !== f.genero && p.gender !== "unissex") return false
     if (f.categoria && p.category !== f.categoria) return false
     if (f.marca && p.brand !== f.marca) return false
     if (f.tamanho && !p.availableSizes.includes(f.tamanho)) return false
@@ -76,6 +120,7 @@ export function filterProducts(list: Product[], f: CatalogFilters): Product[] {
     if (range && !(p.price != null && p.price >= range.min && p.price < range.max)) return false
     if (f.disponibilidade && p.stockStatus !== f.disponibilidade) return false
     if (f.novidades && !p.newArrival) return false
+    if (f.oferta && !isOnSale(p)) return false
     if (f.destaque && !p.featured) return false
     if (f.q && !matchesSearch(p, f.q)) return false
     return true
@@ -107,18 +152,24 @@ export function queryCatalog(f: CatalogFilters): Product[] {
   return sortProducts(filterProducts(products, f), f.sort)
 }
 
-export function countActiveFilters(f: CatalogFilters, ignoreCategoria = false): number {
-  let n = 0
-  if (f.q) n++
-  if (f.categoria && !ignoreCategoria) n++
-  if (f.marca) n++
-  if (f.tamanho) n++
-  if (f.cor) n++
-  if (f.preco) n++
-  if (f.disponibilidade) n++
-  if (f.novidades) n++
-  if (f.destaque) n++
-  return n
+export function countActiveFilters(
+  f: CatalogFilters,
+  ignore: (keyof CatalogFilters)[] = []
+): number {
+  const keys: (keyof CatalogFilters)[] = [
+    "q",
+    "genero",
+    "categoria",
+    "marca",
+    "tamanho",
+    "cor",
+    "preco",
+    "disponibilidade",
+    "novidades",
+    "oferta",
+    "destaque",
+  ]
+  return keys.filter((k) => f[k] && !ignore.includes(k)).length
 }
 
 export function relatedProducts(product: Product, limit = 4): Product[] {
