@@ -2,6 +2,7 @@ import type { Product } from "@/types"
 import { products } from "@/data/products"
 import { categoryLabel } from "@/data/categories"
 import { siteConfig } from "@/data/site.config"
+import { brandShowcase, type BrandShowcaseItem } from "@/data/brands"
 
 // Camada de dados do catálogo — funções puras, prontas para trocar por Supabase depois.
 
@@ -77,6 +78,34 @@ export const allBrands = siteConfig.brands
 export const brandsInCatalog = siteConfig.brands.filter((brand) =>
   products.some((p) => p.brand === brand)
 )
+
+// ── Vitrine de marcas ─────────────────────────────────────────────────────────
+// A vitrine curada (data/brands.ts) mais qualquer marca que exista nos produtos
+// e ainda não tenha card — assim, cadastrar produto de marca nova já a coloca
+// na navegação sem mexer em mais nada.
+const marcasCobertas = new Set(brandShowcase.flatMap((i) => i.brands))
+
+export const showcaseBrands: BrandShowcaseItem[] = [
+  ...brandShowcase,
+  ...Array.from(new Set(products.map((p) => p.brand)))
+    .filter((b) => !marcasCobertas.has(b))
+    .map((b) => ({ name: b, slug: brandSlug(b), brands: [b] })),
+]
+
+// Navegação do catálogo não mostra marca sem produto — filtro que devolve zero
+// peças é beco sem saída.
+export const showcaseBrandsWithProducts = showcaseBrands.filter((item) =>
+  item.brands.some((b) => products.some((p) => p.brand === b))
+)
+
+// `?marca=` aceita o slug da vitrine (tommy-hilfiger cobre também Tommy Jeans)
+// e continua aceitando o nome exato usado pelos chips do painel de filtros.
+export function brandNamesForFilter(marca: string): string[] {
+  const item = showcaseBrands.find((i) => i.slug === marca)
+  if (item) return item.brands
+  const porSlug = siteConfig.brands.filter((b) => brandSlug(b) === marca)
+  return porSlug.length > 0 ? porSlug : [marca]
+}
 export const allSizes = ["P", "M", "G", "GG", "38", "39", "40", "41", "42", "43", "44", "46"]
 export const clothingSizes = ["P", "M", "G", "GG"]
 export const shoeSizes = ["38", "39", "40", "41", "42", "43", "44"]
@@ -114,7 +143,7 @@ export function filterProducts(list: Product[], f: CatalogFilters): Product[] {
   return list.filter((p) => {
     if (f.genero && p.gender !== f.genero && p.gender !== "unissex") return false
     if (f.categoria && p.category !== f.categoria) return false
-    if (f.marca && p.brand !== f.marca) return false
+    if (f.marca && !brandNamesForFilter(f.marca).includes(p.brand)) return false
     if (f.tamanho && !p.availableSizes.includes(f.tamanho)) return false
     if (f.cor && !p.availableColors.some((c) => c.name === f.cor)) return false
     if (range && !(p.price != null && p.price >= range.min && p.price < range.max)) return false

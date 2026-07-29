@@ -1,59 +1,78 @@
-import Image from "next/image"
 import Link from "next/link"
 import { siteConfig } from "@/data/site.config"
+import { HeroVideo } from "@/components/HeroVideo"
 
 const { hero } = siteConfig
 
-// Hero fixo: copy sem data nem estação, vinda de site.config.
-//
-// Não há véu escuro sobre a foto. O texto ocupa a metade esquerda, que é
-// parede lisa de estúdio — assim nunca cobre o rosto nem a peça, que vivem
-// à direita. `tone` só escolhe a cor da tipografia (ver site.config).
+// Hero: texto de um lado, vídeos do feed do outro, retos e esguios como os
+// reels de onde vêm. Um vídeo cadastrado vira um card; dois ou três viram a
+// fileira com o do meio rebaixado (ver site.config.hero.videos).
 export function Hero() {
-  const light = hero.tone === "light"
-  const ink = light ? "text-white" : "text-text-primary"
-  const outline = light
-    ? "border-white text-white hover:bg-white hover:text-text-primary"
-    : "border-text-primary text-text-primary hover:bg-text-primary hover:text-white"
+  const videos = hero.videos
+  // Largura da fileira cresce com o número de cards: 1 vira um card só,
+  // 2 ficam lado a lado, 3 formam o trio.
+  const larguraColagem =
+    videos.length >= 3
+      ? "max-w-lg grid-cols-3 lg:max-w-none"
+      : videos.length === 2
+        ? "max-w-sm grid-cols-2 lg:max-w-md"
+        : "max-w-[240px] lg:max-w-xs"
 
   return (
-    <section className="hero-band">
-      <div className="hero-band__photo">
-        <Image
-          src={hero.image}
-          alt={hero.imageAlt}
-          fill
-          preload
-          sizes="100vw"
-          // Mobile: recorte retrato centrado no modelo, deixando o rodapé da
-          // foto (piso liso) para o texto pousar.
-          className="object-cover object-[63%_center] lg:object-[center_top]"
-        />
-      </div>
+    <section className="bg-bg-surface">
+      <div className="shell grid items-center gap-10 py-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-20">
+        <div>
+          <h1 className="hero-rise font-display text-[26px] font-medium uppercase leading-[1.08] tracking-[0.06em] text-text-primary lg:text-[36px]">
+            {hero.title}
+          </h1>
 
-      {/* Mobile: texto dentro da própria foto, centralizado na parte de baixo.
-          Desktop: coluna de texto à esquerda, longe do modelo. */}
-      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-10 text-center sm:px-8 lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[46%] lg:items-start lg:justify-center lg:px-12 lg:pb-0 lg:text-left">
-        <h1
-          className={`hero-rise font-display text-[36px] font-medium uppercase leading-none tracking-[0.08em] lg:text-[72px] ${ink}`}
-        >
-          {hero.title}
-        </h1>
+          <p
+            className="hero-rise mt-4 max-w-md text-base text-text-secondary lg:mt-5"
+            style={{ animationDelay: "120ms" }}
+          >
+            {hero.subtitle}
+          </p>
 
-        <p
-          className={`hero-rise mt-6 text-base lg:mt-8 lg:max-w-md ${ink}`}
-          style={{ animationDelay: "120ms" }}
-        >
-          {hero.subtitle}
-        </p>
+          <Link
+            href={hero.href}
+            className="hero-rise mt-7 inline-flex min-h-12 items-center border border-text-primary px-8 text-[13px] font-semibold uppercase tracking-[0.16em] text-text-primary transition-colors hover:bg-text-primary hover:text-white"
+            style={{ animationDelay: "200ms" }}
+          >
+            {hero.ctaLabel}
+          </Link>
+        </div>
 
-        <Link
-          href={hero.href}
-          className={`hero-rise mt-5 inline-flex min-h-12 items-center border px-8 text-[13px] font-semibold uppercase tracking-[0.16em] transition-colors lg:mt-7 ${outline}`}
-          style={{ animationDelay: "200ms" }}
-        >
-          {hero.ctaLabel}
-        </Link>
+        {/* Fileira de reels: cards retos em 9:16, moldura de fio fino e sombra
+            suave — o do meio desce um pouco para dar ritmo sem inclinar nada.
+            Com um vídeo só, o card fica na largura que a proporção pede. */}
+        <div className={`mx-auto grid w-full gap-4 ${larguraColagem}`}>
+          {videos.map((video, i) => {
+            const ultimo = i === videos.length - 1
+            return (
+              <div
+                key={video.src}
+                className={`hero-rise relative ${i === 1 ? "mt-8" : ""}`}
+                style={{ animationDelay: `${160 + i * 100}ms` }}
+              >
+                <span className="relative block aspect-[9/16] overflow-hidden rounded-xl bg-bg-elevated shadow-[0_24px_48px_-24px_rgba(28,28,26,0.35)] ring-1 ring-black/10">
+                  <HeroVideo src={video.src} poster={video.poster} />
+                </span>
+                {/* Selo de origem dos vídeos: o feed da loja. O leve giro do
+                    selo é o único elemento inclinado do hero. */}
+                {ultimo && (
+                  <a
+                    href={siteConfig.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute -bottom-4 -right-2 rotate-[-2deg] rounded bg-text-primary px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg transition-colors hover:bg-accent-strong"
+                  >
+                    {siteConfig.instagramHandle}
+                  </a>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
     </section>
   )

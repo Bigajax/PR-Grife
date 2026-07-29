@@ -12,11 +12,12 @@ const { homeFeature } = siteConfig
 export function HomeFeature() {
   return (
     <section className="bg-bg-base" aria-labelledby="destaque-home">
-      <div className="grid md:grid-cols-2">
-        {/* Quadro 3:4 = a proporção da própria foto (1087×1446 = 0.752), então o
-            object-cover praticamente não corta. Ao trocar por uma foto de outra
-            proporção, ajuste este aspect — senão volta a cortar. */}
-        <div className="relative aspect-[3/4] w-full">
+      <div className="grid md:grid-cols-[0.9fr_1.1fr]">
+        {/* Quadro 4:5 = a proporção exata da foto (1024×1280), então o
+            object-cover não corta nada. A coluna da imagem é um pouco mais
+            estreita que a do texto (0.9fr) para a seção não ficar tão alta.
+            Ao trocar por uma foto de outra proporção, ajuste este aspect. */}
+        <div className="relative aspect-[4/5] w-full">
           <Image
             src={homeFeature.image}
             alt={homeFeature.imageAlt}

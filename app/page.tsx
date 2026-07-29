@@ -1,6 +1,6 @@
 import { Hero } from "@/components/Hero"
 import { Brands } from "@/components/Brands"
-import { Categories } from "@/components/Categories"
+import { BrandShowcase } from "@/components/BrandShowcase"
 import { HomeFeature } from "@/components/HomeFeature"
 import { RecommendedCarousel } from "@/components/RecommendedCarousel"
 import { HomeDuo } from "@/components/HomeDuo"
@@ -13,7 +13,7 @@ export default function Home() {
     <main>
       <Hero />
       <Brands />
-      <Categories />
+      <BrandShowcase />
       <HomeFeature />
       <RecommendedCarousel />
       <HomeDuo />

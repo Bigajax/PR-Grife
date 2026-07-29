@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
-import { Search, SlidersHorizontal, X, ArrowUpDown, ShoppingBag } from "lucide-react"
+import { Search, SlidersHorizontal, X, ArrowUpDown, ShoppingBag, LayoutGrid } from "lucide-react"
 import { categories } from "@/data/categories"
 import {
   queryCatalog,
@@ -11,6 +11,7 @@ import {
   availabilityOptions,
   genderOptions,
   allBrands,
+  showcaseBrandsWithProducts,
   clothingSizes,
   shoeSizes,
   allColors,
@@ -20,6 +21,7 @@ import {
 } from "@/lib/catalog"
 import { ProductCard } from "@/components/ProductCard"
 import { ActiveFilters } from "@/components/ActiveFilters"
+import { BrandLogo } from "@/components/BrandLogos"
 import { useSelection } from "@/hooks/useSelection"
 import { track } from "@/lib/tracking"
 
@@ -284,6 +286,74 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
           </button>
         </div>
       </form>
+
+      {/* Navegação por marca: espelho da vitrine da home. A seleção vive na
+          query string (?marca=slug), então troca sem recarregar e convive com
+          os demais filtros. Marca sem produto não aparece. */}
+      {!isLocked("marca") && (
+        <div
+          className="mt-6 flex items-start gap-3 overflow-x-auto pb-1 no-scrollbar"
+          role="group"
+          aria-label="Comprar por marca"
+        >
+          <button
+            type="button"
+            onClick={() => setParam("marca", null)}
+            aria-pressed={!filters.marca}
+            className="group w-24 shrink-0 text-center"
+          >
+            <span
+              className={`flex aspect-square items-center justify-center border bg-white transition-colors ${
+                !filters.marca ? "border-black-soft" : "border-border-gray group-hover:border-gold"
+              }`}
+            >
+              <LayoutGrid
+                className={`h-6 w-6 ${!filters.marca ? "text-black-soft" : "text-text-gray"}`}
+                strokeWidth={1.4}
+                aria-hidden="true"
+              />
+            </span>
+            <span
+              className={`mt-1.5 block text-[11px] leading-tight ${
+                !filters.marca ? "font-semibold text-black-soft" : "text-text-gray"
+              }`}
+            >
+              Todas as marcas
+            </span>
+          </button>
+
+          {showcaseBrandsWithProducts.map((item) => {
+            const ativa = filters.marca === item.slug || item.brands.includes(filters.marca ?? "")
+            return (
+              <button
+                key={item.slug}
+                type="button"
+                onClick={() => {
+                  setParam("marca", ativa ? null : item.slug)
+                  track("apply_filter", { key: "marca", value: item.slug })
+                }}
+                aria-pressed={ativa}
+                className="group w-24 shrink-0 text-center"
+              >
+                <span
+                  className={`flex aspect-square items-center justify-center border bg-white p-3 transition-colors ${
+                    ativa ? "border-black-soft" : "border-border-gray group-hover:border-gold"
+                  }`}
+                >
+                  <BrandLogo name={item.name} className="h-8 w-auto max-w-full" />
+                </span>
+                <span
+                  className={`mt-1.5 block text-[11px] leading-tight ${
+                    ativa ? "font-semibold text-black-soft" : "text-text-gray"
+                  }`}
+                >
+                  {item.name}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {/* Chips de categoria rápida */}
       {quickCategories.length > 0 && (

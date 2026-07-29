@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { brandSlug, brandsInCatalog } from "@/lib/catalog"
+import { brandShowcase } from "@/data/brands"
 import { BrandLogo } from "@/components/BrandLogos"
 
 // São poucas marcas: um trilho mais estreito que a tela abriria um vão visível
@@ -8,11 +8,13 @@ import { BrandLogo } from "@/components/BrandLogos"
 // sem isso o Tab passaria pela mesma marca quatro vezes.
 const REPETICOES = 4
 
+// A faixa segue a vitrine curada (data/brands.ts): as 8 marcas confirmadas,
+// com a família Tommy representada uma vez só.
 const loop = Array.from({ length: REPETICOES }, (_, volta) =>
-  brandsInCatalog.map((brand) => ({ brand, decorativo: volta > 0 }))
+  brandShowcase.map((item) => ({ item, decorativo: volta > 0 }))
 ).flat()
 
-type Slide = { brand: string; decorativo: boolean }
+type Slide = { item: (typeof brandShowcase)[number]; decorativo: boolean }
 
 // Fundo branco de propósito: vários logos têm fundo branco chapado e, sobre a
 // superfície bege, apareciam como um retângulo em volta da marca.
@@ -35,18 +37,18 @@ export function Brands() {
 function Track({ items, duplicado = false }: { items: Slide[]; duplicado?: boolean }) {
   return (
     <ul className="marquee__track" aria-hidden={duplicado || undefined}>
-      {items.map(({ brand, decorativo }, i) => {
+      {items.map(({ item, decorativo }, i) => {
         const oculto = decorativo || duplicado
         return (
-          <li key={`${brand}-${i}`} className="shrink-0" aria-hidden={oculto || undefined}>
+          <li key={`${item.slug}-${i}`} className="shrink-0" aria-hidden={oculto || undefined}>
             <Link
-              href={`/catalogo?marca=${brandSlug(brand)}`}
-              aria-label={oculto ? undefined : `Ver peças ${brand}`}
+              href={`/catalogo?marca=${item.slug}`}
+              aria-label={oculto ? undefined : `Ver peças ${item.name}`}
               tabIndex={oculto ? -1 : undefined}
               className="group flex items-center justify-center"
             >
               <BrandLogo
-                name={brand}
+                name={item.name}
                 className="h-12 max-w-32 text-text-primary transition-colors group-hover:text-accent-strong"
               />
             </Link>

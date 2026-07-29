@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#faf9f6",
+  themeColor: "#f8f4e9",
 }
 
 // Dados estruturados básicos — somente informações presentes no perfil público da loja.
@@ -69,6 +69,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${manrope.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        {/* Marfim texturizado com sombra botânica — ver .veu-botanico no globals.css */}
+        <div className="veu-botanico" aria-hidden="true" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}

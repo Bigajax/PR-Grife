@@ -36,36 +36,53 @@ export const siteConfig = {
   // parede clara de estúdio, então o texto vai em grafite — branco sumiria nela.
   // Ao subir uma foto escura, troque para "light".
   hero: {
-    title: "Elegância em cada peça",
-    subtitle: "Seleção premium para todos os momentos.",
+    title: "Peças de grife",
+    subtitle: "Tommy Hilfiger, Lacoste, Reserva e mais — em Maringá e para todo o Brasil.",
     ctaLabel: "Ver catálogo",
     href: "/catalogo",
     // O nome do arquivo carrega versão de propósito. O otimizador de imagem do
     // Next 16 guarda o resultado por 4 horas (minimumCacheTTL) e o navegador
     // guarda pela URL: sobrescrever o mesmo nome continua entregando a foto
     // antiga. Ao trocar a imagem, suba com um sufixo novo (-v4, -v5...).
-    image: "/images/hero-v4.png",
-    imageAlt:
-      "Modelo de jaqueta bomber jeans diante de uma parede clara com sombras de folhagem",
-    tone: "dark" as "dark" | "light",
+    // Colagem de vídeos do hero. Um item renderiza um card; dois renderizam a
+    // colagem lado a lado. Para somar o segundo, basta acrescentar aqui.
+    videos: [
+      {
+        src: "/videos/hero-1.mp4",
+        // Sem poster: o navegador já pinta o primeiro quadro com preload
+        // metadata. Vale cadastrar um se o vídeo abrir com quadro escuro.
+        poster: undefined as string | undefined,
+      },
+      {
+        src: "/videos/hero-2.mp4",
+        poster: undefined as string | undefined,
+      },
+      {
+        src: "/videos/hero-3.mp4",
+        poster: undefined as string | undefined,
+      },
+    ],
   },
   // ── Bloco editorial da home ─────────────────────────────────────────────────
   // Este é o slot de rotação da home: para trocar a campanha, edite só aqui.
   // O hero fica fixo. `lines` é renderizado como um parágrafo único, então a
   // coluna de texto mantém exatamente três elementos: título, apoio e botão.
   homeFeature: {
-    title: "Montado na loja",
+    title: "Alta perfumaria",
     lines: [
-      "Cada look começa com uma escolha peça por peça, na nossa loja em Maringá.",
-      "A seleção da casa está na vitrine.",
+      "Le Male Elixir, Scandal Pour Homme e os importados da casa.",
+      "Fragrâncias marcantes, escolhidas a dedo pela curadoria.",
     ],
-    ctaLabel: "Ver seleção",
-    href: "/catalogo?destaque=essenciais",
+    ctaLabel: "Ver perfumes",
+    href: "/catalogo?categoria=perfumes",
     // Nome versionado pelo mesmo motivo do hero: sobrescrever o arquivo entrega
     // a foto antiga por causa do cache. Ao trocar, suba com sufixo novo.
-    image: "/images/home-feature-v3.png",
+    // v2 = recorte 4:5 do still panorâmico na resolução original (1024×1280),
+    // já na região do frasco — o quadro mostra a imagem inteira, sem corte do
+    // object-cover, e o otimizador não joga resolução fora.
+    image: "/images/home-perfumaria-v2.jpg",
     imageAlt:
-      "Cliente com overshirt bege sobre camiseta preta, dentro da loja da PR Grife, com araras de jeans e jaquetas ao fundo",
+      "Frasco de Scandal Pour Homme com tampa em formato de coroa dourada, sobre fundo de madeira escura",
   },
   // ── Recomendados na home ────────────────────────────────────────────────────
   // Curadoria manual do carrossel, por id de produto (data/products.ts).
@@ -85,12 +102,14 @@ export const siteConfig = {
       imageAlt: "Boné bege sobre superfície clara",
       href: "/catalogo?categoria=acessorios",
     },
+    // Perfumes saiu daqui quando o bloco editorial virou "Alta perfumaria" —
+    // dois caminhos para o mesmo destino confundem a leitura da home.
     {
-      title: "Perfumes",
-      subtitle: "Os importados da loja",
-      image: "/images/products/perfume-le-male.jpg",
-      imageAlt: "Frasco de perfume importado",
-      href: "/catalogo?categoria=perfumes",
+      title: "Tênis",
+      subtitle: "Do branco clássico ao statement",
+      image: "/images/products/tenis-hilfiger.jpg",
+      imageAlt: "Tênis branco com detalhe marinho sobre superfície clara",
+      href: "/catalogo?categoria=tenis",
     },
   ],
   metadata: {
