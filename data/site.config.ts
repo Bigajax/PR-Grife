@@ -46,19 +46,24 @@ export const siteConfig = {
     // antiga. Ao trocar a imagem, suba com um sufixo novo (-v4, -v5...).
     // Colagem de vídeos do hero. Um item renderiza um card; dois renderizam a
     // colagem lado a lado. Para somar o segundo, basta acrescentar aqui.
+    // -v2 = reencode para web: H.264 720p (o arquivo 1 era VP9, que o iPhone
+    // não toca), CRF 27 com teto de 1100 kbps, sem trilha de áudio (são mudos)
+    // e faststart (índice no começo — o vídeo começa antes de baixar inteiro).
+    // Receita em: ffmpeg -crf 27 -maxrate 1100k -preset slow
+    //             -vf "scale=720:-2,hqdn3d=1.5:1.5:6:6" -movflags +faststart -an
     videos: [
       {
-        src: "/videos/hero-1.mp4",
+        src: "/videos/hero-1-v2.mp4",
         // Sem poster: o navegador já pinta o primeiro quadro com preload
         // metadata. Vale cadastrar um se o vídeo abrir com quadro escuro.
         poster: undefined as string | undefined,
       },
       {
-        src: "/videos/hero-2.mp4",
+        src: "/videos/hero-2-v2.mp4",
         poster: undefined as string | undefined,
       },
       {
-        src: "/videos/hero-3.mp4",
+        src: "/videos/hero-3-v2.mp4",
         poster: undefined as string | undefined,
       },
     ],

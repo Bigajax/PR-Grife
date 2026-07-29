@@ -8,13 +8,15 @@
      - Accent (dourado dessaturado) só em eyebrow, underline e hover. Nunca
        como fundo cheio de botão.
      - Alternância de seções: bg-base → bg-surface → bg-base. Nada mais.       */
-  /* Marfim: a base esquentou a pedido do proprietário. */
-  --color-bg-base: #f8f4e9;
-  --color-bg-surface: #f1ebdc;
-  --color-bg-elevated: #fffdf6;
+  /* Decisão do proprietário: base branca, com a sombra de folhagem do
+     .veu-botanico por cima. (Os tons de marfim antigos, caso voltem:
+     base #f8f4e9, surface #f1ebdc, elevated #fffdf6, border #e4ddcc.)  */
+  --color-bg-base: #ffffff;
+  --color-bg-surface: #f7f7f5;
+  --color-bg-elevated: #ffffff;
   --color-text-primary: #1c1c1a;
   --color-text-secondary: #6b6862;
-  --color-border: #e4ddcc;
+  --color-border: #e7e5e0;
   /* Ouro rosé: só traço fino, eyebrow, underline de hover, borda de filtro
      ativo e stroke de ícone. Nunca fundo de botão nem bloco cheio.
      Texto em ouro rosé usa sempre accent-strong — o accent puro não alcança

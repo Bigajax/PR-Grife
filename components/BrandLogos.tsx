@@ -29,7 +29,9 @@ export function BrandLogo({
       className={`${className} object-contain ${
         mono ? "grayscale opacity-75 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100" : ""
       }`}
-      loading="lazy"
+      // Sem loading="lazy": dentro do trilho animado da faixa o Safari não
+      // dispara o carregamento e os logos ficam em branco. São arquivos
+      // pequenos; carregar tudo de uma vez é mais barato que o bug.
       decoding="async"
     />
   )
