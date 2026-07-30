@@ -55,7 +55,7 @@ export function Carousel({ title, ariaLabel, children, colado = false }: Carouse
   return (
     <>
       <div className="flex items-end justify-between gap-6">
-        <h2 className="font-display text-2xl font-medium text-text-primary sm:text-[28px]">
+        <h2 className="font-display text-2xl font-medium uppercase tracking-[0.04em] text-text-primary sm:text-[28px]">
           {title}
         </h2>
 

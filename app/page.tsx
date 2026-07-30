@@ -22,10 +22,10 @@ export default function Home() {
         <CategoryShowcase />
       </Reveal>
       <Reveal>
-        <HomeFeature />
+        <RecommendedCarousel />
       </Reveal>
       <Reveal>
-        <RecommendedCarousel />
+        <HomeFeature />
       </Reveal>
       <HomeDuo />
     </main>

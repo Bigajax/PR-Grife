@@ -31,7 +31,7 @@ export function HomeFeature() {
           <div className="md:max-w-[60%]">
             <h2
               id="destaque-home"
-              className="font-display text-[34px] font-medium leading-tight text-text-primary"
+              className="font-display text-2xl font-medium uppercase leading-tight tracking-[0.04em] text-text-primary sm:text-[28px]"
             >
               {homeFeature.title}
             </h2>
