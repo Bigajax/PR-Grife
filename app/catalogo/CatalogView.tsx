@@ -10,7 +10,6 @@ import {
   countActiveFilters,
   priceRanges,
   availabilityOptions,
-  brandsInCatalog,
   categoriesWithProducts,
   categoriesWithProductsForBrand,
   showcaseBrandsWithProducts,
@@ -157,30 +156,9 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
 
   const filterPanel = (
     <div className="flex flex-col gap-6">
-      {!isLocked("categoria") && quickCategories.length > 0 && (
-        <FilterGroup legend="Categoria">
-          {quickCategories.map((c) => (
-            <Chip
-              key={c.id}
-              active={filters.categoria === c.id}
-              onClick={() => toggleParam("categoria", c.id)}
-            >
-              {c.label}
-            </Chip>
-          ))}
-        </FilterGroup>
-      )}
-
-      {!isLocked("marca") && (
-        <FilterGroup legend="Marca">
-          {brandsInCatalog(catalog).map((b) => (
-            <Chip key={b} active={filters.marca === b} onClick={() => toggleParam("marca", b)}>
-              {b}
-            </Chip>
-          ))}
-        </FilterGroup>
-      )}
-
+      {/* Painel enxuto de propósito: categoria e marca já têm navegação
+          própria acima da grade (chips e faixa de logos) — repetir aqui era
+          só ruído. Novidades e ofertas têm página no menu. */}
       <FilterGroup legend="Tamanho">
         {[...clothingSizes, ...shoeSizes].map((s) => (
           <Chip key={s} active={filters.tamanho === s} onClick={() => toggleParam("tamanho", s)} compact>
@@ -189,6 +167,8 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
         ))}
       </FilterGroup>
 
+      {/* Só a bolinha da cor — o nome vai no title/aria e no chip de filtro
+          ativo quando selecionada. */}
       <FilterGroup legend="Cor">
         {allColorsFor(catalog).map((c) => (
           <button
@@ -196,18 +176,19 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
             type="button"
             onClick={() => toggleParam("cor", c.name)}
             aria-pressed={filters.cor === c.name}
-            className={`flex min-h-10 items-center gap-2 rounded-full border px-3 text-[13px] transition-colors ${
+            aria-label={`Cor ${c.name}`}
+            title={c.name}
+            className={`h-9 w-9 rounded-full border-2 p-0.5 transition-colors ${
               filters.cor === c.name
-                ? "border-black-soft bg-white font-semibold text-black-soft"
-                : "border-border-gray bg-white text-text-gray hover:border-gold"
+                ? "border-black-soft"
+                : "border-transparent hover:border-border-gray"
             }`}
           >
             <span
-              className="h-3.5 w-3.5 rounded-full border border-border-gray"
+              className="block h-full w-full rounded-full border border-border-gray"
               style={{ backgroundColor: c.hex }}
               aria-hidden="true"
             />
-            {c.name}
           </button>
         ))}
       </FilterGroup>
@@ -232,21 +213,6 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
         ))}
       </FilterGroup>
 
-      <FilterGroup legend="Destaques">
-        {!isLocked("novidades") && (
-          <Chip active={Boolean(filters.novidades)} onClick={() => toggleParam("novidades", "1")}>
-            Novidades
-          </Chip>
-        )}
-        {!isLocked("oferta") && (
-          <Chip active={Boolean(filters.oferta)} onClick={() => toggleParam("oferta", "1")}>
-            Ofertas
-          </Chip>
-        )}
-        <Chip active={Boolean(filters.destaque)} onClick={() => toggleParam("destaque", "1")}>
-          Favoritos da loja
-        </Chip>
-      </FilterGroup>
     </div>
   )
 
