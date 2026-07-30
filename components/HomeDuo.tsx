@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { siteConfig } from "@/data/site.config"
+import { Reveal } from "@/components/Reveal"
 
 const { homeDuo } = siteConfig
 
@@ -12,8 +13,11 @@ export function HomeDuo() {
   return (
     <section className="bg-bg-base" aria-label="Destaques de categoria">
       <div className="shell grid gap-6 py-8 md:grid-cols-2 lg:py-10">
-        {homeDuo.map((card) => (
-          <Link key={card.href} href={card.href} className="group relative block overflow-hidden">
+        {/* Segundo card entra um passo depois do primeiro — só o suficiente
+            para o olho ler a ordem, sem virar coreografia. */}
+        {homeDuo.map((card, i) => (
+          <Reveal key={card.href} delay={i * 120}>
+          <Link href={card.href} className="group relative block overflow-hidden">
             <div className="relative aspect-[4/5] w-full bg-bg-surface">
               <Image
                 src={card.image}
@@ -43,6 +47,7 @@ export function HomeDuo() {
               </span>
             </div>
           </Link>
+          </Reveal>
         ))}
       </div>
     </section>

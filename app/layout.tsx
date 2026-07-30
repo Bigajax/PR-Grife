@@ -10,6 +10,7 @@ import { Footer } from "@/components/Footer"
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp"
 import { SelectionDrawer } from "@/components/SelectionDrawer"
 import { ConsentBanner } from "@/components/ConsentBanner"
+import { SiteLoader } from "@/components/SiteLoader"
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -69,6 +70,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${manrope.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <SiteLoader />
         {/* Marfim texturizado com sombra botânica — ver .veu-botanico no globals.css */}
         <div className="veu-botanico" aria-hidden="true" />
         <script
