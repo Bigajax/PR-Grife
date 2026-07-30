@@ -1,16 +1,18 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
+import Link from "next/link"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { Search, SlidersHorizontal, X, ArrowUpDown, ShoppingBag, LayoutGrid } from "lucide-react"
-import { categories } from "@/data/categories"
+import { departmentBySlug } from "@/data/departments"
 import {
   queryCatalog,
   countActiveFilters,
   priceRanges,
   availabilityOptions,
-  genderOptions,
-  allBrands,
+  brandsInCatalog,
+  categoriesWithProducts,
+  categoriesWithProductsForBrand,
   showcaseBrandsWithProducts,
   clothingSizes,
   shoeSizes,
@@ -30,7 +32,6 @@ const PAGE_SIZE = 24
 function readFilters(sp: URLSearchParams, locked: CatalogFilters): CatalogFilters {
   return {
     q: sp.get("q") ?? undefined,
-    genero: sp.get("genero") ?? undefined,
     categoria: sp.get("categoria") ?? undefined,
     marca: sp.get("marca") ?? undefined,
     tamanho: sp.get("tamanho") ?? undefined,
@@ -83,8 +84,8 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setReady(true)
     track("view_catalog", {
-      categoria: locked.categoria ?? "todos",
-      genero: locked.genero ?? "todos",
+      departamento: locked.departamento ?? "todos",
+      categoria: locked.categoria ?? "todas",
       marca: locked.marca ?? "todas",
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,27 +141,23 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
   )
 
   const isLocked = (key: keyof CatalogFilters) => lockedKeys.includes(key)
-  const quickCategories = isLocked("categoria") ? [] : categories
+  // Categorias contextuais ao recorte: na página de marca, só as categorias em
+  // que a marca tem peça; num departamento, só as categorias dele com produto;
+  // no catálogo geral, todas as categorias com produto. Nunca chip que devolve
+  // zero peças.
+  const quickCategories = isLocked("categoria")
+    ? []
+    : locked.marca
+      ? categoriesWithProductsForBrand(locked.marca)
+      : locked.departamento
+        ? categoriesWithProducts(departmentBySlug(locked.departamento)?.categoryIds)
+        : categoriesWithProducts()
 
   const filterPanel = (
     <div className="flex flex-col gap-6">
-      {!isLocked("genero") && (
-        <FilterGroup legend="Gênero">
-          {genderOptions.map((g) => (
-            <Chip
-              key={g.id}
-              active={filters.genero === g.id}
-              onClick={() => toggleParam("genero", g.id)}
-            >
-              {g.label}
-            </Chip>
-          ))}
-        </FilterGroup>
-      )}
-
-      {!isLocked("categoria") && (
+      {!isLocked("categoria") && quickCategories.length > 0 && (
         <FilterGroup legend="Categoria">
-          {categories.map((c) => (
+          {quickCategories.map((c) => (
             <Chip
               key={c.id}
               active={filters.categoria === c.id}
@@ -174,7 +171,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
 
       {!isLocked("marca") && (
         <FilterGroup legend="Marca">
-          {allBrands.map((b) => (
+          {brandsInCatalog.map((b) => (
             <Chip key={b} active={filters.marca === b} onClick={() => toggleParam("marca", b)}>
               {b}
             </Chip>
@@ -502,17 +499,31 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
             </>
           ) : (
             <div className="border border-border-gray bg-white p-10 text-center">
-              <p className="font-display text-2xl text-black-soft">Nenhuma peça encontrada.</p>
+              <p className="font-display text-2xl text-black-soft">Nenhum produto encontrado.</p>
               <p className="mt-2 text-sm text-text-gray">
-                Ajuste a busca ou os filtros — ou fale com a gente, a curadoria vai além da vitrine.
+                Tente remover algum filtro ou explorar outra categoria.
               </p>
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="mt-5 rounded-full border border-black-soft px-6 py-2.5 text-sm font-semibold text-black-soft"
-              >
-                Limpar filtros
-              </button>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                {activeCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="rounded-full border border-black-soft px-6 py-2.5 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
+                  >
+                    Limpar filtros
+                  </button>
+                )}
+                {/* Recorte travado pela rota (marca/departamento sem produto):
+                    "limpar" não desfaz o lock, então o caminho é sair dele. */}
+                {lockedKeys.length > 0 && (
+                  <Link
+                    href="/catalogo"
+                    className="rounded-full bg-black-soft px-6 py-2.5 text-sm font-semibold text-off-white transition-opacity hover:opacity-90"
+                  >
+                    Explorar o catálogo completo
+                  </Link>
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -42,7 +42,7 @@ function Track({ items, duplicado = false }: { items: Slide[]; duplicado?: boole
         return (
           <li key={`${item.slug}-${i}`} className="shrink-0" aria-hidden={oculto || undefined}>
             <Link
-              href={`/catalogo?marca=${item.slug}`}
+              href={`/catalogo/marca/${item.slug}`}
               aria-label={oculto ? undefined : `Ver peças ${item.name}`}
               tabIndex={oculto ? -1 : undefined}
               className="group flex items-center justify-center"

@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { MessageCircle } from "lucide-react"
 import { siteConfig } from "@/data/site.config"
-import { categories } from "@/data/categories"
 import { faqItems } from "@/data/faq"
+import { categoriesWithProducts, categoryHref } from "@/lib/catalog"
 import { templates } from "@/lib/whatsapp"
 import { Logo } from "@/components/Logo"
 import { WhatsAppCta } from "@/components/WhatsAppCta"
@@ -32,17 +32,21 @@ const columns: { title: string; links: FooterLink[] }[] = [
     title: "Navegação",
     links: [
       { label: "Todas as peças", href: "/catalogo" },
-      { label: "Novidades", href: "/catalogo?destaque=novidades" },
-      { label: "Ofertas", href: "/catalogo?destaque=ofertas" },
+      { label: "Novidades", href: "/novidades" },
+      { label: "Ofertas", href: "/ofertas" },
       { label: "Marcas", href: "/#marcas" },
     ],
   },
   {
     title: "Categorias",
-    links: categories.slice(0, 8).map((c) => ({
-      label: c.label,
-      href: `/catalogo?categoria=${c.id}`,
-    })),
+    // Só categoria com produto — link de rodapé para vitrine vazia é beco
+    // sem saída. URLs pela fonte única categoryHref (departamento + query).
+    links: categoriesWithProducts()
+      .slice(0, 8)
+      .map((c) => ({
+        label: c.label,
+        href: categoryHref(c.id),
+      })),
   },
   {
     title: "Atendimento",

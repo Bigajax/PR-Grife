@@ -7,7 +7,6 @@ import {
   brandSlug,
   priceRanges,
   availabilityOptions,
-  genderOptions,
   type CatalogFilters,
 } from "@/lib/catalog"
 
@@ -15,7 +14,6 @@ import {
 // e o seletor já mostra o estado dela.
 const CHIP_KEYS = [
   "q",
-  "genero",
   "categoria",
   "marca",
   "tamanho",
@@ -33,8 +31,6 @@ function chipLabel(key: ChipKey, value: string | boolean): string | null {
   switch (key) {
     case "q":
       return `“${value}”`
-    case "genero":
-      return genderOptions.find((o) => o.id === value)?.label ?? String(value)
     case "categoria":
       return categoryLabel(String(value))
     case "marca":

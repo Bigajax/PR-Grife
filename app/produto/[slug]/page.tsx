@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { products } from "@/data/products"
 import { categoryLabel } from "@/data/categories"
-import { relatedProducts } from "@/lib/catalog"
+import { categoryHref, relatedProducts } from "@/lib/catalog"
 import { siteConfig } from "@/data/site.config"
 import { Breadcrumb } from "@/components/Breadcrumb"
 import { ProductCard } from "@/components/ProductCard"
@@ -64,7 +64,7 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
           items={[
             { label: "Início", href: "/" },
             { label: "Catálogo", href: "/catalogo" },
-            { label: category, href: `/catalogo/${product.category}` },
+            { label: category, href: categoryHref(product.category) },
             { label: product.name },
           ]}
         />

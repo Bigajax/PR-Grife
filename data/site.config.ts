@@ -36,8 +36,8 @@ export const siteConfig = {
   // parede clara de estúdio, então o texto vai em grafite — branco sumiria nela.
   // Ao subir uma foto escura, troque para "light".
   hero: {
-    title: "Peças de grife",
-    subtitle: "Tommy Hilfiger, Lacoste, Reserva e mais — em Maringá e para todo o Brasil.",
+    title: "Somente produtos originais",
+    subtitle: "Tommy Hilfiger, Lacoste, Reserva e outras grandes marcas — em Maringá e para todo o Brasil.",
     ctaLabel: "Ver catálogo",
     href: "/catalogo",
     // O nome do arquivo carrega versão de propósito. O otimizador de imagem do
@@ -79,7 +79,7 @@ export const siteConfig = {
       "Fragrâncias marcantes, escolhidas a dedo pela curadoria.",
     ],
     ctaLabel: "Ver perfumes",
-    href: "/catalogo?categoria=perfumes",
+    href: "/catalogo/perfumes",
     // Nome versionado pelo mesmo motivo do hero: sobrescrever o arquivo entrega
     // a foto antiga por causa do cache. Ao trocar, suba com sufixo novo.
     // v2 = recorte 4:5 do still panorâmico na resolução original (1024×1280),
@@ -105,7 +105,7 @@ export const siteConfig = {
       subtitle: "Bonés, cintos e óculos",
       image: "/images/products/bone-bege.jpg",
       imageAlt: "Boné bege sobre superfície clara",
-      href: "/catalogo?categoria=acessorios",
+      href: "/catalogo/acessorios",
     },
     // Perfumes saiu daqui quando o bloco editorial virou "Alta perfumaria" —
     // dois caminhos para o mesmo destino confundem a leitura da home.
@@ -114,13 +114,13 @@ export const siteConfig = {
       subtitle: "Do branco clássico ao statement",
       image: "/images/products/tenis-hilfiger.jpg",
       imageAlt: "Tênis branco com detalhe marinho sobre superfície clara",
-      href: "/catalogo?categoria=tenis",
+      href: "/catalogo/tenis",
     },
   ],
   metadata: {
     title: "PR Grife | Moda Multimarcas de Alto Padrão em Maringá",
     description:
-      "Moda multimarcas masculina e feminina de alto padrão, curadoria de peças, atendimento personalizado pelo WhatsApp e entrega para todo o Brasil. Conheça a seleção da PR Grife.",
+      "Moda masculina multimarcas de alto padrão, curadoria de peças, atendimento personalizado pelo WhatsApp e entrega para todo o Brasil. Conheça a seleção da PR Grife.",
     url: "https://prgrife.com.br", // TODO_CONFIRMAR — domínio definitivo
   },
 }

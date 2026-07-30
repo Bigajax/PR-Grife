@@ -1,6 +1,7 @@
-import type { Product } from "@/types"
+import type { Category, Product } from "@/types"
 import { products } from "@/data/products"
-import { categoryLabel } from "@/data/categories"
+import { categories, categoryLabel } from "@/data/categories"
+import { departmentBySlug, departmentOfCategory } from "@/data/departments"
 import { siteConfig } from "@/data/site.config"
 import { brandShowcase, type BrandShowcaseItem } from "@/data/brands"
 
@@ -30,7 +31,8 @@ export const availabilityOptions = [
 
 export type CatalogFilters = {
   q?: string
-  genero?: string
+  /** Recorte de rota (/catalogo/<depto>) — chega sempre via `locked`, nunca pela query string. */
+  departamento?: string
   categoria?: string
   marca?: string
   tamanho?: string
@@ -42,11 +44,6 @@ export type CatalogFilters = {
   destaque?: boolean
   sort?: SortKey
 }
-
-export const genderOptions = [
-  { id: "masculino", label: "Masculino" },
-  { id: "feminino", label: "Feminino" },
-]
 
 // Oferta real: só existe quando o preço "de" cadastrado é maior que o atual.
 // Nunca inventar desconto (regra do Guia Mestre).
@@ -141,7 +138,10 @@ export function matchesSearch(product: Product, q: string): boolean {
 export function filterProducts(list: Product[], f: CatalogFilters): Product[] {
   const range = priceRanges.find((r) => r.id === f.preco)
   return list.filter((p) => {
-    if (f.genero && p.gender !== f.genero && p.gender !== "unissex") return false
+    if (f.departamento) {
+      const dep = departmentBySlug(f.departamento)
+      if (dep && !dep.categoryIds.includes(p.category)) return false
+    }
     if (f.categoria && p.category !== f.categoria) return false
     if (f.marca && !brandNamesForFilter(f.marca).includes(p.brand)) return false
     if (f.tamanho && !p.availableSizes.includes(f.tamanho)) return false
@@ -185,9 +185,10 @@ export function countActiveFilters(
   f: CatalogFilters,
   ignore: (keyof CatalogFilters)[] = []
 ): number {
+  // `departamento` fica de fora: é recorte de rota (como um lock), não filtro
+  // que o visitante aplicou.
   const keys: (keyof CatalogFilters)[] = [
     "q",
-    "genero",
     "categoria",
     "marca",
     "tamanho",
@@ -199,6 +200,33 @@ export function countActiveFilters(
     "destaque",
   ]
   return keys.filter((k) => f[k] && !ignore.includes(k)).length
+}
+
+// Categorias com ao menos um produto — chips e listas nunca oferecem filtro
+// que devolve zero peças. `ids` restringe a um departamento.
+export function categoriesWithProducts(ids?: string[]): Category[] {
+  return categories.filter(
+    (c) => (!ids || ids.includes(c.id)) && products.some((p) => p.category === c.id)
+  )
+}
+
+// Chips da página de marca: só as categorias em que AQUELA marca tem peça.
+export function categoriesWithProductsForBrand(marcaSlug: string): Category[] {
+  const names = brandNamesForFilter(marcaSlug)
+  return categories.filter((c) =>
+    products.some((p) => p.category === c.id && names.includes(p.brand))
+  )
+}
+
+// Fonte única de URL de categoria (header, footer, breadcrumb do produto).
+// Departamento de categoria única (perfumes, tênis) linka direto na página do
+// departamento — sem query redundante.
+export function categoryHref(categoryId: string): string {
+  const dep = departmentOfCategory(categoryId)
+  if (!dep) return `/catalogo?categoria=${categoryId}`
+  return dep.categoryIds.length === 1
+    ? `/catalogo/${dep.slug}`
+    : `/catalogo/${dep.slug}?categoria=${categoryId}`
 }
 
 export function relatedProducts(product: Product, limit = 4): Product[] {

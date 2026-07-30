@@ -1,27 +1,29 @@
 import type { MetadataRoute } from "next"
 import { siteConfig } from "@/data/site.config"
-import { categories } from "@/data/categories"
+import { departments } from "@/data/departments"
 import { products } from "@/data/products"
-import { brandSlug } from "@/lib/catalog"
+import { showcaseBrands } from "@/lib/catalog"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteConfig.metadata.url
   return [
     { url: base, changeFrequency: "weekly", priority: 1 },
-    // /catalogo é a vitrine; /feminino saiu (nenhum SKU feminino cadastrado).
+    // /catalogo é a vitrine; todo o catálogo é masculino (sem rota de gênero).
     { url: `${base}/catalogo`, changeFrequency: "weekly", priority: 0.9 },
-    ...["masculino", "novidades", "ofertas"].map((path) => ({
+    ...["novidades", "ofertas"].map((path) => ({
       url: `${base}/${path}`,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...siteConfig.brands.map((b) => ({
-      url: `${base}/marca/${brandSlug(b)}`,
+    // Departamentos (subcategorias vivem em query string — não entram no sitemap).
+    ...departments.map((d) => ({
+      url: `${base}/catalogo/${d.slug}`,
       changeFrequency: "weekly" as const,
-      priority: 0.7,
+      priority: 0.8,
     })),
-    ...categories.map((c) => ({
-      url: `${base}/catalogo/${c.id}`,
+    // Marcas da vitrine — mesmo conjunto do generateStaticParams da página.
+    ...showcaseBrands.map((item) => ({
+      url: `${base}/catalogo/marca/${item.slug}`,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),

@@ -20,7 +20,7 @@ export function BrandShowcase() {
             .map((item) => (
             <Link
               key={item.slug}
-              href={`/catalogo?marca=${item.slug}`}
+              href={`/catalogo/marca/${item.slug}`}
               className="group w-[calc((100%_-_1.5rem)/1.35)] sm:w-[calc((100%_-_3rem)/2.6)] lg:w-[calc((100%_-_4.5rem)/4.35)]"
             >
               <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden border border-border bg-bg-elevated p-8 transition-colors group-hover:border-text-primary">

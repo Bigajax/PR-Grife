@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import { siteConfig } from "@/data/site.config"
 import { Breadcrumb } from "@/components/Breadcrumb"
 import { CatalogView } from "@/app/catalogo/CatalogView"
+import { DepartmentTabs } from "@/app/catalogo/DepartmentTabs"
 
 export const metadata: Metadata = {
   title: `Catálogo | ${siteConfig.name}`,
@@ -21,6 +22,7 @@ export default function CatalogoPage() {
         <h1 className="font-display mt-4 text-3xl font-medium text-text-primary sm:text-4xl">
           Catálogo
         </h1>
+        <DepartmentTabs />
       </div>
 
       <Suspense>

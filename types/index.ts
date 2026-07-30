@@ -1,7 +1,5 @@
 export type StockStatus = "available" | "low_stock" | "out_of_stock" | "on_request"
 
-export type Gender = "masculino" | "feminino" | "unissex"
-
 export type Badge =
   | "novo"
   | "reposicao"
@@ -17,7 +15,6 @@ export type Product = {
   name: string
   brand: string
   category: string
-  gender: Gender
   shortDescription: string
   fullDescription?: string
   price?: number

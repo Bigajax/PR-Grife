@@ -10,6 +10,12 @@ export const categories: Category[] = [
   { id: "moletons-tricos", label: "Moletons e tricôs", image: "/images/products/trico-marinho.jpg" },
   { id: "tenis", label: "Tênis", image: "/images/products/tenis-hilfiger-box.jpg" },
   { id: "bones", label: "Bonés", image: "/images/products/bone-bege.jpg" },
+  // Categorias ainda sem SKU: existem para a navegação por departamento
+  // (dropdown do header) e ganham vida quando o primeiro produto entrar.
+  // `image` é obrigatório no tipo mas nenhuma UI renderiza — placeholder.
+  { id: "cintos", label: "Cintos", image: "/images/products/slides-212.jpg" },
+  { id: "carteiras", label: "Carteiras", image: "/images/products/slides-212.jpg" },
+  { id: "oculos", label: "Óculos", image: "/images/products/slides-212.jpg" },
   { id: "acessorios", label: "Acessórios", image: "/images/products/slides-212.jpg" },
   { id: "perfumes", label: "Perfumes", image: "/images/products/perfume-le-male.jpg" },
 ]
