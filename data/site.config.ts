@@ -3,12 +3,43 @@
 export const siteConfig = {
   name: "PR Grife",
   tagline: "Autoestima em forma de peças de roupa.",
-  whatsapp: "5544XXXXXXXXX", // TODO_CONFIRMAR — número oficial de WhatsApp da loja
+  // Número oficial da loja, só dígitos — consumido por lib/whatsapp.ts (wa.me).
+  whatsapp: "5544991036557",
+  phoneDisplay: "(44) 99103-6557",
+  phoneE164: "+5544991036557", // links tel: e telephone do JSON-LD
   instagram: "https://www.instagram.com/useprgrife/",
   instagramHandle: "@useprgrife",
-  address: "Avenida Tiradentes, 202 — Maringá, PR", // TODO_CONFIRMAR — conferir complemento/CEP (bio do IG: 87013260)
-  hours: "Seg a Sáb, 9h às 19h", // TODO_CONFIRMAR — horário oficial de funcionamento
-  mapsUrl: "https://maps.google.com/?q=Avenida+Tiradentes+202+Maringá+PR", // TODO_CONFIRMAR — link oficial do Google Maps
+  // Endereço oficial, sem CEP de propósito (não confirmado pelo proprietário).
+  address: "Avenida Tiradentes, 202 — Maringá, PR",
+  // Linha compacta (barra do rodapé). A fonte estruturada é hoursDetailed.
+  hours: "Seg a sex, 9h às 18h · Sáb, 9h às 13h",
+  // Horário oficial estruturado: gera a UI (loja física, cards) E o
+  // openingHoursSpecification do JSON-LD. Sem domingo/feriado de propósito.
+  hoursDetailed: [
+    {
+      label: "Segunda a sexta",
+      display: "das 9h às 18h",
+      schemaDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "09:00",
+      closes: "18:00",
+    },
+    {
+      label: "Sábado",
+      display: "das 9h às 13h",
+      schemaDays: ["Saturday"],
+      opens: "09:00",
+      closes: "13:00",
+    },
+  ],
+  paymentText: "Dinheiro, Pix ou cartão em até 10x sem juros",
+  // Os três destinos de mapa derivam do MESMO endereço textual — sem
+  // coordenadas inventadas: busca (abrir no Maps), rota (dir) e embed (iframe).
+  mapsUrl:
+    "https://www.google.com/maps?q=Avenida%20Tiradentes%2C%20202%2C%20Maring%C3%A1%2C%20Paran%C3%A1",
+  directionsUrl:
+    "https://www.google.com/maps/dir/?api=1&destination=Avenida%20Tiradentes%2C%20202%2C%20Maring%C3%A1%2C%20Paran%C3%A1",
+  mapsEmbedUrl:
+    "https://www.google.com/maps?q=Avenida%20Tiradentes%2C%20202%2C%20Maring%C3%A1%2C%20Paran%C3%A1&output=embed",
   yearsActive: 3,
   // Prazo padrão de encomenda — é da LOJA, não do produto (regra do Guia Mestre).
   // Aparece em etiquetas, página de produto e mensagem de WhatsApp.
@@ -29,6 +60,46 @@ export const siteConfig = {
   ],
   // Barra fina do topo. Dois itens, sem caixa alta pesada.
   announcements: ["Entrega para todo o Brasil", "Loja física em Maringá"],
+  // ── Política de trocas ──────────────────────────────────────────────────────
+  // Copy oficial aprovada pelo proprietário — fonte única para a seção da
+  // página /loja-fisica E para /politicas/trocas. A observação nunca pode
+  // sugerir recusa de direitos obrigatórios do consumidor.
+  exchangePolicy: {
+    title: "Política de trocas",
+    paragraphs: [
+      "Realizamos trocas de produtos com defeito de fabricação ou recebidos como presente, conforme as condições da loja.",
+      "Para agilizar o atendimento, entre em contato pelo WhatsApp e tenha em mãos o produto, a etiqueta e, quando disponível, o comprovante de compra.",
+    ],
+    note: "Produtos com defeito serão analisados, sem prejuízo dos direitos garantidos pela legislação aplicável.",
+  },
+  // ── Página /loja-fisica ─────────────────────────────────────────────────────
+  // Toda a copy editável da página de loja física vive aqui.
+  storePage: {
+    eyebrow: "Loja física",
+    title: "Da vitrine digital para a PR Grife.",
+    highlight: "Sem complicação.",
+    description:
+      "Explore nosso catálogo, confirme a disponibilidade pelo WhatsApp e visite nossa loja em Maringá.",
+    badge: "PR Grife • Maringá",
+    // Fotos reais da loja (720x1280 e 640x1136, retrato). Ao trocar, subir com
+    // sufixo de versão — o otimizador guarda o resultado por 4h (ver hero).
+    images: {
+      main: {
+        src: "/images/loja.jpg",
+        alt: "Interior da loja PR Grife em Maringá, com araras de roupas e atendimento no balcão",
+      },
+      secondary: {
+        src: "/images/atendimento.jpg",
+        alt: "Entrada da loja PR Grife na Avenida Tiradentes, em Maringá",
+      },
+    },
+    mapTitle: "Encontre a PR Grife",
+    mapText:
+      "Estamos na Avenida Tiradentes, 202, em Maringá. Use o mapa para montar sua rota até a loja.",
+    metaTitle: "Loja Física PR Grife em Maringá | Como chegar",
+    metaDescription:
+      "Visite a PR Grife na Avenida Tiradentes, 202, em Maringá. Produtos originais, atendimento pelo WhatsApp e pagamento em até 10x sem juros.",
+  },
   // ── Hero ────────────────────────────────────────────────────────────────────
   // Copy fixa: não tem data, estação nem campanha para trocar.
   //

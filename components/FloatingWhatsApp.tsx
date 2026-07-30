@@ -7,8 +7,9 @@ import { WhatsAppCta } from "@/components/WhatsAppCta"
 import { templates } from "@/lib/whatsapp"
 import { useSelection } from "@/hooks/useSelection"
 
-// Botão flutuante mobile (só na home — no catálogo há a barra fixa e o produto tem CTA próprio).
-// Aparece após pequena rolagem, respeita safe area, some com o teclado ou com a seleção aberta.
+// Botão flutuante mobile, presente no site inteiro exceto onde cobriria um CTA
+// fixo próprio (página de produto) ou não faz sentido (/admin). Aparece após
+// pequena rolagem, respeita safe area, some com o teclado ou com a seleção aberta.
 export function FloatingWhatsApp() {
   const [visible, setVisible] = useState(false)
   const [keyboardOpen, setKeyboardOpen] = useState(false)
@@ -30,17 +31,19 @@ export function FloatingWhatsApp() {
     return () => vv.removeEventListener("resize", onResize)
   }, [])
 
-  if (pathname !== "/" || !visible || keyboardOpen || isOpen) return null
+  // /produto tem barra de compra fixa no rodapé; /admin tem o próprio chrome.
+  const oculto = pathname.startsWith("/produto") || pathname.startsWith("/admin")
+  if (oculto || !visible || keyboardOpen || isOpen) return null
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 flex justify-center pb-[calc(0.9rem+env(safe-area-inset-bottom))] md:hidden">
       <WhatsAppCta
-        message={templates.atendimentoGeral()}
+        message={templates.informacoesProdutos()}
         event="hero_whatsapp_click"
         payload={{ placement: "floating_mobile" }}
-        className="inline-flex min-h-12 items-center gap-2.5 rounded-full bg-black-soft px-7 text-sm font-semibold text-off-white shadow-lg shadow-black-soft/25"
+        className="inline-flex min-h-12 items-center gap-2.5 rounded-full bg-text-primary px-7 text-sm font-semibold text-white shadow-lg shadow-text-primary/25"
       >
-        <MessageCircle className="h-4.5 w-4.5 text-gold" aria-hidden="true" />
+        <MessageCircle className="h-4.5 w-4.5 text-accent" aria-hidden="true" />
         Falar com a PR Grife
       </WhatsAppCta>
     </div>

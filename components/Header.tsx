@@ -110,8 +110,9 @@ export function Header() {
           </Link>
         </div>
 
+        {/* gap menor até xl: com cinco itens, o gap-7 encostava na logo em ~1024px. */}
         <nav
-          className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 lg:flex"
+          className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 xl:gap-7 lg:flex"
           aria-label="Navegação principal"
         >
           <Link
@@ -192,6 +193,18 @@ export function Header() {
             }`}
           >
             Ofertas
+          </Link>
+
+          <Link
+            href="/loja-fisica"
+            aria-current={pathname === "/loja-fisica" ? "page" : undefined}
+            className={`border-b pb-0.5 text-[12.5px] font-semibold uppercase tracking-[0.14em] transition-colors hover:text-accent ${
+              pathname === "/loja-fisica"
+                ? "border-accent text-accent"
+                : "border-transparent text-text-primary"
+            }`}
+          >
+            Loja Física
           </Link>
         </nav>
 
@@ -424,6 +437,13 @@ export function Header() {
               className="border-b border-border py-3.5 font-display text-xl font-medium text-text-primary"
             >
               Ofertas
+            </Link>
+            <Link
+              href="/loja-fisica"
+              onClick={closeAll}
+              className="border-b border-border py-3.5 font-display text-xl font-medium text-text-primary"
+            >
+              Loja física
             </Link>
           </nav>
           <WhatsAppCta

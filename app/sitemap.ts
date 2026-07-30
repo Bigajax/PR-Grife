@@ -11,11 +11,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: base, changeFrequency: "weekly", priority: 1 },
     // /catalogo é a vitrine; todo o catálogo é masculino (sem rota de gênero).
     { url: `${base}/catalogo`, changeFrequency: "weekly", priority: 0.9 },
-    ...["novidades", "ofertas"].map((path) => ({
+    ...["novidades", "ofertas", "loja-fisica"].map((path) => ({
       url: `${base}/${path}`,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
+    { url: `${base}/politicas/trocas`, changeFrequency: "monthly" as const, priority: 0.3 },
     // Departamentos (subcategorias vivem em query string — não entram no sitemap).
     ...departments.map((d) => ({
       url: `${base}/catalogo/${d.slug}`,

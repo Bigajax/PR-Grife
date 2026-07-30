@@ -39,6 +39,7 @@ function buildColumns(products: Product[]): { title: string; links: FooterLink[]
         { label: "Novidades", href: "/novidades" },
         { label: "Ofertas", href: "/ofertas" },
         { label: "Marcas", href: "/#marcas" },
+        { label: "Loja física", href: "/loja-fisica" },
       ],
     },
     {
@@ -55,6 +56,8 @@ function buildColumns(products: Product[]): { title: string; links: FooterLink[]
     {
       title: "Atendimento",
       links: [
+        { label: "Como chegar", href: siteConfig.directionsUrl, external: true },
+        { label: "Perguntas frequentes", href: "/#faq" },
         { label: "Trocas e devoluções", href: "/politicas/trocas" },
         { label: "Política de privacidade", href: "/politicas/privacidade" },
         { label: siteConfig.instagramHandle, href: siteConfig.instagram, external: true },
@@ -183,7 +186,14 @@ export function Footer({ products }: { products: Product[] }) {
       <div className="border-t border-border">
         <div className="shell flex flex-col items-start justify-between gap-2 py-5 text-xs text-text-secondary sm:flex-row sm:items-center">
           <p>
-            {siteConfig.address} · {siteConfig.hours}
+            {siteConfig.address} · {siteConfig.hours} ·{" "}
+            <a
+              href={`tel:${siteConfig.phoneE164}`}
+              aria-label={`Ligar para ${siteConfig.phoneDisplay}`}
+              className="transition-colors hover:text-accent-strong"
+            >
+              {siteConfig.phoneDisplay}
+            </a>
           </p>
           <p>
             © {new Date().getFullYear()} {siteConfig.name}. Vitrine digital — preços e

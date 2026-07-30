@@ -48,20 +48,29 @@ export const viewport: Viewport = {
   themeColor: "#f8f4e9",
 }
 
-// Dados estruturados básicos — somente informações presentes no perfil público da loja.
+// Dados estruturados oficiais da loja. Sem postalCode nem geo de propósito —
+// CEP e coordenadas não foram confirmados pelo proprietário.
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
   "@type": "ClothingStore",
   name: siteConfig.name,
   description: siteConfig.metadata.description,
   url: siteConfig.metadata.url,
+  telephone: siteConfig.phoneE164,
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Avenida Tiradentes, 202", // TODO_CONFIRMAR
+    streetAddress: "Avenida Tiradentes, 202",
     addressLocality: "Maringá",
     addressRegion: "PR",
     addressCountry: "BR",
   },
+  hasMap: siteConfig.mapsUrl,
+  openingHoursSpecification: siteConfig.hoursDetailed.map((h) => ({
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: h.schemaDays,
+    opens: h.opens,
+    closes: h.closes,
+  })),
   sameAs: [siteConfig.instagram],
 }
 

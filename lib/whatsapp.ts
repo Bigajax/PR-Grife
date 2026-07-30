@@ -129,6 +129,14 @@ export const templates = {
       `Podem me ajudar a encontrar algumas peças?`
     ),
 
+  // Página /loja-fisica: quem quer visitar ou falar direto com a loja.
+  lojaFisica: () =>
+    `Olá! Vim pelo site da ${siteConfig.name} e gostaria de falar com a loja.`,
+
+  // Botão flutuante presente no site inteiro.
+  informacoesProdutos: () =>
+    `Olá! Vim pelo site da ${siteConfig.name} e gostaria de informações sobre os produtos.`,
+
   produto: (p: Product, size?: string, color?: string) =>
     compose(greeting(p), ...productBlocks(p, size, color), closing(p, size)),
 
