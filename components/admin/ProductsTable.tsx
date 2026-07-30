@@ -7,7 +7,6 @@ import { categoryLabel } from "@/data/categories"
 import { departmentOfCategory, departments } from "@/data/departments"
 import { formatPrice } from "@/lib/format"
 import { isOnSale } from "@/lib/catalog"
-import { totalStock } from "@/lib/stock"
 import type { AdminProduct } from "@/lib/products/db"
 import { setArchived, deleteProduct, duplicateProduct } from "@/app/admin/produtos/actions"
 import { ProductForm } from "@/components/admin/ProductForm"
@@ -177,18 +176,43 @@ export function ProductsTable({
                     {p.price != null ? formatPrice(p.price) : "sem preço"}
                   </span>
                   <span className="text-text-secondary">{stockLabel[p.stockStatus]}</span>
-                  {p.trackStock && (
-                    <span className={p.stockStatus === "low_stock" || p.stockStatus === "out_of_stock" ? "font-semibold text-alert" : "text-text-secondary"}>
-                      {totalStock(p)} un ·{" "}
-                      {p.variants.filter((v) => v.isActive).length}{" "}
-                      {p.variants.filter((v) => v.isActive).length === 1 ? "variação" : "variações"}
-                    </span>
-                  )}
                   {isOnSale(p) && <span className="font-semibold text-accent-strong">Oferta</span>}
                   {p.newArrival && <span className="text-text-secondary">Novidade</span>}
                   {p.featured && <span className="text-text-secondary">Destaque</span>}
                   {p.archivedAt && <span className="font-semibold text-alert">Arquivado</span>}
                 </p>
+                {/* Saldo por tamanho, de relance: verde ok, rosé no mínimo,
+                    vermelho zerado (esg.). Mesma leitura do painel de estoque. */}
+                {p.trackStock && p.variants.some((v) => v.isActive) && (
+                  <p className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    {p.variants
+                      .filter((v) => v.isActive)
+                      .map((v) => {
+                        const zerado = v.stockQuantity <= 0
+                        const baixo = !zerado && v.stockQuantity <= v.minimumStock
+                        return (
+                          <span
+                            key={v.id}
+                            title={
+                              zerado
+                                ? `${v.size ?? "Único"}: esgotado`
+                                : `${v.size ?? "Único"}: ${v.stockQuantity} em estoque${baixo ? " (estoque baixo)" : ""}`
+                            }
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-semibold tabular-nums ${
+                              zerado
+                                ? "bg-accent-soft text-alert"
+                                : baixo
+                                  ? "bg-accent-soft text-accent-strong"
+                                  : "bg-bg-surface text-success"
+                            }`}
+                          >
+                            {v.size ?? "Único"}: {v.stockQuantity}
+                            {zerado && <span className="text-[9px] uppercase">esg.</span>}
+                          </span>
+                        )
+                      })}
+                  </p>
+                )}
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-1.5 text-xs font-semibold">
                 {p.trackStock && p.variants.some((v) => v.isActive) && (

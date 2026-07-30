@@ -2,19 +2,13 @@
 
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { X, Loader2, Plus } from "lucide-react"
+import { X, Loader2, Plus, Trash2 } from "lucide-react"
 import { siteConfig } from "@/data/site.config"
 import { departments, departmentOfCategory, categoriesOfDepartment } from "@/data/departments"
 import { clothingSizes, shoeSizes } from "@/lib/catalog"
-import {
-  buildVariantSku,
-  saleModeLabels,
-  stockTypeLabels,
-  variantKey,
-  variantLabel,
-} from "@/lib/stock"
+import { saleModeLabels } from "@/lib/stock"
 import type { AdminProduct } from "@/lib/products/db"
-import type { ProductColor, SaleMode, StockType } from "@/types"
+import type { ProductColor, SaleMode } from "@/types"
 import { createProduct, saveProduct, type ProductInput } from "@/app/admin/produtos/actions"
 import { ImagesEditor } from "@/components/admin/ImagesEditor"
 import { MoneyInput } from "@/components/admin/MoneyInput"
@@ -24,8 +18,10 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog"
  * Cadastro e edição num único formulário (drawer de tela cheia).
  * Departamento não é gravado: o select só filtra as categorias — o produto
  * pertence ao departamento da categoria escolhida (data/departments.ts).
- * O produto salvo aparece automaticamente em /catalogo, /catalogo/<depto>,
- * ?categoria= e /catalogo/marca/<slug>.
+ *
+ * Estoque no modelo simples: cada tamanho é uma linha Tamanho | Estoque |
+ * Ativo, com o saldo editável aqui mesmo. Entrada/Saída com motivo (painel
+ * de estoque) continuam registrando o histórico auditado.
  */
 
 const stockOptions = [
@@ -36,6 +32,14 @@ const stockOptions = [
 ] as const
 
 const quickSizes = [...clothingSizes, ...shoeSizes]
+
+type VariantRow = {
+  /** id do banco quando a linha já existe; null para linha nova. */
+  id: string | null
+  size: string
+  stock: number
+  isActive: boolean
+}
 
 export function ProductForm({
   product,
@@ -59,118 +63,62 @@ export function ProductForm({
   const [oldPrice, setOldPrice] = useState<number | null>(product?.oldPrice ?? null)
   const [installmentText, setInstallmentText] = useState(product?.installmentText ?? "")
   const [images, setImages] = useState<string[]>(product?.images ?? [])
-  const [sizes, setSizes] = useState<string[]>(product?.availableSizes ?? [])
-  const [customSize, setCustomSize] = useState("")
   const [colors, setColors] = useState<ProductColor[]>(product?.availableColors ?? [])
   const [stockStatus, setStockStatus] = useState<string>(product?.stockStatus ?? "available")
   const [material, setMaterial] = useState(product?.material ?? "")
   const [fit, setFit] = useState(product?.fit ?? "")
   const [featured, setFeatured] = useState(product?.featured ?? false)
   const [newArrival, setNewArrival] = useState(product?.newArrival ?? false)
-
-  // ── Controle de estoque ────────────────────────────────────────────────────
   const [saleMode, setSaleMode] = useState<SaleMode>(product?.saleMode ?? "in_stock")
-  const [trackStock, setTrackStock] = useState(product?.trackStock ?? false)
-  const [stockType, setStockType] = useState<StockType>(product?.stockType ?? "single")
   const [minimumStock, setMinimumStock] = useState(product?.minimumStock ?? 0)
-  const [allowNegative, setAllowNegative] = useState(product?.allowNegativeStock ?? false)
-  // Dados por combinação, chaveados por variantKey. O record nunca é podado:
-  // remover um tamanho/cor só tira a linha da tabela — re-adicionar reencontra
-  // o que estava preenchido (pedido do proprietário: não perder dados).
-  const [variantData, setVariantData] = useState<
-    Record<string, { initialQuantity: number; minimumStock: number; isActive: boolean }>
-  >(() =>
-    Object.fromEntries(
-      (product?.variants ?? []).map((v) => [
-        variantKey(v.size, v.color),
-        { initialQuantity: 0, minimumStock: v.minimumStock, isActive: v.isActive },
-      ])
-    )
-  )
-  // Confirmação pendente de remoção de variações com saldo.
+  const [customSize, setCustomSize] = useState("")
+
+  // Linhas de tamanho/estoque. Produto antigo sem variações herda os tamanhos
+  // cadastrados com saldo zero — é só digitar as quantidades e salvar.
+  const [rows, setRows] = useState<VariantRow[]>(() => {
+    if (product?.variants?.length) {
+      return product.variants.map((v) => ({
+        id: v.id,
+        size: v.size ?? "Único",
+        stock: v.stockQuantity,
+        isActive: v.isActive,
+      }))
+    }
+    return (product?.availableSizes ?? []).map((s) => ({
+      id: null,
+      size: s,
+      stock: 0,
+      isActive: true,
+    }))
+  })
+
+  // Confirmação pendente de remoção de tamanhos com saldo.
   const [confirmLoss, setConfirmLoss] = useState<string[] | null>(null)
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Variações já gravadas no banco. O cadastro só CONFIGURA o estoque; o
-  // saldo é gerenciado na página Estoque (separação pedida pelo proprietário:
-  // editar produto e movimentar estoque são tarefas diferentes).
-  const savedList = useMemo(() => product?.variants ?? [], [product])
-  const savedVariants = useMemo(
-    () => new Map(savedList.map((v) => [variantKey(v.size, v.color), v])),
-    [savedList]
-  )
-
-  const colorNames = useMemo(
-    () => colors.map((c) => c.name.trim()).filter(Boolean),
-    [colors]
-  )
-
-  // Combinações da tabela, na ordem cor-maior (Preto/P, Preto/M, Branco/P...).
-  const combos = useMemo(() => {
-    if (stockType !== "per_variant") return []
-    if (sizes.length === 0 && colorNames.length === 0) return []
-    const sizeList: (string | null)[] = sizes.length > 0 ? sizes : [null]
-    const colorList: (string | null)[] = colorNames.length > 0 ? colorNames : [null]
-    const out: { size: string | null; color: string | null }[] = []
-    for (const color of colorList) for (const size of sizeList) out.push({ size, color })
-    return out
-  }, [stockType, sizes, colorNames])
-
-  const variantEntry = (key: string) =>
-    variantData[key] ?? { initialQuantity: 0, minimumStock, isActive: true }
-
-  const setVariantField = (
-    key: string,
-    field: "initialQuantity" | "minimumStock" | "isActive",
-    value: number | boolean
-  ) =>
-    setVariantData((cur) => ({
-      ...cur,
-      [key]: { ...(cur[key] ?? { initialQuantity: 0, minimumStock, isActive: true }), [field]: value },
-    }))
-
   const depCategories = useMemo(() => categoriesOfDepartment(depSlug), [depSlug])
 
-  const toggleSize = (s: string) =>
-    setSizes((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))
+  const hasSize = (s: string) => rows.some((r) => r.size.toUpperCase() === s.toUpperCase())
 
-  const addCustomSize = () => {
-    const v = customSize.trim()
-    if (v && !sizes.includes(v)) setSizes((cur) => [...cur, v])
-    setCustomSize("")
+  const addSize = (s: string) => {
+    const size = s.trim()
+    if (!size || hasSize(size)) return
+    setRows((cur) => [...cur, { id: null, size, stock: 0, isActive: true }])
   }
 
-  const ofertaAtiva =
-    oldPrice != null && price != null && oldPrice > price
-
-  // Combinações que o submit vai enviar (linha única no estoque simples).
-  const buildVariantsInput = (): ProductInput["variants"] => {
-    if (!trackStock) return []
-    if (stockType === "single") {
-      const entry = variantEntry(variantKey(null, null))
-      return [
-        {
-          size: null,
-          color: null,
-          minimumStock,
-          isActive: true,
-          initialQuantity: entry.initialQuantity,
-        },
-      ]
-    }
-    return combos.map(({ size, color }) => {
-      const entry = variantEntry(variantKey(size, color))
-      return {
-        size,
-        color,
-        minimumStock: entry.minimumStock,
-        isActive: entry.isActive,
-        initialQuantity: entry.initialQuantity,
-      }
-    })
+  const toggleQuickSize = (s: string) => {
+    if (hasSize(s)) setRows((cur) => cur.filter((r) => r.size.toUpperCase() !== s.toUpperCase()))
+    else addSize(s)
   }
+
+  const patchRow = (index: number, patch: Partial<VariantRow>) =>
+    setRows((cur) => cur.map((r, i) => (i === index ? { ...r, ...patch } : r)))
+
+  const removeRow = (index: number) => setRows((cur) => cur.filter((_, i) => i !== index))
+
+  const ofertaAtiva = oldPrice != null && price != null && oldPrice > price
 
   const doSubmit = async () => {
     setError(null)
@@ -185,7 +133,8 @@ export function ProductForm({
       oldPrice,
       installmentText: installmentText.trim() || null,
       images,
-      availableSizes: sizes,
+      // A vitrine mostra os tamanhos ativos, na ordem das linhas.
+      availableSizes: rows.filter((r) => r.isActive).map((r) => r.size),
       colors,
       stockStatus: stockStatus as ProductInput["stockStatus"],
       material: material.trim() || null,
@@ -193,11 +142,13 @@ export function ProductForm({
       featured,
       newArrival,
       saleMode,
-      trackStock,
-      stockType,
       minimumStock,
-      allowNegativeStock: allowNegative,
-      variants: buildVariantsInput(),
+      variants: rows.map((r) => ({
+        id: r.id,
+        size: r.size,
+        stockQuantity: r.stock,
+        isActive: r.isActive,
+      })),
     }
     const result = editing ? await saveProduct(product.id, input) : await createProduct(input)
     setSaving(false)
@@ -215,17 +166,16 @@ export function ProductForm({
       setError("Escolha a categoria do produto.")
       return
     }
-    // Remover combinação que ainda tem saldo pede confirmação: a variação será
-    // desativada (histórico preservado), mas some da vitrine e da tabela.
-    if (editing && trackStock) {
-      const keeping = new Set(
-        stockType === "single"
-          ? [variantKey(null, null)]
-          : combos.map(({ size, color }) => variantKey(size, color))
-      )
-      const losing = savedList
-        .filter((v) => !keeping.has(variantKey(v.size, v.color)) && v.stockQuantity > 0)
-        .map((v) => `${variantLabel(v.size, v.color)} (${v.stockQuantity} un)`)
+    if (rows.some((r) => !r.size.trim())) {
+      setError("Todo tamanho precisa de um nome — preencha ou remova a linha vazia.")
+      return
+    }
+    // Remover linha que ainda tem saldo pede confirmação (o histórico fica).
+    if (editing) {
+      const keptIds = new Set(rows.map((r) => r.id).filter(Boolean))
+      const losing = (product?.variants ?? [])
+        .filter((v) => !keptIds.has(v.id) && v.stockQuantity > 0)
+        .map((v) => `${v.size ?? "Único"} (${v.stockQuantity} un)`)
       if (losing.length > 0) {
         setConfirmLoss(losing)
         return
@@ -334,19 +284,19 @@ export function ProductForm({
           <p className={sectionCls}>Fotos</p>
           <ImagesEditor images={images} onChange={setImages} />
 
-          <p className={sectionCls}>Tamanhos e cores</p>
+          <p className={sectionCls}>Tamanhos e estoque</p>
 
           <div>
-            <span className={labelCls}>Tamanhos</span>
+            <span className={labelCls}>Adicionar tamanho</span>
             <div className="flex flex-wrap gap-2">
               {quickSizes.map((s) => (
                 <button
                   key={s}
                   type="button"
-                  onClick={() => toggleSize(s)}
-                  aria-pressed={sizes.includes(s)}
+                  onClick={() => toggleQuickSize(s)}
+                  aria-pressed={hasSize(s)}
                   className={`min-h-9 min-w-9 border px-2 text-[13px] font-medium transition-colors ${
-                    sizes.includes(s)
+                    hasSize(s)
                       ? "border-text-primary bg-text-primary text-white"
                       : "border-border bg-white text-text-secondary hover:border-accent"
                   }`}
@@ -355,23 +305,6 @@ export function ProductForm({
                 </button>
               ))}
             </div>
-            {sizes.filter((s) => !quickSizes.includes(s)).length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {sizes
-                  .filter((s) => !quickSizes.includes(s))
-                  .map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => toggleSize(s)}
-                      className="min-h-9 border border-text-primary bg-text-primary px-2.5 text-[13px] font-medium text-white"
-                      title="Clique para remover"
-                    >
-                      {s} ×
-                    </button>
-                  ))}
-              </div>
-            )}
             <div className="mt-2 flex items-center gap-2">
               <input
                 value={customSize}
@@ -379,7 +312,8 @@ export function ProductForm({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault()
-                    addCustomSize()
+                    addSize(customSize)
+                    setCustomSize("")
                   }
                 }}
                 placeholder="Outro tamanho (ex.: 100 ml, Único)"
@@ -387,7 +321,10 @@ export function ProductForm({
               />
               <button
                 type="button"
-                onClick={addCustomSize}
+                onClick={() => {
+                  addSize(customSize)
+                  setCustomSize("")
+                }}
                 className="flex items-center gap-1 border border-border px-3 py-2.5 text-xs font-semibold text-text-primary hover:bg-bg-surface"
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -396,8 +333,70 @@ export function ProductForm({
             </div>
           </div>
 
+          {rows.length > 0 ? (
+            <div>
+              <div className="overflow-x-auto border border-border bg-white">
+                <div className="grid min-w-[400px] grid-cols-[6rem_7rem_1fr_3rem] items-center gap-x-3 border-b border-border bg-bg-surface px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                  <span>Tamanho</span>
+                  <span>Estoque</span>
+                  <span>Ativo</span>
+                  <span className="sr-only">Remover</span>
+                </div>
+                {rows.map((r, i) => (
+                  <div
+                    key={r.id ?? `nova-${i}`}
+                    className="grid min-w-[400px] grid-cols-[6rem_7rem_1fr_3rem] items-center gap-x-3 border-b border-border px-3 py-2 last:border-b-0"
+                  >
+                    <input
+                      value={r.size}
+                      onChange={(e) => patchRow(i, { size: e.target.value })}
+                      aria-label={`Nome do tamanho ${i + 1}`}
+                      className="w-20 border border-border bg-white px-2 py-1.5 text-sm uppercase text-text-primary focus:border-accent-strong focus:outline-none"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      value={r.stock}
+                      onChange={(e) => patchRow(i, { stock: Math.max(0, Number(e.target.value) || 0) })}
+                      aria-label={`Estoque do tamanho ${r.size || i + 1}`}
+                      className="w-24 border border-border bg-white px-2 py-1.5 text-sm tabular-nums text-text-primary focus:border-accent-strong focus:outline-none"
+                    />
+                    <label className="flex w-fit cursor-pointer items-center gap-2 text-xs font-semibold text-text-primary">
+                      <input
+                        type="checkbox"
+                        checked={r.isActive}
+                        onChange={(e) => patchRow(i, { isActive: e.target.checked })}
+                        className="h-4 w-4 accent-accent-strong"
+                      />
+                      Ativo
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => removeRow(i)}
+                      aria-label={`Remover tamanho ${r.size || i + 1}`}
+                      className="justify-self-end p-1.5 text-text-secondary hover:text-alert"
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs text-text-secondary">
+                O estoque salvo aqui vale na hora. Para registrar entrada/saída com motivo e
+                histórico, use a ação Estoque na listagem ou a página Estoque.
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs text-text-secondary">
+              Sem tamanhos, o produto fica sem controle de estoque — a disponibilidade é escolhida
+              manualmente abaixo (útil para perfumes e acessórios de peça única… ou adicione o
+              tamanho &quot;Único&quot; para controlar o saldo).
+            </p>
+          )}
+
+          <p className={sectionCls}>Cores</p>
+
           <div>
-            <span className={labelCls}>Cores</span>
             <ul className="flex flex-col gap-2">
               {colors.map((c, i) => (
                 <li key={i} className="flex items-center gap-2">
@@ -439,220 +438,6 @@ export function ProductForm({
             </button>
           </div>
 
-          <p className={sectionCls}>Controle de estoque</p>
-
-          <div>
-            <label htmlFor="pf-modo" className={labelCls}>Modo de venda</label>
-            <select
-              id="pf-modo"
-              value={saleMode}
-              onChange={(e) => setSaleMode(e.target.value as SaleMode)}
-              className={`${inputCls} max-w-72`}
-            >
-              {(Object.keys(saleModeLabels) as SaleMode[]).map((mode) => (
-                <option key={mode} value={mode}>{saleModeLabels[mode]}</option>
-              ))}
-            </select>
-          </div>
-
-          <label className="flex cursor-pointer items-center gap-2.5 text-sm text-text-primary">
-            <input
-              type="checkbox"
-              checked={trackStock}
-              onChange={(e) => setTrackStock(e.target.checked)}
-              className="h-4 w-4 accent-accent-strong"
-            />
-            Controlar estoque deste produto
-          </label>
-          {!trackStock && (
-            <p className="-mt-4 text-xs text-text-secondary">
-              Desligado: sem limite de quantidade — a disponibilidade continua manual, como hoje.
-            </p>
-          )}
-
-          {trackStock && (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="pf-minimo" className={labelCls}>Estoque mínimo para alerta</label>
-                  <input
-                    id="pf-minimo"
-                    type="number"
-                    min={0}
-                    value={minimumStock}
-                    onChange={(e) => setMinimumStock(Math.max(0, Number(e.target.value) || 0))}
-                    className={`${inputCls} max-w-40`}
-                  />
-                  <p className="mt-1 text-xs text-text-secondary">
-                    No mínimo ou abaixo, o produto mostra &quot;Últimas unidades&quot;.
-                  </p>
-                </div>
-                <label className="flex cursor-pointer items-center gap-2.5 self-start pt-6 text-sm text-text-primary">
-                  <input
-                    type="checkbox"
-                    checked={allowNegative}
-                    onChange={(e) => setAllowNegative(e.target.checked)}
-                    className="h-4 w-4 accent-accent-strong"
-                  />
-                  Permitir venda sem estoque (saldo negativo)
-                </label>
-              </div>
-
-              <div>
-                <span className={labelCls}>Tipo de estoque</span>
-                <div className="flex flex-col gap-2">
-                  {(Object.keys(stockTypeLabels) as StockType[]).map((t) => {
-                    const semVariacoes = t === "per_variant" && sizes.length === 0 && colorNames.length === 0
-                    return (
-                      <label
-                        key={t}
-                        className={`flex items-center gap-2.5 text-sm ${
-                          semVariacoes ? "cursor-not-allowed text-text-secondary/60" : "cursor-pointer text-text-primary"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="pf-stocktype"
-                          checked={stockType === t}
-                          disabled={semVariacoes}
-                          onChange={() => setStockType(t)}
-                          className="h-4 w-4 accent-accent-strong"
-                        />
-                        {stockTypeLabels[t]}
-                        {semVariacoes && " — cadastre tamanhos ou cores acima"}
-                      </label>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {stockType === "single" ? (
-                <div>
-                  <label htmlFor="pf-qtd" className={labelCls}>Quantidade disponível</label>
-                  {savedVariants.has(variantKey(null, null)) ? (
-                    <div className="flex flex-wrap items-center gap-3">
-                      <p className="text-sm text-text-primary">
-                        <span className="font-semibold">
-                          {savedVariants.get(variantKey(null, null))!.stockQuantity} unidades
-                        </span>
-                      </p>
-                      <a
-                        href={`/admin/estoque?q=${encodeURIComponent(product?.productCode ?? "")}`}
-                        className="border border-border bg-white px-3 py-1.5 text-xs font-semibold text-text-primary hover:bg-bg-surface"
-                      >
-                        Gerenciar estoque
-                      </a>
-                      <span className="w-full text-xs text-text-secondary">
-                        Entrada, saída e histórico ficam na página Estoque — toda alteração é registrada.
-                      </span>
-                    </div>
-                  ) : (
-                    <input
-                      id="pf-qtd"
-                      type="number"
-                      min={0}
-                      value={variantEntry(variantKey(null, null)).initialQuantity}
-                      onChange={(e) =>
-                        setVariantField(
-                          variantKey(null, null),
-                          "initialQuantity",
-                          Math.max(0, Number(e.target.value) || 0)
-                        )
-                      }
-                      className={`${inputCls} max-w-40`}
-                    />
-                  )}
-                </div>
-              ) : (
-                combos.length > 0 && (
-                  <div>
-                    <span className={`${labelCls} flex items-center justify-between`}>
-                      Variações ({combos.length})
-                      {editing && savedList.length > 0 && (
-                        <a
-                          href={`/admin/estoque?q=${encodeURIComponent(product?.productCode ?? "")}`}
-                          className="border border-border bg-white px-3 py-1.5 text-[11px] font-semibold normal-case tracking-normal text-text-primary hover:bg-bg-surface"
-                        >
-                          Gerenciar estoque
-                        </a>
-                      )}
-                    </span>
-                    <div className="overflow-x-auto border border-border bg-white">
-                      <div className="grid min-w-[640px] grid-cols-[1.3fr_1.1fr_9.5rem_5rem_3.5rem] items-center gap-x-3 border-b border-border bg-bg-surface px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
-                        <span>Variação</span>
-                        <span>SKU</span>
-                        <span>Estoque</span>
-                        <span>Mínimo</span>
-                        <span>Ativa</span>
-                      </div>
-                      {(() => {
-                        // SKUs de preview desviam dos já gravados e entre si.
-                        const taken = new Set(savedList.map((v) => v.sku))
-                        return combos.map(({ size, color }) => {
-                          const key = variantKey(size, color)
-                          const saved = savedVariants.get(key)
-                          const entry = variantEntry(key)
-                          const sku =
-                            saved?.sku ??
-                            buildVariantSku(product?.productCode ?? "PRG-XXXX", size, color, taken)
-                          return (
-                            <div
-                              key={key}
-                              className="grid min-w-[640px] grid-cols-[1.3fr_1.1fr_9.5rem_5rem_3.5rem] items-center gap-x-3 border-b border-border px-3 py-2 last:border-b-0"
-                            >
-                              <span className="text-sm text-text-primary">{variantLabel(size, color)}</span>
-                              <span className="font-mono text-xs text-text-secondary">{sku}</span>
-                              {saved ? (
-                                <span
-                                  className="text-sm font-semibold tabular-nums text-text-primary"
-                                  title="Saldo gerenciado na página Estoque"
-                                >
-                                  {saved.stockQuantity}
-                                </span>
-                              ) : (
-                                <input
-                                  type="number"
-                                  min={0}
-                                  aria-label={`Estoque inicial de ${variantLabel(size, color)}`}
-                                  value={entry.initialQuantity}
-                                  onChange={(e) =>
-                                    setVariantField(key, "initialQuantity", Math.max(0, Number(e.target.value) || 0))
-                                  }
-                                  className="w-20 border border-border bg-white px-2 py-1.5 text-sm text-text-primary focus:border-accent-strong focus:outline-none"
-                                />
-                              )}
-                              <input
-                                type="number"
-                                min={0}
-                                aria-label={`Estoque mínimo de ${variantLabel(size, color)}`}
-                                value={entry.minimumStock}
-                                onChange={(e) =>
-                                  setVariantField(key, "minimumStock", Math.max(0, Number(e.target.value) || 0))
-                                }
-                                className="w-16 border border-border bg-white px-2 py-1.5 text-sm text-text-primary focus:border-accent-strong focus:outline-none"
-                              />
-                              <input
-                                type="checkbox"
-                                aria-label={`Variação ${variantLabel(size, color)} ativa`}
-                                checked={entry.isActive}
-                                onChange={(e) => setVariantField(key, "isActive", e.target.checked)}
-                                className="h-4 w-4 accent-accent-strong"
-                              />
-                            </div>
-                          )
-                        })
-                      })()}
-                    </div>
-                    <p className="mt-1.5 text-xs text-text-secondary">
-                      Combinações novas aceitam estoque inicial. O saldo das já cadastradas é
-                      gerenciado na página Estoque (Entrada/Saída com histórico registrado).
-                    </p>
-                  </div>
-                )
-              )}
-            </>
-          )}
-
           <p className={sectionCls}>Preço e disponibilidade</p>
 
           <div className="grid gap-4 sm:grid-cols-3">
@@ -675,7 +460,39 @@ export function ProductForm({
             </div>
           </div>
 
-          {trackStock ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="pf-modo" className={labelCls}>Modo de venda</label>
+              <select
+                id="pf-modo"
+                value={saleMode}
+                onChange={(e) => setSaleMode(e.target.value as SaleMode)}
+                className={inputCls}
+              >
+                {(Object.keys(saleModeLabels) as SaleMode[]).map((mode) => (
+                  <option key={mode} value={mode}>{saleModeLabels[mode]}</option>
+                ))}
+              </select>
+            </div>
+            {rows.length > 0 && (
+              <div>
+                <label htmlFor="pf-minimo" className={labelCls}>Estoque mínimo para alerta</label>
+                <input
+                  id="pf-minimo"
+                  type="number"
+                  min={0}
+                  value={minimumStock}
+                  onChange={(e) => setMinimumStock(Math.max(0, Number(e.target.value) || 0))}
+                  className={`${inputCls} max-w-40`}
+                />
+                <p className="mt-1 text-xs text-text-secondary">
+                  No mínimo ou abaixo, mostra &quot;Últimas unidades&quot;.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {rows.length > 0 ? (
             <p className="text-sm text-text-secondary">
               Disponibilidade calculada automaticamente pelo estoque
               {" — "}acima do mínimo: pronta entrega; no mínimo: últimas unidades; zerado:
@@ -744,10 +561,10 @@ export function ProductForm({
 
       {confirmLoss && (
         <ConfirmDialog
-          title="Variações com estoque serão removidas"
+          title="Tamanhos com estoque serão removidos"
           message={`${confirmLoss.join(", ")} ${
             confirmLoss.length === 1 ? "sai" : "saem"
-          } do cadastro. O saldo deixa de valer e a variação é desativada — o histórico de movimentações fica preservado.`}
+          } do cadastro. O saldo deixa de valer — o histórico de movimentações fica preservado.`}
           confirmLabel="Remover mesmo assim"
           danger
           busy={saving}

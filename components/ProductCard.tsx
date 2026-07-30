@@ -12,16 +12,18 @@ import { FavoriteButton } from "@/components/FavoriteButton"
 import { WhatsAppCta } from "@/components/WhatsAppCta"
 import { useSelection } from "@/hooks/useSelection"
 
-// Um único badge por card, resolvido por hierarquia: desconto > últimas
-// unidades > novo. Destacar tudo é não destacar nada.
-function cardBadge(product: Product): string | null {
-  if (product.stockStatus === "out_of_stock") return "Esgotado"
+// Um único badge por card, resolvido por hierarquia: oferta > últimas
+// unidades > novo. Destacar tudo é não destacar nada. A etiqueta de oferta
+// aparece sozinha assim que o dono preenche o preço "de" no painel, e ganha
+// o rosé da casa para não se confundir com as etiquetas informativas.
+function cardBadge(product: Product): { text: string; oferta?: boolean } | null {
+  if (product.stockStatus === "out_of_stock") return { text: "Esgotado" }
   if (isOnSale(product) && product.oldPrice && product.price) {
     const off = Math.round((1 - product.price / product.oldPrice) * 100)
-    if (off > 0) return `-${off}%`
+    return { text: off > 0 ? `Oferta · -${off}%` : "Oferta", oferta: true }
   }
-  if (product.stockStatus === "low_stock") return "Últimas unidades"
-  if (product.newArrival || product.badges?.includes("novo")) return "Novo"
+  if (product.stockStatus === "low_stock") return { text: "Últimas unidades" }
+  if (product.newArrival || product.badges?.includes("novo")) return { text: "Novo" }
   return null
 }
 
@@ -93,8 +95,12 @@ export function ProductCard({
             />
           )}
           {badge && (
-            <span className="absolute bottom-0 left-0 z-10 bg-text-primary px-2 py-1 text-[11px] font-semibold text-white">
-              {badge}
+            <span
+              className={`absolute bottom-0 left-0 z-10 px-2 py-1 text-[11px] font-semibold text-white ${
+                badge.oferta ? "bg-accent-strong" : "bg-text-primary"
+              }`}
+            >
+              {badge.text}
             </span>
           )}
         </Link>

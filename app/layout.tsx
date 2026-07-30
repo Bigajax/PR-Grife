@@ -11,7 +11,6 @@ import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp"
 import { SelectionDrawer } from "@/components/SelectionDrawer"
-import { ConsentBanner } from "@/components/ConsentBanner"
 import { SiteLoader } from "@/components/SiteLoader"
 import { SiteChrome } from "@/components/SiteChrome"
 
@@ -108,7 +107,6 @@ export default async function RootLayout({
               <Footer products={products} />
               <FloatingWhatsApp />
               <SelectionDrawer />
-              <ConsentBanner />
             </SiteChrome>
           </Providers>
         </CatalogProvider>

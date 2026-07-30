@@ -100,11 +100,16 @@ export function hasTrackedStock(p: Product): boolean {
 }
 
 function findVariants(p: Product, size?: string | null, color?: string | null): ProductVariant[] {
-  // Estoque único: a variação é o produto inteiro — tamanho/cor escolhidos
-  // não recortam nada (são só opções informativas da mesma peça).
-  if (p.stockType !== "per_variant") return activeVariants(p)
-  return activeVariants(p).filter(
-    (v) => (size == null || (v.size ?? null) === size) && (color == null || (v.color ?? null) === color)
+  const pool = activeVariants(p)
+  // Uma dimensão só filtra se as variações a carregam: no modelo por tamanho,
+  // a cor do produto é informativa (variações têm color nulo) e escolher uma
+  // cor não pode zerar o resultado. Idem para produto de variação única.
+  const temTamanho = pool.some((v) => v.size != null)
+  const temCor = pool.some((v) => v.color != null)
+  return pool.filter(
+    (v) =>
+      (size == null || !temTamanho || v.size === size) &&
+      (color == null || !temCor || v.color === color)
   )
 }
 

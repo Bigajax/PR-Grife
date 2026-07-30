@@ -93,7 +93,58 @@ type MovementRow = {
   user_email: string;
   created_at: string;
   product_variants: { size: string | null; color: string | null; sku: string } | null;
+  products?: { name: string; product_code: string } | null;
 };
+
+function mapMovementRow(row: MovementRow): StockMovement & { productName?: string; productCode?: string } {
+  return {
+    id: row.id,
+    productId: row.product_id,
+    variantId: row.variant_id,
+    movementType: row.movement_type,
+    reason: row.reason,
+    quantity: row.quantity,
+    previousQuantity: row.previous_quantity,
+    balanceAfter: row.balance_after,
+    notes: row.notes ?? undefined,
+    userEmail: row.user_email,
+    createdAt: row.created_at,
+    variant: row.product_variants
+      ? {
+          size: row.product_variants.size ?? undefined,
+          color: row.product_variants.color ?? undefined,
+          sku: row.product_variants.sku,
+        }
+      : undefined,
+    productName: row.products?.name,
+    productCode: row.products?.product_code,
+  };
+}
+
+export type GlobalMovement = ReturnType<typeof mapMovementRow>;
+
+export type GlobalMovementsResult =
+  | { ok: true; movements: GlobalMovement[] }
+  | { ok: false; error: string };
+
+/** Histórico global do painel (página Movimentações), mais recente primeiro. */
+export async function fetchAllMovements(): Promise<GlobalMovementsResult> {
+  try {
+    const { supabase } = await requireUser();
+    const { data, error } = await supabase
+      .from("stock_movements")
+      .select("*, product_variants(size, color, sku), products(name, product_code)")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(friendly(error.message));
+    return { ok: true, movements: ((data ?? []) as MovementRow[]).map(mapMovementRow) };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Não foi possível carregar as movimentações.",
+    };
+  }
+}
 
 export type MovementsResult =
   | { ok: true; movements: StockMovement[] }
