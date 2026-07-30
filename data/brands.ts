@@ -62,19 +62,21 @@ export const brandShowcase: BrandShowcaseItem[] = [
     cover: "/images/brands/covers/colcci-vitrine-v1.png",
     coverPosition: "55% center",
   },
-  {
-    name: "Reserva",
-    slug: "reserva",
-    brands: ["Reserva"],
-    cover: "/images/brands/covers/reserva-vitrine-v1.png",
-    coverPosition: "40% center",
-  },
+  // US Polo antes da Reserva de propósito: na vitrine da home, a 4ª posição
+  // é o card largo da segunda linha — pedido do proprietário.
   {
     name: "US Polo",
     slug: "us-polo",
     brands: ["US Polo"],
     cover: "/images/brands/covers/us-polo-vitrine-v1.png",
     coverPosition: "left center",
+  },
+  {
+    name: "Reserva",
+    slug: "reserva",
+    brands: ["Reserva"],
+    cover: "/images/brands/covers/reserva-vitrine-v1.png",
+    coverPosition: "40% center",
   },
   {
     name: "Ankor",

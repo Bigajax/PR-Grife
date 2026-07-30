@@ -10,7 +10,7 @@ import { brandShowcase } from "@/data/brands"
 //
 // Os cards vêm da vitrine curada (data/brands.ts), na ordem de lá: os seis
 // primeiros com card na home (vitrineHome !== false) entram, largos nas
-// posições 1 e 4 (Lacoste e Reserva). Clique abre o catálogo já filtrado em
+// posições 1 e 4 (Lacoste e US Polo). Clique abre o catálogo já filtrado em
 // /catalogo/marca/<slug> — marca sem SKU cai no estado vazio da página, que
 // tem saída para o catálogo completo.
 const VAGAS = 6
@@ -26,6 +26,7 @@ const recorteNoLogo: Record<string, string> = {
   "tommy-hilfiger": "86% center",
   colcci: "88% center",
   "us-polo": "54% center",
+  reserva: "82% center",
   ankor: "84% center",
 }
 
