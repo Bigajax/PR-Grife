@@ -4,10 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Menu, X, ShoppingBag, Search, ChevronDown } from "lucide-react"
-import { Logo } from "@/components/Logo"
+import { Menu, X, ShoppingBag, Search, ChevronDown, Heart, UserRound } from "lucide-react"
+import { Logo, DiamondMark } from "@/components/Logo"
 import { WhatsAppCta } from "@/components/WhatsAppCta"
 import { NavDropdown } from "@/components/NavDropdown"
+import { siteConfig } from "@/data/site.config"
 import { templates } from "@/lib/whatsapp"
 import { queryCatalog, categoryHref, showcaseBrandsFor } from "@/lib/catalog"
 import { useCatalog } from "@/components/CatalogProvider"
@@ -38,12 +39,34 @@ export function Header() {
   const router = useRouter()
   const searchRef = useRef<HTMLInputElement>(null)
 
+  // Mobile: a linha de busca recolhe suavemente ao rolar para baixo (depois de
+  // uma rolagem maior) e volta ao primeiro gesto para cima — nunca some com o
+  // menu aberto nem no meio de uma digitação.
+  const [searchRowHidden, setSearchRowHidden] = useState(false)
+  const lastY = useRef(0)
   useEffect(() => {
-    if (!menuOpen && !searchOpen) return
+    const onScroll = () => {
+      const y = window.scrollY
+      const desceu = y > lastY.current
+      lastY.current = y
+      if (menuOpen || term.trim().length >= 2) {
+        setSearchRowHidden(false)
+        return
+      }
+      if (desceu && y > 240) setSearchRowHidden(true)
+      else if (!desceu) setSearchRowHidden(false)
+    }
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [menuOpen, term])
+
+  useEffect(() => {
+    if (!menuOpen && !searchOpen && term.trim().length < 2) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMenuOpen(false)
         setSearchOpen(false)
+        setTerm("")
       }
     }
     document.addEventListener("keydown", onKey)
@@ -52,7 +75,7 @@ export function Header() {
       document.removeEventListener("keydown", onKey)
       document.body.style.overflow = ""
     }
-  }, [menuOpen, searchOpen])
+  }, [menuOpen, searchOpen, term])
 
   useEffect(() => {
     if (searchOpen) searchRef.current?.focus()
@@ -81,34 +104,112 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-bg-base">
-      {/* `relative` na barra: a logo centralizada no mobile ancora aqui — não no
-          header inteiro, cuja altura muda quando busca/menu abrem embaixo. */}
-      <div className="shell relative flex h-16 items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-            aria-expanded={menuOpen}
-            className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-text-primary lg:hidden"
-          >
-            {menuOpen ? (
-              <X className="h-5 w-5" aria-hidden="true" />
-            ) : (
-              <Menu className="h-5 w-5" aria-hidden="true" />
-            )}
-          </button>
-          {/* Mobile: logo centralizada na barra. Desktop: volta à esquerda e o
-              centro é da navegação. */}
-          <Link
-            href="/"
-            aria-label="PR Grife — início"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 shrink-0 lg:static lg:translate-x-0 lg:translate-y-0"
-          >
-            <Logo variant="dark" />
+    <header className="sticky top-0 z-40 border-b border-border bg-bg-elevated pt-[env(safe-area-inset-top)]">
+      {/* ── Mobile: header em duas linhas ────────────────────────────────────
+          Linha 1 (58px): menu | logo | conta — grade 1fr/auto/1fr, então o
+          centro da logo não se move com a largura dos ícones laterais.
+          Linha 2 (48px): busca sempre visível + favoritos + sacola; recolhe
+          suave ao rolar para baixo (searchRowHidden). */}
+      <div className="lg:hidden">
+        <div className="grid h-[58px] grid-cols-[1fr_auto_1fr] items-center px-[18px]">
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={menuOpen}
+              className="-ml-2.5 flex h-11 w-11 items-center justify-center text-text-primary"
+            >
+              {menuOpen ? (
+                <X className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
+              ) : (
+                <Menu className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
+              )}
+            </button>
+          </div>
+
+          {/* Lockup maior que o do desktop: o header de duas linhas dá espaço
+              para a marca respirar. Mesmos elementos do Logo — não é redesenho. */}
+          <Link href="/" aria-label="PR Grife — início" className="flex items-center gap-2.5">
+            <DiamondMark className="h-[22px] w-[22px] shrink-0" />
+            <span className="whitespace-nowrap font-sans text-[15px] font-semibold uppercase tracking-[0.32em] text-black-soft">
+              {siteConfig.name}
+            </span>
           </Link>
+
+          <div className="flex items-center justify-end">
+            <Link
+              href="/admin"
+              aria-label="Minha conta"
+              className="-mr-2.5 flex h-11 w-11 items-center justify-center text-text-primary"
+            >
+              <UserRound className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
+            </Link>
+          </div>
         </div>
+
+        <div
+          className={`overflow-hidden transition-all duration-300 ${
+            searchRowHidden ? "max-h-0 opacity-0" : "max-h-12 opacity-100"
+          }`}
+        >
+          <div className="flex h-12 items-center gap-4 px-[18px] pb-1.5">
+            <form
+              onSubmit={submitSearch}
+              role="search"
+              className="flex min-w-0 flex-1 items-center gap-2.5 border-b border-border pb-1.5"
+            >
+              <Search className="h-[18px] w-[18px] shrink-0 text-text-primary" strokeWidth={1.6} aria-hidden="true" />
+              <input
+                type="search"
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+                placeholder="O que você está buscando hoje?"
+                aria-label="Buscar por nome, marca, categoria, cor ou referência"
+                className="h-9 w-full bg-transparent text-[15px] text-text-primary outline-none placeholder:font-light placeholder:italic placeholder:text-text-secondary"
+              />
+              {term && (
+                <button
+                  type="button"
+                  onClick={() => setTerm("")}
+                  aria-label="Limpar busca"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center text-text-secondary"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </form>
+
+            <Link
+              href="/favoritos"
+              aria-label="Favoritos"
+              className="flex h-11 w-11 shrink-0 items-center justify-center text-text-primary"
+            >
+              <Heart className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
+            </Link>
+
+            <button
+              type="button"
+              onClick={openDrawer}
+              aria-label={`Abrir minha seleção${items.length ? ` (${items.length} peças)` : ""}`}
+              className="relative -mr-1 flex h-11 w-11 shrink-0 items-center justify-center text-text-primary"
+            >
+              <ShoppingBag className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
+              {items.length > 0 && (
+                <span className="absolute right-0.5 top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-text-primary px-1 text-[10px] font-bold text-white">
+                  {items.length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop: barra única existente ──────────────────────────────────── */}
+      <div className="shell relative hidden h-16 items-center justify-between lg:flex">
+        <Link href="/" aria-label="PR Grife — início" className="shrink-0">
+          <Logo variant="dark" />
+        </Link>
 
         {/* gap menor até xl: com cinco itens, o gap-7 encostava na logo em ~1024px. */}
         <nav
@@ -219,6 +320,14 @@ export function Header() {
             <Search className="h-5 w-5" aria-hidden="true" />
           </button>
 
+          <Link
+            href="/favoritos"
+            aria-label="Favoritos"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-text-primary transition-colors hover:text-accent"
+          >
+            <Heart className="h-5 w-5" aria-hidden="true" />
+          </Link>
+
           <button
             type="button"
             onClick={openDrawer}
@@ -244,12 +353,14 @@ export function Header() {
         </div>
       </div>
 
-      {/* Busca com resultados em tempo real */}
-      {searchOpen && (
-        <div className="border-t border-border bg-bg-base">
+      {/* Busca com resultados em tempo real. No mobile o campo é o da segunda
+          linha do header (sempre visível): o painel só entra com os resultados
+          quando há 2+ caracteres. No desktop, abre com o botão de lupa. */}
+      {(searchOpen || term.trim().length >= 2) && (
+        <div className="border-t border-border bg-bg-elevated">
           <form
             onSubmit={submitSearch}
-            className="shell flex items-center gap-3 py-3"
+            className="shell hidden items-center gap-3 py-3 lg:flex"
             role="search"
           >
             <Search className="h-5 w-5 shrink-0 text-text-secondary" aria-hidden="true" />
@@ -355,7 +466,7 @@ export function Header() {
       {/* Menu mobile: itens diretos + accordions (um aberto por vez) para
           departamentos com subcategorias e para as marcas. */}
       {menuOpen && (
-        <div className="shell max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-bg-base pb-8 pt-4 lg:hidden">
+        <div className="max-h-[calc(100dvh-106px)] overflow-y-auto border-t border-border bg-bg-elevated px-[18px] pb-8 pt-4 lg:hidden">
           <nav className="flex flex-col" aria-label="Navegação móvel">
             <Link
               href="/novidades"
