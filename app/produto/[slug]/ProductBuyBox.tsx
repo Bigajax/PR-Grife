@@ -25,6 +25,8 @@ export function ProductBuyBox({ product }: { product: Product }) {
   const [color, setColor] = useState<string | null>(
     product.availableColors.length === 1 ? product.availableColors[0].name : null
   )
+  // Forma de pagamento escolhida — opcional; qualifica a mensagem do pedido.
+  const [payment, setPayment] = useState<string | null>(null)
   const [sizeHint, setSizeHint] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
   const sizesRef = useRef<HTMLFieldSetElement>(null)
@@ -97,12 +99,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
     }
   }
 
-  // URL só após a hidratação: evita divergir do HTML do servidor (o bloco
-  // LINK entra na mensagem assim que o cliente monta).
-  const [url, setUrl] = useState<string | undefined>(undefined)
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUrl(window.location.href)
     // Tamanho escolhido no card da vitrine chega por ?tamanho= — a PDP abre
     // já com ele marcado.
     const wanted = new URLSearchParams(window.location.search).get("tamanho")
@@ -124,10 +121,11 @@ export function ProductBuyBox({ product }: { product: Product }) {
       : "Pedir no WhatsApp"
   const ctaHref = buildWhatsAppLink(
     soldOut
-      ? templates.aviseMe(product, size ?? undefined, url)
-      : buildOrderMessage([
-          { product, size: size ?? undefined, color: color ?? undefined, url },
-        ]),
+      ? templates.aviseMe(product, size ?? undefined)
+      : buildOrderMessage(
+          [{ product, size: size ?? undefined, color: color ?? undefined }],
+          payment ?? undefined
+        ),
     utm
   )
 
@@ -246,6 +244,33 @@ export function ProductBuyBox({ product }: { product: Product }) {
         {stockLabels[selectedStatus]}
         {onRequest && ` — prazo estimado: ${siteConfig.leadTimeText}`}
       </p>
+
+      {/* Forma de pagamento: opcional — escolhida, entra qualificada na
+          mensagem ("Pagamento: Pix"); sem escolha, vai a régua completa. */}
+      {!soldOut && (
+        <fieldset className="mt-5">
+          <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-text-gray">
+            Como prefere pagar?
+          </legend>
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {siteConfig.paymentOptions.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setPayment((cur) => (cur === opt ? null : opt))}
+                aria-pressed={payment === opt}
+                className={`min-h-10 rounded-full border px-3.5 text-[13px] font-medium transition-colors ${
+                  payment === opt
+                    ? "border-black-soft bg-black-soft text-off-white"
+                    : "border-border-gray bg-white text-text-gray hover:border-gold"
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       {/* CTAs */}
       <div className="mt-6 flex flex-col gap-2.5">

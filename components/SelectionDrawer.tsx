@@ -1,12 +1,13 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import Image from "next/image"
 import { X, Trash2 } from "lucide-react"
 import { useSelection } from "@/hooks/useSelection"
 import { useFocusTrap } from "@/hooks/useFocusTrap"
 import { useUtm } from "@/hooks/useUtm"
 import { buildWhatsAppLink, buildOrderMessage } from "@/lib/whatsapp"
+import { siteConfig } from "@/data/site.config"
 import { isOptionAvailable } from "@/lib/stock"
 import { useProductLookup } from "@/components/CatalogProvider"
 import { formatPrice } from "@/lib/format"
@@ -18,6 +19,7 @@ import { DiamondMark } from "@/components/Logo"
 export function SelectionDrawer() {
   const { items, isOpen, closeDrawer, remove, update } = useSelection()
   const productById = useProductLookup()
+  const [payment, setPayment] = useState<string | null>(null)
   const utm = useUtm()
   const ref = useRef<HTMLDivElement>(null)
   useFocusTrap(ref, isOpen, closeDrawer)
@@ -141,6 +143,30 @@ export function SelectionDrawer() {
             </ul>
 
             <div className="border-t border-border-gray px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              {/* Forma de pagamento: opcional — escolhida, a mensagem sai
+                  qualificada ("Pagamento: Pix"). */}
+              <fieldset className="pb-3">
+                <legend className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-gray">
+                  Como prefere pagar?
+                </legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {siteConfig.paymentOptions.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setPayment((cur) => (cur === opt ? null : opt))}
+                      aria-pressed={payment === opt}
+                      className={`min-h-9 rounded-full border px-3 text-xs font-medium transition-colors ${
+                        payment === opt
+                          ? "border-black-soft bg-black-soft text-off-white"
+                          : "border-border-gray bg-white text-text-gray hover:border-gold"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
               <a
                 href={buildWhatsAppLink(
                   buildOrderMessage(
@@ -148,7 +174,8 @@ export function SelectionDrawer() {
                       product,
                       size: item.size,
                       color: item.color,
-                    }))
+                    })),
+                    payment ?? undefined
                   ),
                   utm
                 )}

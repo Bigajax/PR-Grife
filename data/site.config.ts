@@ -32,6 +32,9 @@ export const siteConfig = {
     },
   ],
   paymentText: "Pix, dinheiro ou cartão em até 10x sem juros",
+  // Opções clicáveis nos pontos de pedido (PDP e sacola). O rótulo escolhido
+  // entra como "Pagamento: <opção>" na mensagem de WhatsApp.
+  paymentOptions: ["Pix", "Dinheiro", "Cartão em até 10x sem juros"],
   // Os três destinos de mapa derivam do MESMO endereço textual — sem
   // coordenadas inventadas: busca (abrir no Maps), rota (dir) e embed (iframe).
   mapsUrl:
