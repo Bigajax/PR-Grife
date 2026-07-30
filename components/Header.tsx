@@ -47,14 +47,17 @@ export function Header() {
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY
-      const desceu = y > lastY.current
+      const delta = y - lastY.current
       lastY.current = y
       if (menuOpen || term.trim().length >= 2) {
         setSearchRowHidden(false)
         return
       }
-      if (desceu && y > 240) setSearchRowHidden(true)
-      else if (!desceu) setSearchRowHidden(false)
+      // Histerese: o fim do momentum repete o mesmo y (delta 0) — sem o
+      // limiar, esse eco desfazia o recolhimento no mesmo instante.
+      if (Math.abs(delta) < 2) return
+      if (delta > 0 && y > 240) setSearchRowHidden(true)
+      else if (delta < 0) setSearchRowHidden(false)
     }
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)

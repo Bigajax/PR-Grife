@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { siteConfig } from "@/data/site.config"
+import { DiamondMark } from "@/components/Logo"
 
-// Barra fina do topo, em superfície clara. Desktop: os três avisos numa linha.
-// Mobile: um por vez, para caber sem quebrar em duas linhas.
+// Faixa do topo em grafite — o único bloco escuro do site, o que a destaca do
+// header branco quente logo abaixo. Desktop: todos os avisos numa linha, com o
+// diamante da casa como separador. Mobile: um por vez, com fade.
 export function AnnouncementBar() {
   const messages = siteConfig.announcements
   const [index, setIndex] = useState(0)
@@ -16,19 +18,29 @@ export function AnnouncementBar() {
     return () => clearInterval(id)
   }, [messages.length])
 
+  const textCls =
+    "text-[10.5px] font-semibold uppercase tracking-[0.22em] text-off-white"
+
   return (
-    <div className="border-b border-border bg-bg-surface text-text-secondary">
-      <p className="shell hidden py-2 text-center text-xs md:block">
-        {messages.join(" · ")}
-      </p>
+    <div className="bg-text-primary">
+      <div className="shell hidden h-9 items-center justify-center gap-4 md:flex">
+        {messages.map((msg, i) => (
+          <p key={msg} className={`flex items-center gap-4 ${textCls}`}>
+            {i > 0 && (
+              <DiamondMark className="h-2 w-2 shrink-0 opacity-80" aria-hidden />
+            )}
+            {msg}
+          </p>
+        ))}
+      </div>
       <div
-        className="relative flex h-8 items-center justify-center overflow-hidden md:hidden"
+        className="relative flex h-9 items-center justify-center overflow-hidden md:hidden"
         aria-live="polite"
       >
         {messages.map((msg, i) => (
           <p
             key={msg}
-            className={`absolute text-xs transition-opacity duration-500 ${
+            className={`absolute transition-opacity duration-500 ${textCls} ${
               i === index ? "opacity-100" : "opacity-0"
             }`}
             aria-hidden={i !== index}
