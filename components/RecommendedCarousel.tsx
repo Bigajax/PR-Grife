@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { ArrowRight } from "lucide-react"
+import { DiamondMark } from "@/components/Logo"
 import type { Product } from "@/types"
 import { siteConfig } from "@/data/site.config"
 import { useCatalog } from "@/components/CatalogProvider"
@@ -66,13 +68,33 @@ export function RecommendedCarousel() {
             </div>
           ))}
 
-          {/* Último slide leva ao catálogo, em vez de terminar em nada. */}
+          {/* Fecho do trilho: painel grafite com a marca da casa — um convite
+              com o mesmo peso visual dos cards, não um link solto no vazio. */}
           <div className="w-[calc(100%/1.6)] border-l border-border sm:w-[calc(100%/2.6)] lg:w-[calc(100%/4.35)]">
             <Link
               href="/catalogo"
-              className="flex h-full min-h-56 items-center justify-center bg-bg-elevated px-4 text-center text-sm font-semibold text-text-primary underline underline-offset-4 transition-colors hover:text-accent-strong"
+              className="group flex h-full min-h-56 flex-col items-center justify-center gap-5 bg-text-primary px-6 py-10 text-center"
             >
-              Ver catálogo completo
+              <DiamondMark className="h-8 w-8" />
+              <span className="flex flex-col gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-sand">
+                  Toda a vitrine
+                </span>
+                <span className="font-display text-2xl font-medium leading-tight text-off-white">
+                  Ver o catálogo
+                  <br />
+                  completo
+                </span>
+              </span>
+              <span
+                aria-hidden="true"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-off-white transition-all group-hover:border-accent group-hover:text-accent"
+              >
+                <ArrowRight
+                  className="h-5 w-5 transition-transform group-hover:translate-x-0.5"
+                  strokeWidth={1.6}
+                />
+              </span>
             </Link>
           </div>
         </Carousel>
