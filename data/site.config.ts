@@ -110,8 +110,9 @@ export const siteConfig = {
   // parede clara de estúdio, então o texto vai em grafite — branco sumiria nela.
   // Ao subir uma foto escura, troque para "light".
   hero: {
-    title: "Somente produtos originais",
-    subtitle: "Tommy Hilfiger, Lacoste, Reserva e outras grandes marcas — em Maringá e para todo o Brasil.",
+    title: "O que você procura hoje?",
+    // Renderizada em dourado da marca (ver Hero.tsx) — é selo, não parágrafo.
+    subtitle: "Somente produtos originais",
     ctaLabel: "Ver catálogo",
     href: "/catalogo",
     // O nome do arquivo carrega versão de propósito. O otimizador de imagem do

@@ -162,7 +162,7 @@ export function Header() {
                 type="search"
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
-                placeholder="O que você está buscando hoje?"
+                placeholder="Encontre a sua próxima peça"
                 aria-label="Buscar por nome, marca, categoria, cor ou referência"
                 className="h-9 w-full bg-transparent text-[15px] text-text-primary outline-none placeholder:font-light placeholder:italic placeholder:text-text-secondary"
               />

@@ -43,7 +43,7 @@ export function CategoryShowcase() {
               <span className="hairline-gold w-16 shrink-0" aria-hidden="true" />
             </p>
             <h2 className="font-display mt-3 text-2xl font-medium uppercase tracking-[0.04em] text-text-primary sm:text-[28px]">
-              O que você procura hoje?
+              Escolha a sua grife
             </h2>
           </div>
 

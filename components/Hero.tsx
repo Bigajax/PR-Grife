@@ -26,8 +26,9 @@ export function Hero() {
             {hero.title}
           </h1>
 
+          {/* Selo da casa em dourado — o mesmo ouro do diamante da logo. */}
           <p
-            className="hero-rise mt-4 max-w-md text-base text-text-secondary lg:mt-5"
+            className="hero-rise mt-4 text-[13px] font-semibold uppercase tracking-[0.28em] text-[#C2A15D] lg:mt-5 lg:text-sm"
             style={{ animationDelay: "120ms" }}
           >
             {hero.subtitle}
