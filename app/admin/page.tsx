@@ -24,12 +24,12 @@ export default async function AdminHomePage() {
     {
       label: "Últimas unidades",
       count: published.filter((p) => p.stockStatus === "low_stock").length,
-      href: "/admin/produtos",
+      href: "/admin/estoque?situacao=low_stock",
     },
     {
       label: "Esgotados",
       count: published.filter((p) => p.stockStatus === "out_of_stock").length,
-      href: "/admin/produtos",
+      href: "/admin/estoque?situacao=out_of_stock",
     },
   ]
 

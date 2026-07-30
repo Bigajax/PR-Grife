@@ -4,7 +4,14 @@ import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAnonKey, supabaseConfigured, supabaseUrl } from "@/lib/supabase/env";
 import { products as staticProducts } from "@/data/products";
-import type { Product, ProductColor, StockStatus } from "@/types";
+import type {
+  Product,
+  ProductColor,
+  ProductVariant,
+  SaleMode,
+  StockStatus,
+  StockType,
+} from "@/types";
 
 /**
  * Leitura do catálogo, cacheada com a tag "products". As Server Actions do
@@ -49,7 +56,67 @@ export type ProductRow = {
   featured: boolean;
   new_arrival: boolean;
   archived_at: string | null;
+  // Colunas da migration 0002 — opcionais: um banco sem ela não as devolve.
+  track_stock?: boolean;
+  stock_type?: StockType;
+  minimum_stock?: number;
+  sale_mode?: SaleMode;
+  allow_negative_stock?: boolean;
 };
+
+export type VariantRow = {
+  id: string;
+  product_id: string;
+  size: string | null;
+  color: string | null;
+  sku: string;
+  stock_quantity: number;
+  minimum_stock: number;
+  is_active: boolean;
+};
+
+export function mapVariantRow(row: VariantRow): ProductVariant {
+  return {
+    id: row.id,
+    size: row.size ?? undefined,
+    color: row.color ?? undefined,
+    sku: row.sku,
+    stockQuantity: row.stock_quantity,
+    minimumStock: row.minimum_stock,
+    isActive: row.is_active,
+  };
+}
+
+/**
+ * Busca as variações dos produtos indicados, agrupadas por product_id.
+ * Try/catch PRÓPRIO: sem a migration 0002 a tabela não existe e a vitrine
+ * precisa seguir de pé — devolve mapa vazio e loga uma vez.
+ */
+async function fetchVariantsByProduct(
+  productIds: string[],
+  onlyActive: boolean
+): Promise<Map<string, ProductVariant[]>> {
+  const map = new Map<string, ProductVariant[]>();
+  if (productIds.length === 0) return map;
+  try {
+    let query = anonClient()
+      .from("product_variants")
+      .select("*")
+      .in("product_id", productIds)
+      .order("created_at", { ascending: true });
+    if (onlyActive) query = query.eq("is_active", true);
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    for (const row of (data ?? []) as VariantRow[]) {
+      const list = map.get(row.product_id) ?? [];
+      list.push(mapVariantRow(row));
+      map.set(row.product_id, list);
+    }
+  } catch (err) {
+    console.error("[catalogo] Falha ao ler product_variants (migration 0002 aplicada?):", err);
+  }
+  return map;
+}
 
 /** Converte a linha do banco para o tipo do app. `numeric` chega como string. */
 export function mapRow(row: ProductRow): Product {
@@ -75,6 +142,11 @@ export function mapRow(row: ProductRow): Product {
     fit: row.fit ?? undefined,
     featured: row.featured,
     newArrival: row.new_arrival,
+    trackStock: row.track_stock ?? false,
+    stockType: row.stock_type ?? "single",
+    saleMode: row.sale_mode ?? "in_stock",
+    allowNegativeStock: row.allow_negative_stock ?? false,
+    minimumStock: row.minimum_stock ?? 0,
   };
 }
 
@@ -87,7 +159,16 @@ async function fetchCatalog(): Promise<Product[]> {
       .is("archived_at", null)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
-    return (data as ProductRow[]).map(mapRow);
+    const rows = data as ProductRow[];
+    // Variações só dos produtos com controle ligado; a falha da tabela
+    // (migration 0002 ausente) não derruba nada — segue sem variants.
+    const tracked = rows.filter((r) => r.track_stock).map((r) => r.id);
+    const variants = await fetchVariantsByProduct(tracked, true);
+    return rows.map((row) => {
+      const product = mapRow(row);
+      const list = variants.get(row.id);
+      return list ? { ...product, variants: list } : product;
+    });
   } catch (err) {
     // Banco fora do ar não pode derrubar a vitrine: cai no estático e loga.
     console.error("[catalogo] Falha ao ler o Supabase, usando data/products.ts:", err);
@@ -111,7 +192,11 @@ export async function getProduct(slug: string): Promise<Product | undefined> {
  * Usar em páginas com `export const dynamic = "force-dynamic"`.
  * Devolve também archived_at, que o tipo público não carrega.
  */
-export type AdminProduct = Product & { archivedAt: string | null };
+export type AdminProduct = Product & {
+  archivedAt: string | null;
+  /** No painel as variações vêm sempre (inclusive inativas); [] sem controle. */
+  variants: ProductVariant[];
+};
 
 export async function getAdminCatalog(): Promise<AdminProduct[]> {
   const { data, error } = await anonClient()
@@ -119,8 +204,14 @@ export async function getAdminCatalog(): Promise<AdminProduct[]> {
     .select("*")
     .order("created_at", { ascending: true });
   if (error) throw new Error(`Erro ao carregar o catálogo: ${error.message}`);
-  return (data as ProductRow[]).map((row) => ({
+  const rows = data as ProductRow[];
+  const variants = await fetchVariantsByProduct(
+    rows.map((r) => r.id),
+    false
+  );
+  return rows.map((row) => ({
     ...mapRow(row),
     archivedAt: row.archived_at,
+    variants: variants.get(row.id) ?? [],
   }));
 }

@@ -1,5 +1,44 @@
 export type StockStatus = "available" | "low_stock" | "out_of_stock" | "on_request"
 
+/** Como o produto é vendido: pronta entrega, só encomenda, ou os dois. */
+export type SaleMode = "in_stock" | "on_request" | "both"
+
+/** Estoque único (uma quantidade) ou por combinação tamanho × cor. */
+export type StockType = "single" | "per_variant"
+
+/**
+ * Uma combinação vendável do produto. No "estoque único" existe exatamente
+ * uma variação com size/color ausentes. Espelha public.product_variants.
+ */
+export type ProductVariant = {
+  id: string
+  size?: string
+  color?: string
+  sku: string
+  stockQuantity: number
+  minimumStock: number
+  isActive: boolean
+}
+
+export type StockMovementType = "entry" | "exit"
+
+/** Linha do histórico imutável (public.stock_movements), já em camelCase. */
+export type StockMovement = {
+  id: string
+  productId: string
+  variantId: string
+  movementType: StockMovementType
+  reason: string
+  quantity: number
+  previousQuantity: number
+  balanceAfter: number
+  notes?: string
+  userEmail: string
+  createdAt: string
+  /** Dados da variação, quando a leitura faz o join. */
+  variant?: { size?: string; color?: string; sku: string }
+}
+
 export type Badge =
   | "novo"
   | "reposicao"
@@ -32,6 +71,17 @@ export type Product = {
   fit?: string
   featured?: boolean
   newArrival?: boolean
+  // ── Controle de estoque (migration 0002) ──────────────────────────────────
+  // Todos opcionais: o catálogo estático (data/products.ts) e bancos sem a
+  // migration continuam válidos — sem estes campos, o site se comporta como
+  // antes (stockStatus manual, nenhuma variação desabilitada).
+  trackStock?: boolean
+  stockType?: StockType
+  saleMode?: SaleMode
+  allowNegativeStock?: boolean
+  minimumStock?: number
+  /** Variações ativas com saldo — presentes só quando trackStock. */
+  variants?: ProductVariant[]
 }
 
 export type Category = {

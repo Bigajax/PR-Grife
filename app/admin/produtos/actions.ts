@@ -6,6 +6,7 @@ import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
 import { supabaseUrl } from "@/lib/supabase/env";
 import { PRODUCTS_TAG } from "@/lib/products/db";
+import { buildVariantSku } from "@/lib/stock";
 import { categories } from "@/data/categories";
 
 /**
@@ -22,8 +23,11 @@ async function requireUser() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Sessão expirada — entre novamente no painel.");
-  return supabase;
+  // Devolve também o user: as movimentações de estoque registram o e-mail.
+  return { supabase, user };
 }
+
+type AdminClient = Awaited<ReturnType<typeof requireUser>>["supabase"];
 
 // { expire: 0 } expira o cache na hora: quem salvou precisa ver a mudança na
 // vitrine imediatamente (Next 16 exige o 2º argumento de revalidateTag).
@@ -72,6 +76,25 @@ const productSchema = z
     fit: z.string().trim().max(40).nullable(),
     featured: z.boolean(),
     newArrival: z.boolean(),
+    // ── Controle de estoque (migration 0002) ────────────────────────────────
+    saleMode: z.enum(["in_stock", "on_request", "both"]),
+    trackStock: z.boolean(),
+    stockType: z.enum(["single", "per_variant"]),
+    minimumStock: z.number().int().min(0).max(99999),
+    allowNegativeStock: z.boolean(),
+    // O saldo NÃO viaja aqui: combinação nova traz um estoque inicial (vira
+    // movimentação); as existentes só atualizam mínimo/ativo.
+    variants: z
+      .array(
+        z.object({
+          size: z.string().trim().min(1).max(12).nullable(),
+          color: z.string().trim().min(1).max(30).nullable(),
+          minimumStock: z.number().int().min(0).max(99999),
+          isActive: z.boolean(),
+          initialQuantity: z.number().int().min(0).max(999999),
+        })
+      )
+      .max(21 * 13),
   })
   .refine(
     (d) => d.oldPrice == null || d.price == null || d.oldPrice > d.price,
@@ -98,18 +121,33 @@ function toRow(data: ProductInput) {
     thumbnail: data.images[0] ?? "",
     available_sizes: data.availableSizes,
     colors: data.colors,
-    stock_status: data.stockStatus,
+    stock_status: stockStatusForRow(data),
     material: data.material,
     fit: data.fit,
     featured: data.featured,
     new_arrival: data.newArrival,
+    track_stock: data.trackStock,
+    stock_type: data.stockType,
+    minimum_stock: data.minimumStock,
+    sale_mode: data.saleMode,
+    allow_negative_stock: data.allowNegativeStock,
     updated_at: new Date().toISOString(),
   };
 }
 
+/**
+ * Disponibilidade gravada junto com a linha. Com controle de estoque o valor
+ * manual é só provisório — refresh_product_stock_status corrige em seguida.
+ * Sem controle, encomenda pura força on_request (coerência sem UI extra).
+ */
+function stockStatusForRow(data: ProductInput) {
+  if (!data.trackStock && data.saleMode === "on_request") return "on_request";
+  return data.stockStatus;
+}
+
 /** Slug único: acrescenta -2, -3... enquanto houver conflito. */
 async function uniqueSlug(
-  supabase: Awaited<ReturnType<typeof requireUser>>,
+  supabase: AdminClient,
   base: string,
   ignoreId?: string
 ): Promise<string> {
@@ -125,9 +163,7 @@ async function uniqueSlug(
 }
 
 /** Próximo código interno PRG-XXXX. */
-async function nextProductCode(
-  supabase: Awaited<ReturnType<typeof requireUser>>
-): Promise<string> {
+async function nextProductCode(supabase: AdminClient): Promise<string> {
   const { data } = await supabase
     .from("products")
     .select("product_code")
@@ -139,11 +175,120 @@ async function nextProductCode(
   return `PRG-${String(n).padStart(4, "0")}`;
 }
 
+type VariantRowLite = {
+  id: string;
+  size: string | null;
+  color: string | null;
+  stock_quantity: number;
+};
+
+/**
+ * Sincroniza product_variants com o cadastro. O saldo NUNCA é escrito aqui:
+ * combinação nova nasce zerada e o estoque inicial entra como movimentação
+ * (register_stock_movement) — o histórico registra até o primeiro saldo.
+ * Combinações removidas do cadastro: delete; com histórico (FK), desativa.
+ * Com trackStock desligado nada é tocado — religar reencontra tudo intacto.
+ */
+async function syncVariants(
+  supabase: AdminClient,
+  productId: string,
+  productCode: string,
+  data: ProductInput,
+  userEmail: string
+): Promise<void> {
+  if (!data.trackStock) return;
+
+  const key = (size: string | null, color: string | null) => `${size ?? ""}|${color ?? ""}`;
+
+  // Combinações desejadas na ordem do cadastro; estoque único = linha nula.
+  const wanted = new Map(
+    (data.stockType === "single"
+      ? [{ size: null, color: null, minimumStock: data.minimumStock, isActive: true, initialQuantity: data.variants[0]?.initialQuantity ?? 0 }]
+      : data.variants
+    ).map((v) => [key(v.size, v.color), v])
+  );
+
+  const { data: existingRows, error: readError } = await supabase
+    .from("product_variants")
+    .select("id, size, color, stock_quantity")
+    .eq("product_id", productId);
+  if (readError) throw new Error(migrationHint(readError.message));
+  const existing = new Map(
+    ((existingRows ?? []) as VariantRowLite[]).map((row) => [key(row.size, row.color), row])
+  );
+
+  // SKUs já usados no produto continuam valendo; os novos desviam deles.
+  const taken = new Set<string>();
+
+  for (const [combo, desired] of wanted) {
+    const found = existing.get(combo);
+    if (found) {
+      const { error } = await supabase
+        .from("product_variants")
+        .update({ minimum_stock: desired.minimumStock, is_active: desired.isActive })
+        .eq("id", found.id);
+      if (error) throw new Error(error.message);
+      continue;
+    }
+    const sku = buildVariantSku(productCode, desired.size, desired.color, taken);
+    const { data: created, error } = await supabase
+      .from("product_variants")
+      .insert({
+        product_id: productId,
+        size: desired.size,
+        color: desired.color,
+        sku,
+        stock_quantity: 0,
+        minimum_stock: desired.minimumStock,
+        is_active: desired.isActive,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(migrationHint(error.message));
+    if (desired.initialQuantity > 0) {
+      const { error: rpcError } = await supabase.rpc("register_stock_movement", {
+        p_variant_id: created.id,
+        p_movement_type: "entry",
+        p_quantity: desired.initialQuantity,
+        p_reason: "inventory_adjustment",
+        p_notes: "Estoque inicial do cadastro",
+        p_user_email: userEmail,
+      });
+      if (rpcError) throw new Error(rpcError.message);
+    }
+  }
+
+  // Removidas do cadastro: apaga; com movimentações (FK 23503), só desativa.
+  for (const [combo, row] of existing) {
+    if (wanted.has(combo)) continue;
+    const { error } = await supabase.from("product_variants").delete().eq("id", row.id);
+    if (error) {
+      const { error: updateError } = await supabase
+        .from("product_variants")
+        .update({ is_active: false })
+        .eq("id", row.id);
+      if (updateError) throw new Error(updateError.message);
+    }
+  }
+
+  const { error: refreshError } = await supabase.rpc("refresh_product_stock_status", {
+    p_product_id: productId,
+  });
+  if (refreshError) throw new Error(refreshError.message);
+}
+
+/** Erro de tabela/coluna inexistente vira instrução acionável. */
+function migrationHint(message: string): string {
+  return /does not exist|schema cache/i.test(message)
+    ? `${message} — rode supabase/migrations/0002_estoque.sql no SQL Editor (docs/admin.md).`
+    : message;
+}
+
 export async function createProduct(
   input: ProductInput
 ): Promise<ActionResult & { id?: string }> {
   try {
-    const supabase = await requireUser();
+    const { supabase, user } = await requireUser();
     const data = productSchema.parse(input);
     const slug = await uniqueSlug(supabase, data.name);
     const productCode = await nextProductCode(supabase);
@@ -153,7 +298,9 @@ export async function createProduct(
       .insert({ ...toRow(data), slug, product_code: productCode })
       .select("id")
       .single();
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(migrationHint(error.message));
+
+    await syncVariants(supabase, row.id, productCode, data, user.email ?? "");
 
     bumpCatalog();
     return { ok: true, id: row.id };
@@ -167,11 +314,18 @@ export async function saveProduct(
   input: ProductInput
 ): Promise<ActionResult> {
   try {
-    const supabase = await requireUser();
+    const { supabase, user } = await requireUser();
     const data = productSchema.parse(input);
 
-    const { error } = await supabase.from("products").update(toRow(data)).eq("id", id);
-    if (error) throw new Error(error.message);
+    const { data: row, error } = await supabase
+      .from("products")
+      .update(toRow(data))
+      .eq("id", id)
+      .select("product_code")
+      .single();
+    if (error) throw new Error(migrationHint(error.message));
+
+    await syncVariants(supabase, id, row.product_code, data, user.email ?? "");
 
     bumpCatalog();
     return { ok: true };
@@ -183,7 +337,7 @@ export async function saveProduct(
 /** Arquivar tira da vitrine sem apagar; restaurar devolve. */
 export async function setArchived(id: string, archived: boolean): Promise<ActionResult> {
   try {
-    const supabase = await requireUser();
+    const { supabase } = await requireUser();
     const { error } = await supabase
       .from("products")
       .update({ archived_at: archived ? new Date().toISOString() : null })
@@ -198,9 +352,17 @@ export async function setArchived(id: string, archived: boolean): Promise<Action
 
 export async function deleteProduct(id: string): Promise<ActionResult> {
   try {
-    const supabase = await requireUser();
+    const { supabase } = await requireUser();
     const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      // FK RESTRICT de stock_movements: o histórico é registro contábil.
+      if (error.code === "23503") {
+        throw new Error(
+          "Este produto tem histórico de estoque — use Arquivar para tirá-lo da vitrine preservando o registro."
+        );
+      }
+      throw new Error(error.message);
+    }
     bumpCatalog();
     return { ok: true };
   } catch (e) {
@@ -211,7 +373,7 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
 /** Cópia nasce arquivada (fora da vitrine) para ser editada com calma. */
 export async function duplicateProduct(id: string): Promise<ActionResult> {
   try {
-    const supabase = await requireUser();
+    const { supabase } = await requireUser();
     const { data: original, error: readError } = await supabase
       .from("products")
       .select("*")
@@ -224,14 +386,50 @@ export async function duplicateProduct(id: string): Promise<ActionResult> {
     const slug = await uniqueSlug(supabase, name);
     const productCode = await nextProductCode(supabase);
 
-    const { error } = await supabase.from("products").insert({
-      ...rest,
-      name,
-      slug,
-      product_code: productCode,
-      archived_at: new Date().toISOString(),
-    });
+    // Cópia com controle de estoque nasce ZERADA (regra do proprietário):
+    // o status copiado mentiria, então já grava o derivado do saldo zero.
+    const stockStatus = original.track_stock
+      ? original.sale_mode === "in_stock"
+        ? "out_of_stock"
+        : "on_request"
+      : rest.stock_status;
+
+    const { data: copy, error } = await supabase
+      .from("products")
+      .insert({
+        ...rest,
+        name,
+        slug,
+        product_code: productCode,
+        stock_status: stockStatus,
+        archived_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
     if (error) throw new Error(error.message);
+
+    // Espelha as variações do original com saldo zero e SKU do novo código.
+    if (original.track_stock) {
+      const { data: variants, error: variantsError } = await supabase
+        .from("product_variants")
+        .select("size, color, minimum_stock, is_active")
+        .eq("product_id", id);
+      if (variantsError) throw new Error(migrationHint(variantsError.message));
+      if (variants && variants.length > 0) {
+        const taken = new Set<string>();
+        const rows = variants.map((v) => ({
+          product_id: copy.id,
+          size: v.size,
+          color: v.color,
+          sku: buildVariantSku(productCode, v.size, v.color, taken),
+          stock_quantity: 0,
+          minimum_stock: v.minimum_stock,
+          is_active: v.is_active,
+        }));
+        const { error: insertError } = await supabase.from("product_variants").insert(rows);
+        if (insertError) throw new Error(insertError.message);
+      }
+    }
 
     bumpCatalog();
     return { ok: true };

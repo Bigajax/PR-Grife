@@ -7,6 +7,7 @@ import { X } from "lucide-react"
 import type { Product } from "@/types"
 import { formatPrice } from "@/lib/format"
 import { isOnSale } from "@/lib/catalog"
+import { isOptionAvailable } from "@/lib/stock"
 import { buildWhatsAppLink, buildOrderMessage } from "@/lib/whatsapp"
 import { useFocusTrap } from "@/hooks/useFocusTrap"
 import { useUtm } from "@/hooks/useUtm"
@@ -112,21 +113,28 @@ export function QuickViewModal({
                   Cor
                 </legend>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {product.availableColors.map((c) => (
-                    <button
-                      key={c.name}
-                      type="button"
-                      onClick={() => setColor(c.name)}
-                      aria-pressed={corResolvida === c.name}
-                      className={`min-h-10 border px-3 text-sm transition-colors ${
-                        corResolvida === c.name
-                          ? "border-text-primary font-semibold text-text-primary"
-                          : "border-border text-text-secondary hover:border-accent"
-                      }`}
-                    >
-                      {c.name}
-                    </button>
-                  ))}
+                  {product.availableColors.map((c) => {
+                    const esgotada = !isOptionAvailable(product, { size, color: c.name })
+                    return (
+                      <button
+                        key={c.name}
+                        type="button"
+                        onClick={() => setColor(c.name)}
+                        disabled={esgotada}
+                        aria-pressed={corResolvida === c.name}
+                        aria-label={esgotada ? `${c.name} — esgotada` : undefined}
+                        className={`min-h-10 border px-3 text-sm transition-colors ${
+                          esgotada
+                            ? "cursor-not-allowed border-border text-text-secondary/50 line-through"
+                            : corResolvida === c.name
+                              ? "border-text-primary font-semibold text-text-primary"
+                              : "border-border text-text-secondary hover:border-accent"
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    )
+                  })}
                 </div>
               </fieldset>
             )}
@@ -137,21 +145,28 @@ export function QuickViewModal({
                   Tamanho
                 </legend>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {product.availableSizes.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setSize(s)}
-                      aria-pressed={size === s}
-                      className={`min-h-10 min-w-10 border px-3 text-sm transition-colors ${
-                        size === s
-                          ? "border-text-primary font-semibold text-text-primary"
-                          : "border-border text-text-secondary hover:border-accent"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                  {product.availableSizes.map((s) => {
+                    const esgotado = !isOptionAvailable(product, { size: s, color: corResolvida })
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSize(s)}
+                        disabled={esgotado}
+                        aria-pressed={size === s}
+                        aria-label={esgotado ? `${s} — esgotado` : undefined}
+                        className={`min-h-10 min-w-10 border px-3 text-sm transition-colors ${
+                          esgotado
+                            ? "cursor-not-allowed border-border text-text-secondary/50 line-through"
+                            : size === s
+                              ? "border-text-primary font-semibold text-text-primary"
+                              : "border-border text-text-secondary hover:border-accent"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    )
+                  })}
                 </div>
               </fieldset>
             )}

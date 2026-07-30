@@ -7,10 +7,12 @@ import { categoryLabel } from "@/data/categories"
 import { departmentOfCategory, departments } from "@/data/departments"
 import { formatPrice } from "@/lib/format"
 import { isOnSale } from "@/lib/catalog"
+import { totalStock } from "@/lib/stock"
 import type { AdminProduct } from "@/lib/products/db"
 import { setArchived, deleteProduct, duplicateProduct } from "@/app/admin/produtos/actions"
 import { ProductForm } from "@/components/admin/ProductForm"
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog"
+import { ProductStockPanel } from "@/components/admin/ProductStockPanel"
 
 const stockLabel: Record<string, string> = {
   available: "Pronta entrega",
@@ -26,6 +28,9 @@ const quickFilters = [
   { id: "arquivados", label: "Arquivados" },
   { id: "ofertas", label: "Em oferta" },
   { id: "sem-foto", label: "Sem foto" },
+  { id: "estoque-baixo", label: "Estoque baixo" },
+  { id: "esgotados", label: "Esgotados" },
+  { id: "encomenda", label: "Sob encomenda" },
 ] as const
 
 function norm(text: string): string {
@@ -51,6 +56,7 @@ export function ProductsTable({
   const [editing, setEditing] = useState<AdminProduct | null>(null)
   const [creating, setCreating] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<AdminProduct | null>(null)
+  const [stockPanel, setStockPanel] = useState<AdminProduct | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -61,6 +67,9 @@ export function ProductsTable({
       if (filter === "arquivados" && !p.archivedAt) return false
       if (filter === "ofertas" && !isOnSale(p)) return false
       if (filter === "sem-foto" && p.images.length > 0) return false
+      if (filter === "estoque-baixo" && p.stockStatus !== "low_stock") return false
+      if (filter === "esgotados" && p.stockStatus !== "out_of_stock") return false
+      if (filter === "encomenda" && p.stockStatus !== "on_request") return false
       if (dep !== "todos" && departmentOfCategory(p.category)?.slug !== dep) return false
       if (needle) {
         const hay = norm(`${p.name} ${p.brand} ${categoryLabel(p.category)} ${p.productCode}`)
@@ -168,6 +177,13 @@ export function ProductsTable({
                     {p.price != null ? formatPrice(p.price) : "sem preço"}
                   </span>
                   <span className="text-text-secondary">{stockLabel[p.stockStatus]}</span>
+                  {p.trackStock && (
+                    <span className={p.stockStatus === "low_stock" || p.stockStatus === "out_of_stock" ? "font-semibold text-alert" : "text-text-secondary"}>
+                      {totalStock(p)} un ·{" "}
+                      {p.variants.filter((v) => v.isActive).length}{" "}
+                      {p.variants.filter((v) => v.isActive).length === 1 ? "variação" : "variações"}
+                    </span>
+                  )}
                   {isOnSale(p) && <span className="font-semibold text-accent-strong">Oferta</span>}
                   {p.newArrival && <span className="text-text-secondary">Novidade</span>}
                   {p.featured && <span className="text-text-secondary">Destaque</span>}
@@ -175,6 +191,16 @@ export function ProductsTable({
                 </p>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-1.5 text-xs font-semibold">
+                {p.trackStock && p.variants.some((v) => v.isActive) && (
+                  <button
+                    type="button"
+                    onClick={() => setStockPanel(p)}
+                    disabled={busy}
+                    className="border border-border bg-white px-3 py-2 text-accent-strong hover:bg-bg-surface disabled:opacity-50"
+                  >
+                    Estoque
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setEditing(p)}
@@ -230,6 +256,10 @@ export function ProductsTable({
             setEditing(null)
           }}
         />
+      )}
+
+      {stockPanel && (
+        <ProductStockPanel product={stockPanel} onClose={() => setStockPanel(null)} />
       )}
 
       {confirmDelete && (

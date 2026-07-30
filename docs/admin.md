@@ -9,9 +9,14 @@ de `data/products.ts` — só o painel fica indisponível.
 1. **Criar o projeto** em [supabase.com](https://supabase.com) (plano gratuito
    atende). Guarde a *Project URL* e a *anon key* (Settings → API).
 
-2. **Rodar a migration**: abra o *SQL Editor* do projeto, cole o conteúdo de
-   `supabase/migrations/0001_catalogo.sql` e execute. Isso cria a tabela
-   `products`, as regras de acesso e o bucket público `produtos` para as fotos.
+2. **Rodar as migrations**: abra o *SQL Editor* do projeto e execute, na
+   ordem, o conteúdo de cada arquivo de `supabase/migrations/`:
+   - `0001_catalogo.sql` — tabela `products`, regras de acesso e o bucket
+     público `produtos` para as fotos.
+   - `0002_estoque.sql` — controle de estoque: variações por tamanho/cor,
+     histórico de movimentações e o cálculo automático de disponibilidade.
+     É retrocompatível: pode rodar num banco já em uso sem afetar os
+     produtos existentes (o controle nasce desligado em todos).
 
 3. **Criar o usuário do painel**: em *Authentication → Users → Add user*,
    cadastre o e-mail e uma senha provisória (marque *Auto confirm*). A senha
@@ -37,6 +42,9 @@ de `data/products.ts` — só o painel fica indisponível.
 ## Uso diário
 
 - `/admin` — visão geral com contagens (publicados, ofertas, sem foto...).
+- `/admin/estoque` — saldo por variação (tamanho/cor), indicadores e
+  movimentações. Todo ajuste de quantidade passa por **Entrada** ou **Saída**
+  com motivo — o histórico fica registrado e não pode ser editado.
 - `/admin/produtos` — cadastrar, editar, duplicar, arquivar e excluir.
   - O produto é cadastrado **uma única vez** (departamento → categoria →
     marca) e aparece automaticamente em `/catalogo`, `/catalogo/<depto>`,

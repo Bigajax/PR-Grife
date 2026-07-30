@@ -3,13 +3,14 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Shirt, Users, Settings, ExternalLink, LogOut, Menu, X } from "lucide-react"
+import { LayoutDashboard, Shirt, Boxes, Users, Settings, ExternalLink, LogOut, Menu, X } from "lucide-react"
 import { signOut } from "@/app/admin/actions"
 import { DiamondMark } from "@/components/Logo"
 
 const items = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { href: "/admin/produtos", label: "Produtos", icon: Shirt },
+  { href: "/admin/estoque", label: "Estoque", icon: Boxes },
   { href: "/admin/usuarios", label: "Usuários", icon: Users },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ]
