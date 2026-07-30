@@ -16,11 +16,12 @@ import {
   showcaseBrandsWithProducts,
   clothingSizes,
   shoeSizes,
-  allColors,
+  allColorsFor,
   sortOptions,
   type CatalogFilters,
   type SortKey,
 } from "@/lib/catalog"
+import { useCatalog } from "@/components/CatalogProvider"
 import { ProductCard } from "@/components/ProductCard"
 import { ActiveFilters } from "@/components/ActiveFilters"
 import { BrandLogo } from "@/components/BrandLogos"
@@ -57,6 +58,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const catalog = useCatalog()
 
   const lockedKeys = useMemo(
     () => Object.keys(locked) as (keyof CatalogFilters)[],
@@ -68,7 +70,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [searchParams]
   )
-  const results = useMemo(() => queryCatalog(filters), [filters])
+  const results = useMemo(() => queryCatalog(catalog, filters), [catalog, filters])
   const activeCount = countActiveFilters(filters, lockedKeys)
 
   const { items: selection, openDrawer } = useSelection()
@@ -148,10 +150,10 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
   const quickCategories = isLocked("categoria")
     ? []
     : locked.marca
-      ? categoriesWithProductsForBrand(locked.marca)
+      ? categoriesWithProductsForBrand(catalog, locked.marca)
       : locked.departamento
-        ? categoriesWithProducts(departmentBySlug(locked.departamento)?.categoryIds)
-        : categoriesWithProducts()
+        ? categoriesWithProducts(catalog, departmentBySlug(locked.departamento)?.categoryIds)
+        : categoriesWithProducts(catalog)
 
   const filterPanel = (
     <div className="flex flex-col gap-6">
@@ -171,7 +173,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
 
       {!isLocked("marca") && (
         <FilterGroup legend="Marca">
-          {brandsInCatalog.map((b) => (
+          {brandsInCatalog(catalog).map((b) => (
             <Chip key={b} active={filters.marca === b} onClick={() => toggleParam("marca", b)}>
               {b}
             </Chip>
@@ -188,7 +190,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
       </FilterGroup>
 
       <FilterGroup legend="Cor">
-        {allColors.map((c) => (
+        {allColorsFor(catalog).map((c) => (
           <button
             key={c.name}
             type="button"
@@ -319,7 +321,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
             </span>
           </button>
 
-          {showcaseBrandsWithProducts.map((item) => {
+          {showcaseBrandsWithProducts(catalog).map((item) => {
             const ativa = filters.marca === item.slug || item.brands.includes(filters.marca ?? "")
             return (
               <button

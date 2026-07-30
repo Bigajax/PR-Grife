@@ -9,7 +9,8 @@ import { Logo } from "@/components/Logo"
 import { WhatsAppCta } from "@/components/WhatsAppCta"
 import { NavDropdown } from "@/components/NavDropdown"
 import { templates } from "@/lib/whatsapp"
-import { queryCatalog, categoryHref, showcaseBrands } from "@/lib/catalog"
+import { queryCatalog, categoryHref, showcaseBrandsFor } from "@/lib/catalog"
+import { useCatalog } from "@/components/CatalogProvider"
 import { departments, categoriesOfDepartment } from "@/data/departments"
 import { formatPrice } from "@/lib/format"
 import { track } from "@/lib/tracking"
@@ -30,6 +31,9 @@ export function Header() {
   const [openSection, setOpenSection] = useState<string | null>(null)
   const [term, setTerm] = useState("")
   const { items, openDrawer } = useSelection()
+  const catalog = useCatalog()
+  // Marca nova cadastrada no painel entra na navegação automaticamente.
+  const navBrands = useMemo(() => showcaseBrandsFor(catalog), [catalog])
   const pathname = usePathname()
   const router = useRouter()
   const searchRef = useRef<HTMLInputElement>(null)
@@ -58,8 +62,8 @@ export function Header() {
   const liveResults = useMemo(() => {
     const q = term.trim()
     if (q.length < 2) return null
-    return queryCatalog({ q }).slice(0, 6)
-  }, [term])
+    return queryCatalog(catalog, { q }).slice(0, 6)
+  }, [catalog, term])
 
   const closeAll = () => {
     setMenuOpen(false)
@@ -165,7 +169,7 @@ export function Header() {
 
           <NavDropdown label="Marcas" href="/#marcas" panelClassName="w-60 px-7">
             <ul className="flex flex-col gap-2.5">
-              {showcaseBrands.map((item) => (
+              {navBrands.map((item) => (
                 <li key={item.slug}>
                   <Link
                     href={`/catalogo/marca/${item.slug}`}
@@ -402,7 +406,7 @@ export function Header() {
               open={openSection === "marcas"}
               onToggle={() => setOpenSection((cur) => (cur === "marcas" ? null : "marcas"))}
             >
-              {showcaseBrands.map((item) => (
+              {navBrands.map((item) => (
                 <Link
                   key={item.slug}
                   href={`/catalogo/marca/${item.slug}`}

@@ -7,7 +7,7 @@ import { useSelection } from "@/hooks/useSelection"
 import { useFocusTrap } from "@/hooks/useFocusTrap"
 import { useUtm } from "@/hooks/useUtm"
 import { buildWhatsAppLink, buildOrderMessage } from "@/lib/whatsapp"
-import { productById } from "@/data/products"
+import { useProductLookup } from "@/components/CatalogProvider"
 import { formatPrice } from "@/lib/format"
 import { track } from "@/lib/tracking"
 import { DiamondMark } from "@/components/Logo"
@@ -16,6 +16,7 @@ import { DiamondMark } from "@/components/Logo"
 // o fechamento acontece no WhatsApp.
 export function SelectionDrawer() {
   const { items, isOpen, closeDrawer, remove, update } = useSelection()
+  const productById = useProductLookup()
   const utm = useUtm()
   const ref = useRef<HTMLDivElement>(null)
   useFocusTrap(ref, isOpen, closeDrawer)

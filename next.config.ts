@@ -13,6 +13,23 @@ const CATEGORIAS_ROUPAS = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    // Fotos de produto enviadas pelo painel vivem no Storage do Supabase.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
+  experimental: {
+    serverActions: {
+      // Upload de foto do painel vai por Server Action (FormData). O teto de
+      // validação no servidor é 8 MB; a folga cobre o overhead do multipart.
+      bodySizeLimit: "9mb",
+    },
+  },
   async redirects() {
     return [
       // Todo o catálogo é masculino — a rota dedicada saiu.

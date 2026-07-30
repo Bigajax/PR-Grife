@@ -90,11 +90,21 @@ export const siteConfig = {
       "Frasco de Scandal Pour Homme com tampa em formato de coroa dourada, sobre fundo de madeira escura",
   },
   // ── Recomendados na home ────────────────────────────────────────────────────
-  // Curadoria manual do carrossel, por id de produto (data/products.ts).
-  // A lista é saneada em tempo de render: id inexistente ou peça esgotada é
-  // descartada, e o que faltar para 10 é completado com destaques e novidades
-  // do catálogo. Deixar vazio também funciona.
-  homeRecommended: ["p03", "p10", "p11", "p15", "p16", "p17", "p19", "p01"],
+  // Curadoria manual do carrossel, por SLUG de produto (o slug é estável entre
+  // o catálogo estático e o banco; o id não é). A lista é saneada em tempo de
+  // render: slug inexistente ou peça esgotada é descartada, e o que faltar
+  // para 10 é completado com destaques e novidades. Deixar vazio também
+  // funciona.
+  homeRecommended: [
+    "camisa-linho-terracota",
+    "jaqueta-track-tommy",
+    "bomber-off-white",
+    "tenis-hilfiger-branco",
+    "tenis-hilfiger-listras",
+    "bone-aba-curva-bege",
+    "perfume-le-male-elixir",
+    "camiseta-essencial-branca",
+  ],
   // ── Par de cards editoriais ─────────────────────────────────────────────────
   // Exatamente dois itens. Existe para dar destaque a categorias que não entram
   // no carrossel de categorias — se colocar aqui uma que já está lá, a home

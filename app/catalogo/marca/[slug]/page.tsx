@@ -3,7 +3,9 @@ import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import { siteConfig } from "@/data/site.config"
 import { brandLogoAssets } from "@/data/brands"
-import { showcaseBrands } from "@/lib/catalog"
+import { products as staticProducts } from "@/data/products"
+import { showcaseBrandsFor } from "@/lib/catalog"
+import { getCatalog } from "@/lib/products/db"
 import { Breadcrumb } from "@/components/Breadcrumb"
 import { BrandLogo } from "@/components/BrandLogos"
 import { CatalogView } from "@/app/catalogo/CatalogView"
@@ -12,8 +14,11 @@ import { CatalogView } from "@/app/catalogo/CatalogView"
 // é o que faz "tommy-hilfiger" agrupar Tommy Hilfiger + Tommy Jeans via
 // brandNamesForFilter. Rota estática /catalogo/marca vence a dinâmica
 // /catalogo/[departamento] por precedência do App Router.
+// Marca nova criada no painel ganha página sob demanda (dynamicParams).
+export const dynamicParams = true
+
 export function generateStaticParams() {
-  return showcaseBrands.map((item) => ({ slug: item.slug }))
+  return showcaseBrandsFor(staticProducts).map((item) => ({ slug: item.slug }))
 }
 
 export async function generateMetadata({
@@ -22,7 +27,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const item = showcaseBrands.find((i) => i.slug === slug)
+  const item = showcaseBrandsFor(await getCatalog()).find((i) => i.slug === slug)
   if (!item) return {}
   return {
     title: `${item.name} | ${siteConfig.name}`,
@@ -37,7 +42,7 @@ export default async function MarcaPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const item = showcaseBrands.find((i) => i.slug === slug)
+  const item = showcaseBrandsFor(await getCatalog()).find((i) => i.slug === slug)
   if (!item) notFound()
 
   return (

@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next"
 import { Cormorant_Garamond, Manrope } from "next/font/google"
 import "./globals.css"
 import { siteConfig } from "@/data/site.config"
+import { getCatalog } from "@/lib/products/db"
+import { CatalogProvider } from "@/components/CatalogProvider"
 import { Providers } from "@/components/Providers"
 import { TrackingScripts } from "@/components/TrackingScripts"
 import { AnnouncementBar } from "@/components/AnnouncementBar"
@@ -62,11 +64,15 @@ const localBusinessJsonLd = {
   sameAs: [siteConfig.instagram],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Busca única do catálogo por request (cacheada com a tag "products").
+  // O CatalogProvider distribui para os client components; server components
+  // chamam getCatalog() direto.
+  const products = await getCatalog().catch(() => [])
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${manrope.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
@@ -77,15 +83,17 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
         />
-        <Providers>
-          <AnnouncementBar />
-          <Header />
-          {children}
-          <Footer />
-          <FloatingWhatsApp />
-          <SelectionDrawer />
-          <ConsentBanner />
-        </Providers>
+        <CatalogProvider products={products}>
+          <Providers>
+            <AnnouncementBar />
+            <Header />
+            {children}
+            <Footer products={products} />
+            <FloatingWhatsApp />
+            <SelectionDrawer />
+            <ConsentBanner />
+          </Providers>
+        </CatalogProvider>
         <TrackingScripts />
       </body>
     </html>

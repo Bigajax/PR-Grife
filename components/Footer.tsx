@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { MessageCircle } from "lucide-react"
+import type { Product } from "@/types"
 import { siteConfig } from "@/data/site.config"
 import { faqItems } from "@/data/faq"
 import { categoriesWithProducts, categoryHref } from "@/lib/catalog"
@@ -27,36 +28,40 @@ function InstagramIcon({ className }: { className?: string }) {
   )
 }
 
-const columns: { title: string; links: FooterLink[] }[] = [
-  {
-    title: "Navegação",
-    links: [
-      { label: "Todas as peças", href: "/catalogo" },
-      { label: "Novidades", href: "/novidades" },
-      { label: "Ofertas", href: "/ofertas" },
-      { label: "Marcas", href: "/#marcas" },
-    ],
-  },
-  {
-    title: "Categorias",
-    // Só categoria com produto — link de rodapé para vitrine vazia é beco
-    // sem saída. URLs pela fonte única categoryHref (departamento + query).
-    links: categoriesWithProducts()
-      .slice(0, 8)
-      .map((c) => ({
-        label: c.label,
-        href: categoryHref(c.id),
-      })),
-  },
-  {
-    title: "Atendimento",
-    links: [
-      { label: "Trocas e devoluções", href: "/politicas/trocas" },
-      { label: "Política de privacidade", href: "/politicas/privacidade" },
-      { label: siteConfig.instagramHandle, href: siteConfig.instagram, external: true },
-    ],
-  },
-]
+// As colunas dependem do catálogo (categorias com produto), então são montadas
+// dentro do componente — o layout passa a lista buscada no servidor.
+function buildColumns(products: Product[]): { title: string; links: FooterLink[] }[] {
+  return [
+    {
+      title: "Navegação",
+      links: [
+        { label: "Todas as peças", href: "/catalogo" },
+        { label: "Novidades", href: "/novidades" },
+        { label: "Ofertas", href: "/ofertas" },
+        { label: "Marcas", href: "/#marcas" },
+      ],
+    },
+    {
+      title: "Categorias",
+      // Só categoria com produto — link de rodapé para vitrine vazia é beco
+      // sem saída. URLs pela fonte única categoryHref (departamento + query).
+      links: categoriesWithProducts(products)
+        .slice(0, 8)
+        .map((c) => ({
+          label: c.label,
+          href: categoryHref(c.id),
+        })),
+    },
+    {
+      title: "Atendimento",
+      links: [
+        { label: "Trocas e devoluções", href: "/politicas/trocas" },
+        { label: "Política de privacidade", href: "/politicas/privacidade" },
+        { label: siteConfig.instagramHandle, href: siteConfig.instagram, external: true },
+      ],
+    },
+  ]
+}
 
 function LinkItem({ link }: { link: FooterLink }) {
   const className = "text-text-secondary transition-colors hover:text-accent-strong"
@@ -71,7 +76,8 @@ function LinkItem({ link }: { link: FooterLink }) {
   )
 }
 
-export function Footer() {
+export function Footer({ products }: { products: Product[] }) {
+  const columns = buildColumns(products)
   return (
     <footer className="border-t border-border bg-bg-surface text-text-primary">
       <div className="shell flex flex-col gap-8 pt-10 lg:flex-row lg:items-start lg:justify-between">

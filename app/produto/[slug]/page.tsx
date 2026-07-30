@@ -1,16 +1,21 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { products } from "@/data/products"
+import { products as staticProducts } from "@/data/products"
 import { categoryLabel } from "@/data/categories"
 import { categoryHref, relatedProducts } from "@/lib/catalog"
+import { getCatalog, getProduct } from "@/lib/products/db"
 import { siteConfig } from "@/data/site.config"
 import { Breadcrumb } from "@/components/Breadcrumb"
 import { ProductCard } from "@/components/ProductCard"
 import { ProductGallery } from "./ProductGallery"
 import { ProductBuyBox } from "./ProductBuyBox"
 
+// Pré-gera as páginas do catálogo estático; produto criado no painel depois
+// do deploy renderiza sob demanda (dynamicParams) e entra no cache por tag.
+export const dynamicParams = true
+
 export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }))
+  return staticProducts.map((p) => ({ slug: p.slug }))
 }
 
 export async function generateMetadata({
@@ -19,7 +24,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const product = products.find((p) => p.slug === slug)
+  const product = await getProduct(slug)
   if (!product) return {}
   return {
     title: `${product.name} — ${product.brand} | ${siteConfig.name}`,
@@ -36,10 +41,11 @@ export async function generateMetadata({
 
 export default async function ProdutoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const product = products.find((p) => p.slug === slug)
+  const catalog = await getCatalog()
+  const product = catalog.find((p) => p.slug === slug)
   if (!product) notFound()
 
-  const related = relatedProducts(product)
+  const related = relatedProducts(catalog, product)
   const category = categoryLabel(product.category)
 
   // Dados estruturados do produto — sem afirmar preço/estoque como definitivos.

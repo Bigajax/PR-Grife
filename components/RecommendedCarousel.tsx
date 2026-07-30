@@ -1,24 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import type { Product } from "@/types"
-import { products, productById } from "@/data/products"
 import { siteConfig } from "@/data/site.config"
+import { useCatalog } from "@/components/CatalogProvider"
 import { Carousel } from "@/components/Carousel"
 import { ProductCard } from "@/components/ProductCard"
 import { QuickViewModal } from "@/components/QuickViewModal"
 
 const TOTAL = 10
 
-// Curadoria manual primeiro (site.config.homeRecommended), depois destaques e
-// novidades para completar. Ids inválidos e peças esgotadas caem fora, então a
-// vitrine nunca mostra buraco nem link morto.
-function montarLista(): Product[] {
+// Curadoria manual primeiro (site.config.homeRecommended, por slug), depois
+// destaques e novidades para completar. Slugs inválidos e peças esgotadas caem
+// fora, então a vitrine nunca mostra buraco nem link morto.
+function montarLista(products: Product[]): Product[] {
   const disponivel = (p: Product | undefined): p is Product =>
     p != null && p.stockStatus !== "out_of_stock"
 
-  const escolhidos = siteConfig.homeRecommended.map(productById).filter(disponivel)
+  const escolhidos = siteConfig.homeRecommended
+    .map((slug) => products.find((p) => p.slug === slug))
+    .filter(disponivel)
 
   const resto = [...products]
     .filter(disponivel)
@@ -40,11 +42,11 @@ function montarLista(): Product[] {
   return escolhidos.slice(0, TOTAL)
 }
 
-const lista = montarLista()
-
 // Vitrine curta e horizontal — sem busca, sem filtro, sem paginação.
 // A grade completa continua só em /catalogo.
 export function RecommendedCarousel() {
+  const catalog = useCatalog()
+  const lista = useMemo(() => montarLista(catalog), [catalog])
   const [quickView, setQuickView] = useState<Product | null>(null)
 
   if (lista.length === 0) return null

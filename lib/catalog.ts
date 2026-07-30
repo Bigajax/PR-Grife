@@ -1,11 +1,13 @@
 import type { Category, Product } from "@/types"
-import { products } from "@/data/products"
 import { categories, categoryLabel } from "@/data/categories"
 import { departmentBySlug, departmentOfCategory } from "@/data/departments"
 import { siteConfig } from "@/data/site.config"
 import { brandShowcase, type BrandShowcaseItem } from "@/data/brands"
 
-// Camada de dados do catálogo — funções puras, prontas para trocar por Supabase depois.
+// Camada de consulta do catálogo — funções puras sobre uma lista de produtos.
+// A lista vem do servidor (lib/products/db.ts → CatalogProvider) ou, em
+// build/fallback, de data/products.ts. Nenhuma função importa o catálogo:
+// quem chama fornece — é o que permite o mesmo código servir estático e banco.
 
 export type SortKey = "recentes" | "destaques" | "preco-asc" | "preco-desc" | "procurados"
 
@@ -51,9 +53,7 @@ export function isOnSale(p: Product): boolean {
   return p.oldPrice != null && p.price != null && p.oldPrice > p.price
 }
 
-export const saleProducts = () => products.filter(isOnSale)
-
-// Slug de marca para a rota /marca/[slug].
+// Slug de marca para a rota /catalogo/marca/[slug].
 export function brandSlug(brand: string): string {
   return brand
     .toLowerCase()
@@ -66,51 +66,50 @@ export function brandSlug(brand: string): string {
 export const brandBySlug = (slug: string) =>
   siteConfig.brands.find((b) => brandSlug(b) === slug)
 
-// Facetas derivadas de todo o catálogo (independente dos filtros ativos).
 export const allBrands = siteConfig.brands
 
-// Marcas que têm ao menos uma peça cadastrada. A vitrine só linka para estas:
-// marca sem SKU abre um catálogo vazio, que é beco sem saída. Assim que a peça
-// entrar em data/products.ts, a marca volta a aparecer sozinha.
-export const brandsInCatalog = siteConfig.brands.filter((brand) =>
-  products.some((p) => p.brand === brand)
-)
+// Marcas que têm ao menos uma peça na lista. A vitrine só linka para estas:
+// marca sem SKU abre um catálogo vazio, que é beco sem saída.
+export const brandsInCatalog = (list: Product[]) =>
+  siteConfig.brands.filter((brand) => list.some((p) => p.brand === brand))
 
 // ── Vitrine de marcas ─────────────────────────────────────────────────────────
 // A vitrine curada (data/brands.ts) mais qualquer marca que exista nos produtos
 // e ainda não tenha card — assim, cadastrar produto de marca nova já a coloca
 // na navegação sem mexer em mais nada.
-const marcasCobertas = new Set(brandShowcase.flatMap((i) => i.brands))
+export function showcaseBrandsFor(list: Product[]): BrandShowcaseItem[] {
+  const cobertas = new Set(brandShowcase.flatMap((i) => i.brands))
+  return [
+    ...brandShowcase,
+    ...Array.from(new Set(list.map((p) => p.brand)))
+      .filter((b) => !cobertas.has(b))
+      .map((b) => ({ name: b, slug: brandSlug(b), brands: [b] })),
+  ]
+}
 
-export const showcaseBrands: BrandShowcaseItem[] = [
-  ...brandShowcase,
-  ...Array.from(new Set(products.map((p) => p.brand)))
-    .filter((b) => !marcasCobertas.has(b))
-    .map((b) => ({ name: b, slug: brandSlug(b), brands: [b] })),
-]
-
-// Navegação do catálogo não mostra marca sem produto — filtro que devolve zero
-// peças é beco sem saída.
-export const showcaseBrandsWithProducts = showcaseBrands.filter((item) =>
-  item.brands.some((b) => products.some((p) => p.brand === b))
-)
+// Navegação do catálogo não mostra marca sem produto.
+export const showcaseBrandsWithProducts = (list: Product[]) =>
+  showcaseBrandsFor(list).filter((item) =>
+    item.brands.some((b) => list.some((p) => p.brand === b))
+  )
 
 // `?marca=` aceita o slug da vitrine (tommy-hilfiger cobre também Tommy Jeans)
 // e continua aceitando o nome exato usado pelos chips do painel de filtros.
-export function brandNamesForFilter(marca: string): string[] {
-  const item = showcaseBrands.find((i) => i.slug === marca)
+export function brandNamesForFilter(marca: string, list: Product[]): string[] {
+  const item = showcaseBrandsFor(list).find((i) => i.slug === marca)
   if (item) return item.brands
   const porSlug = siteConfig.brands.filter((b) => brandSlug(b) === marca)
   return porSlug.length > 0 ? porSlug : [marca]
 }
+
 export const allSizes = ["P", "M", "G", "GG", "38", "39", "40", "41", "42", "43", "44", "46"]
 export const clothingSizes = ["P", "M", "G", "GG"]
 export const shoeSizes = ["38", "39", "40", "41", "42", "43", "44"]
-export const allColors = Array.from(
-  new Map(
-    products.flatMap((p) => p.availableColors).map((c) => [c.name, c])
-  ).values()
-)
+
+export const allColorsFor = (list: Product[]) =>
+  Array.from(
+    new Map(list.flatMap((p) => p.availableColors).map((c) => [c.name, c])).values()
+  )
 
 // Normaliza para busca: minúsculas e sem acentos ("calca" encontra "Calça").
 function normalize(text: string): string {
@@ -143,7 +142,7 @@ export function filterProducts(list: Product[], f: CatalogFilters): Product[] {
       if (dep && !dep.categoryIds.includes(p.category)) return false
     }
     if (f.categoria && p.category !== f.categoria) return false
-    if (f.marca && !brandNamesForFilter(f.marca).includes(p.brand)) return false
+    if (f.marca && !brandNamesForFilter(f.marca, list).includes(p.brand)) return false
     if (f.tamanho && !p.availableSizes.includes(f.tamanho)) return false
     if (f.cor && !p.availableColors.some((c) => c.name === f.cor)) return false
     if (range && !(p.price != null && p.price >= range.min && p.price < range.max)) return false
@@ -177,8 +176,8 @@ export function sortProducts(list: Product[], sort: SortKey = "recentes"): Produ
   }
 }
 
-export function queryCatalog(f: CatalogFilters): Product[] {
-  return sortProducts(filterProducts(products, f), f.sort)
+export function queryCatalog(list: Product[], f: CatalogFilters): Product[] {
+  return sortProducts(filterProducts(list, f), f.sort)
 }
 
 export function countActiveFilters(
@@ -204,17 +203,17 @@ export function countActiveFilters(
 
 // Categorias com ao menos um produto — chips e listas nunca oferecem filtro
 // que devolve zero peças. `ids` restringe a um departamento.
-export function categoriesWithProducts(ids?: string[]): Category[] {
+export function categoriesWithProducts(list: Product[], ids?: string[]): Category[] {
   return categories.filter(
-    (c) => (!ids || ids.includes(c.id)) && products.some((p) => p.category === c.id)
+    (c) => (!ids || ids.includes(c.id)) && list.some((p) => p.category === c.id)
   )
 }
 
 // Chips da página de marca: só as categorias em que AQUELA marca tem peça.
-export function categoriesWithProductsForBrand(marcaSlug: string): Category[] {
-  const names = brandNamesForFilter(marcaSlug)
+export function categoriesWithProductsForBrand(list: Product[], marcaSlug: string): Category[] {
+  const names = brandNamesForFilter(marcaSlug, list)
   return categories.filter((c) =>
-    products.some((p) => p.category === c.id && names.includes(p.brand))
+    list.some((p) => p.category === c.id && names.includes(p.brand))
   )
 }
 
@@ -229,11 +228,11 @@ export function categoryHref(categoryId: string): string {
     : `/catalogo/${dep.slug}?categoria=${categoryId}`
 }
 
-export function relatedProducts(product: Product, limit = 4): Product[] {
-  const sameCategory = products.filter(
+export function relatedProducts(list: Product[], product: Product, limit = 4): Product[] {
+  const sameCategory = list.filter(
     (p) => p.id !== product.id && p.category === product.category
   )
-  const sameBrand = products.filter(
+  const sameBrand = list.filter(
     (p) => p.id !== product.id && p.brand === product.brand && p.category !== product.category
   )
   return [...sameCategory, ...sameBrand].slice(0, limit)
