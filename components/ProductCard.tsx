@@ -145,17 +145,18 @@ export function ProductCard({
         message={soldOut ? templates.aviseMe(product) : templates.produto(product)}
         event="product_whatsapp_click"
         payload={{ productId: product.id, placement: "card" }}
-        ariaLabel={`${soldOut ? "Pedir aviso de reposição" : "Consultar no WhatsApp"}: ${product.name}`}
+        ariaLabel={`${soldOut ? "Pedir aviso de reposição" : "Pedir no WhatsApp"}: ${product.name}`}
         className="mt-2.5 flex min-h-10 w-full items-center justify-center gap-1.5 whitespace-nowrap border border-text-primary px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-text-primary transition-colors hover:bg-text-primary hover:text-white"
       >
         <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={1.6} />
         {/* Rótulo num span único: como o link é flex, texto solto + span
-            virariam dois itens com gap no meio. */}
+            virariam dois itens com gap no meio. "Pedir" = mesmo verbo da
+            mensagem que abre no WhatsApp ("quero fazer um pedido"). */}
         {soldOut ? (
           <span>Avise-me</span>
         ) : (
           <span>
-            Consultar<span className="hidden sm:inline"> no WhatsApp</span>
+            Pedir<span className="hidden sm:inline"> no WhatsApp</span>
           </span>
         )}
       </WhatsAppCta>
