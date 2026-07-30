@@ -2,11 +2,13 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Eye } from "lucide-react"
+import { Eye, MessageCircle } from "lucide-react"
 import type { Product } from "@/types"
 import { formatPrice } from "@/lib/format"
 import { isOnSale } from "@/lib/catalog"
+import { templates } from "@/lib/whatsapp"
 import { FavoriteButton } from "@/components/FavoriteButton"
+import { WhatsAppCta } from "@/components/WhatsAppCta"
 
 // Um único badge por card, resolvido por hierarquia: desconto > últimas
 // unidades > novo. Destacar tudo é não destacar nada.
@@ -136,6 +138,27 @@ export function ProductCard({
 
         {variant && <p className="mt-1 text-xs text-text-secondary">{variant}</p>}
       </Link>
+
+      {/* CTA do card: a conversão da loja é o WhatsApp. Esgotado vira pedido
+          de aviso de reposição — o card nunca fica sem ação. */}
+      <WhatsAppCta
+        message={soldOut ? templates.aviseMe(product) : templates.produto(product)}
+        event="product_whatsapp_click"
+        payload={{ productId: product.id, placement: "card" }}
+        ariaLabel={`${soldOut ? "Pedir aviso de reposição" : "Consultar no WhatsApp"}: ${product.name}`}
+        className="mt-2.5 flex min-h-10 w-full items-center justify-center gap-1.5 whitespace-nowrap border border-text-primary px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-text-primary transition-colors hover:bg-text-primary hover:text-white"
+      >
+        <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={1.6} />
+        {/* Rótulo num span único: como o link é flex, texto solto + span
+            virariam dois itens com gap no meio. */}
+        {soldOut ? (
+          <span>Avise-me</span>
+        ) : (
+          <span>
+            Consultar<span className="hidden sm:inline"> no WhatsApp</span>
+          </span>
+        )}
+      </WhatsAppCta>
     </article>
   )
 }

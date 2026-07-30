@@ -31,8 +31,12 @@ export function FloatingWhatsApp() {
     return () => vv.removeEventListener("resize", onResize)
   }, [])
 
-  // /produto tem barra de compra fixa no rodapé; /admin tem o próprio chrome.
-  const oculto = pathname.startsWith("/produto") || pathname.startsWith("/admin")
+  // /produto e /catalogo têm barras fixas próprias no rodapé (o botão cobriria
+  // os controles); /admin tem o próprio chrome. Nas demais rotas ele aparece.
+  const oculto =
+    pathname.startsWith("/produto") ||
+    pathname.startsWith("/catalogo") ||
+    pathname.startsWith("/admin")
   if (oculto || !visible || keyboardOpen || isOpen) return null
 
   return (
