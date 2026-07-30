@@ -13,6 +13,7 @@ import { FloatingWhatsApp } from "@/components/FloatingWhatsApp"
 import { SelectionDrawer } from "@/components/SelectionDrawer"
 import { ConsentBanner } from "@/components/ConsentBanner"
 import { SiteLoader } from "@/components/SiteLoader"
+import { SiteChrome } from "@/components/SiteChrome"
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -76,22 +77,30 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${manrope.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <SiteLoader />
-        {/* Marfim texturizado com sombra botânica — ver .veu-botanico no globals.css */}
-        <div className="veu-botanico" aria-hidden="true" />
+        {/* SiteChrome esconde o chrome do site nas rotas /admin — o painel
+            tem o próprio layout e não usa loader, header, faixas nem véu. */}
+        <SiteChrome>
+          <SiteLoader />
+          {/* Marfim texturizado com sombra botânica — ver .veu-botanico no globals.css */}
+          <div className="veu-botanico" aria-hidden="true" />
+        </SiteChrome>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
         />
         <CatalogProvider products={products}>
           <Providers>
-            <AnnouncementBar />
-            <Header />
+            <SiteChrome>
+              <AnnouncementBar />
+              <Header />
+            </SiteChrome>
             {children}
-            <Footer products={products} />
-            <FloatingWhatsApp />
-            <SelectionDrawer />
-            <ConsentBanner />
+            <SiteChrome>
+              <Footer products={products} />
+              <FloatingWhatsApp />
+              <SelectionDrawer />
+              <ConsentBanner />
+            </SiteChrome>
           </Providers>
         </CatalogProvider>
         <TrackingScripts />

@@ -35,7 +35,7 @@ export function HomeDuo() {
             </div>
 
             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-              <h2 className="font-display text-[30px] font-medium leading-tight text-white">
+              <h2 className="font-display text-xl font-semibold uppercase leading-tight tracking-[0.06em] text-white sm:text-2xl">
                 {card.title}
               </h2>
               <p className="mt-1 text-[15px] text-white">{card.subtitle}</p>
