@@ -133,6 +133,7 @@ export function buildOrderMessage(items: OrderItem[]): string {
       : `Olá! Montei uma seleção na Vitrine Digital da ${siteConfig.name} e quero fazer um pedido:`,
     blocks.join(`\n${DIVIDER}\n`),
     total,
+    `Pagamento: ${siteConfig.paymentText}`,
     `Pode confirmar a disponibilidade, os valores e as opções de entrega?`
   )
 }
@@ -154,11 +155,21 @@ export const templates = {
     `Olá! Vim pelo site da ${siteConfig.name} e gostaria de informações sobre os produtos.`,
 
   produto: (p: Product, size?: string, color?: string) =>
-    compose(greeting(p), productSummary(p, size, color), closing(p, size)),
+    compose(
+      greeting(p),
+      productSummary(p, size, color),
+      `Pagamento: ${siteConfig.paymentText}`,
+      closing(p, size)
+    ),
 
   // Usado na página de produto: inclui a URL da peça para o atendimento abrir o mesmo item.
   produtoDetalhe: (p: Product, size?: string, color?: string, url?: string) =>
-    compose(greeting(p), productSummary(p, size, color, url), closing(p, size)),
+    compose(
+      greeting(p),
+      productSummary(p, size, color, url),
+      `Pagamento: ${siteConfig.paymentText}`,
+      closing(p, size)
+    ),
 
   // Peça esgotada: pedido de aviso de reposição.
   aviseMe: (p: Product, size?: string, url?: string) =>

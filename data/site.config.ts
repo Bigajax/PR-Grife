@@ -31,7 +31,7 @@ export const siteConfig = {
       closes: "13:00",
     },
   ],
-  paymentText: "Dinheiro, Pix ou cartão em até 10x sem juros",
+  paymentText: "Pix, dinheiro ou cartão em até 10x sem juros",
   // Os três destinos de mapa derivam do MESMO endereço textual — sem
   // coordenadas inventadas: busca (abrir no Maps), rota (dir) e embed (iframe).
   mapsUrl:

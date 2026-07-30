@@ -6,6 +6,7 @@ import type { Product } from "@/types"
 import { formatPrice } from "@/lib/format"
 import { stockLabels } from "@/lib/badges"
 import { isOnSale } from "@/lib/catalog"
+import { effectiveStatus, isOptionAvailable } from "@/lib/stock"
 import { buildWhatsAppLink, buildOrderMessage, templates } from "@/lib/whatsapp"
 import { siteConfig } from "@/data/site.config"
 import { useUtm } from "@/hooks/useUtm"
@@ -41,8 +42,13 @@ export function ProductBuyBox({ product }: { product: Product }) {
   const needsSize = product.availableSizes.length > 0
   const needsColor = product.availableColors.length > 0
   const soldOut = product.stockStatus === "out_of_stock"
-  const onRequest = product.stockStatus === "on_request"
   const sale = isOnSale(product)
+
+  // Com estoque por variação, a linha de disponibilidade acompanha a seleção
+  // (Preto/M pode estar em últimas unidades com o produto ainda "disponível").
+  // Sem controle de estoque, cai no stockStatus do produto — como sempre foi.
+  const selectedStatus = effectiveStatus(product, size, color)
+  const onRequest = selectedStatus === "on_request"
 
   // Cor e tamanho são obrigatórios: sem os dois, o pedido chegaria incompleto
   // no atendimento. O botão fica desabilitado até a escolha estar feita.
@@ -100,8 +106,15 @@ export function ProductBuyBox({ product }: { product: Product }) {
     // Tamanho escolhido no card da vitrine chega por ?tamanho= — a PDP abre
     // já com ele marcado.
     const wanted = new URLSearchParams(window.location.search).get("tamanho")
-    if (wanted && product.availableSizes.includes(wanted)) setSize(wanted)
-  }, [product.availableSizes])
+    // Só pré-seleciona tamanho que exista E tenha estoque (ou seja encomenda).
+    if (
+      wanted &&
+      product.availableSizes.includes(wanted) &&
+      isOptionAvailable(product, { size: wanted })
+    )
+      setSize(wanted)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product])
 
   // Rótulo do CTA acompanha a disponibilidade (regra do Guia Mestre).
   const ctaLabel = soldOut
@@ -139,6 +152,8 @@ export function ProductBuyBox({ product }: { product: Product }) {
           )}
         </p>
       )}
+      {/* Formas de pagamento da loja — fonte única em site.config. */}
+      <p className="mt-1.5 text-[13px] font-medium text-black-soft">{siteConfig.paymentText}</p>
       <p className="mt-1 text-xs text-text-gray">Valor demonstrativo — confirme no atendimento.</p>
 
       {needsSize && (
@@ -155,21 +170,28 @@ export function ProductBuyBox({ product }: { product: Product }) {
             </button>
           </div>
           <div className="mt-2.5 flex flex-wrap gap-2">
-            {product.availableSizes.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => pickSize(s)}
-                aria-pressed={size === s}
-                className={`min-h-11 min-w-11 rounded-full border px-3 text-sm font-medium transition-colors ${
-                  size === s
-                    ? "border-black-soft bg-black-soft text-off-white"
-                    : "border-border-gray bg-white text-black-soft hover:border-gold"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
+            {product.availableSizes.map((s) => {
+              const esgotado = !isOptionAvailable(product, { size: s, color })
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => pickSize(s)}
+                  disabled={esgotado}
+                  aria-pressed={size === s}
+                  aria-label={esgotado ? `${s} — esgotado` : undefined}
+                  className={`min-h-11 min-w-11 rounded-full border px-3 text-sm font-medium transition-colors ${
+                    esgotado
+                      ? "cursor-not-allowed border-border-gray bg-white text-text-gray/50 line-through"
+                      : size === s
+                        ? "border-black-soft bg-black-soft text-off-white"
+                        : "border-border-gray bg-white text-black-soft hover:border-gold"
+                  }`}
+                >
+                  {s}
+                </button>
+              )
+            })}
           </div>
           {sizeHint && (
             <p className="mt-2 flex items-center gap-1.5 text-[13px] font-medium text-gold-dark" role="alert">
@@ -189,32 +211,39 @@ export function ProductBuyBox({ product }: { product: Product }) {
         <fieldset className="mt-5">
           <legend className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black-soft">Cor</legend>
           <div className="mt-2.5 flex flex-wrap gap-2">
-            {product.availableColors.map((c) => (
-              <button
-                key={c.name}
-                type="button"
-                onClick={() => pickColor(c.name)}
-                aria-pressed={color === c.name}
-                className={`flex min-h-11 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors ${
-                  color === c.name
-                    ? "border-black-soft bg-white font-semibold text-black-soft"
-                    : "border-border-gray bg-white text-text-gray hover:border-gold"
-                }`}
-              >
-                <span
-                  className="h-4 w-4 rounded-full border border-border-gray"
-                  style={{ backgroundColor: c.hex }}
-                  aria-hidden="true"
-                />
-                {c.name}
-              </button>
-            ))}
+            {product.availableColors.map((c) => {
+              const esgotada = !isOptionAvailable(product, { size, color: c.name })
+              return (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => pickColor(c.name)}
+                  disabled={esgotada}
+                  aria-pressed={color === c.name}
+                  aria-label={esgotada ? `${c.name} — esgotada` : undefined}
+                  className={`flex min-h-11 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors ${
+                    esgotada
+                      ? "cursor-not-allowed border-border-gray bg-white text-text-gray/50 line-through"
+                      : color === c.name
+                        ? "border-black-soft bg-white font-semibold text-black-soft"
+                        : "border-border-gray bg-white text-text-gray hover:border-gold"
+                  }`}
+                >
+                  <span
+                    className={`h-4 w-4 rounded-full border border-border-gray ${esgotada ? "opacity-40" : ""}`}
+                    style={{ backgroundColor: c.hex }}
+                    aria-hidden="true"
+                  />
+                  {c.name}
+                </button>
+              )
+            })}
           </div>
         </fieldset>
       )}
 
-      <p className={`mt-5 text-sm font-medium ${soldOut ? "text-text-gray" : "text-gold-dark"}`}>
-        {stockLabels[product.stockStatus]}
+      <p className={`mt-5 text-sm font-medium ${selectedStatus === "out_of_stock" ? "text-text-gray" : "text-gold-dark"}`}>
+        {stockLabels[selectedStatus]}
         {onRequest && ` — prazo estimado: ${siteConfig.leadTimeText}`}
       </p>
 
