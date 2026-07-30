@@ -68,19 +68,20 @@ export function RecommendedCarousel() {
             </div>
           ))}
 
-          {/* Fecho do trilho: painel grafite com a marca da casa — um convite
-              com o mesmo peso visual dos cards, não um link solto no vazio. */}
+          {/* Fecho do trilho: card transparente com a marca da casa — mesma
+              composição dos cards de marca, sem bloco de cor (pedido do
+              proprietário: nada de painel escuro aqui). */}
           <div className="w-[calc(100%/1.6)] border-l border-border sm:w-[calc(100%/2.6)] lg:w-[calc(100%/4.35)]">
             <Link
               href="/catalogo"
-              className="group flex h-full min-h-56 flex-col items-center justify-center gap-5 bg-text-primary px-6 py-10 text-center"
+              className="group flex h-full min-h-56 flex-col items-center justify-center gap-5 px-6 py-10 text-center"
             >
               <DiamondMark className="h-8 w-8" />
               <span className="flex flex-col gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-sand">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gold-dark">
                   Toda a vitrine
                 </span>
-                <span className="font-display text-2xl font-medium leading-tight text-off-white">
+                <span className="font-display text-2xl font-medium leading-tight text-text-primary">
                   Ver o catálogo
                   <br />
                   completo
@@ -88,7 +89,7 @@ export function RecommendedCarousel() {
               </span>
               <span
                 aria-hidden="true"
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-off-white transition-all group-hover:border-accent group-hover:text-accent"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-text-primary/30 text-text-primary transition-all group-hover:border-accent-strong group-hover:text-accent-strong"
               >
                 <ArrowRight
                   className="h-5 w-5 transition-transform group-hover:translate-x-0.5"
