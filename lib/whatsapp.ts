@@ -70,19 +70,27 @@ function closing(p: Product, size?: string): string {
     : "Pode confirmar os tamanhos disponíveis?"
 }
 
-function productBlocks(p: Product, size?: string, color?: string, url?: string) {
+// Resumo compacto da peça: nome em negrito na primeira linha e um dado por
+// linha ("Campo: valor"), campos vazios omitidos, link por último — o
+// atendimento lê de relance e abre a peça certa com um toque.
+function productSummary(p: Product, size?: string, color?: string, url?: string): string {
   const resolvedColor =
     color ?? (p.availableColors.length === 1 ? p.availableColors[0].name : undefined)
+  const valor =
+    p.price != null
+      ? `${formatPrice(p.price)}${p.installmentText ? ` (${p.installmentText})` : ""}`
+      : null
   return [
-    block("PRODUTO", p.name),
-    block("MARCA", p.brand),
-    block("TAMANHO", size),
-    block("COR", resolvedColor),
-    block("VALOR", p.price != null ? formatPrice(p.price) : null),
-    block("DISPONIBILIDADE", availabilityText(p)),
-    block("CÓDIGO", p.productCode),
-    block("LINK", url),
+    `*${p.name}* - ${p.brand}`,
+    size ? `Tamanho: ${size}` : null,
+    resolvedColor ? `Cor: ${resolvedColor}` : null,
+    valor ? `Valor: ${valor}` : null,
+    `Disponibilidade: ${availabilityText(p)}`,
+    `Ref: ${p.productCode}`,
+    url ?? productUrl(p),
   ]
+    .filter(Boolean)
+    .join("\n")
 }
 
 // ── Pedido padronizado ────────────────────────────────────────────────────────
@@ -103,22 +111,30 @@ function productUrl(p: Product): string {
 }
 
 export function buildOrderMessage(items: OrderItem[]): string {
-  const blocks = items.map(({ product, size, color, url }) => {
-    const variant = [size ? `Tamanho: ${size}` : null, color ? `Cor: ${color}` : null]
-      .filter(Boolean)
-      .join(" | ")
-    const ref = [
-      product.productCode ? `Ref: ${product.productCode}` : null,
-      url ?? productUrl(product),
-    ]
-      .filter(Boolean)
-      .join(" | ")
-    return [`• ${product.name} - ${product.brand}`, variant && `  ${variant}`, `  ${ref}`]
-      .filter(Boolean)
-      .join("\n")
+  const single = items.length === 1
+  const blocks = items.map(({ product, size, color, url }, i) => {
+    const summary = productSummary(product, size, color, url)
+    return single ? summary : `${i + 1}. ${summary}`
   })
 
-  return compose("Olá! Tenho interesse:", blocks.join("\n\n"))
+  // Total só quando todas as peças têm preço — nunca somar por cima de "a
+  // confirmar" (regra da casa: não afirmar valor que não está na vitrine).
+  const todosComPreco = items.every(({ product }) => product.price != null)
+  const total =
+    !single && todosComPreco
+      ? `Total das peças: ${formatPrice(
+          items.reduce((sum, { product }) => sum + (product.price ?? 0), 0)
+        )}`
+      : null
+
+  return compose(
+    single
+      ? `Olá! Vi esta peça na Vitrine Digital da ${siteConfig.name} e quero fazer um pedido!`
+      : `Olá! Montei uma seleção na Vitrine Digital da ${siteConfig.name} e quero fazer um pedido:`,
+    blocks.join(`\n${DIVIDER}\n`),
+    total,
+    `Pode confirmar a disponibilidade, os valores e as opções de entrega?`
+  )
 }
 
 // Templates oficiais — não alterar o texto sem alinhar com o proprietário.
@@ -138,30 +154,31 @@ export const templates = {
     `Olá! Vim pelo site da ${siteConfig.name} e gostaria de informações sobre os produtos.`,
 
   produto: (p: Product, size?: string, color?: string) =>
-    compose(greeting(p), ...productBlocks(p, size, color), closing(p, size)),
+    compose(greeting(p), productSummary(p, size, color), closing(p, size)),
 
   // Usado na página de produto: inclui a URL da peça para o atendimento abrir o mesmo item.
   produtoDetalhe: (p: Product, size?: string, color?: string, url?: string) =>
-    compose(greeting(p), ...productBlocks(p, size, color, url), closing(p, size)),
+    compose(greeting(p), productSummary(p, size, color, url), closing(p, size)),
 
   // Peça esgotada: pedido de aviso de reposição.
   aviseMe: (p: Product, size?: string, url?: string) =>
     compose(
       `Olá! Vi esta peça esgotada na Vitrine Digital da ${siteConfig.name}:`,
-      block("PRODUTO", p.name),
-      block("MARCA", p.brand),
-      block("TAMANHO", size),
-      block("CÓDIGO", p.productCode),
-      block("LINK", url),
+      [
+        `*${p.name}* - ${p.brand}`,
+        size ? `Tamanho: ${size}` : null,
+        `Ref: ${p.productCode}`,
+        url ?? productUrl(p),
+      ]
+        .filter(Boolean)
+        .join("\n"),
       `Podem me avisar quando ela voltar?`
     ),
 
   duvidaProduto: (p: Product) =>
     compose(
       `Olá! Vi esta peça na Vitrine Digital da ${siteConfig.name} e tenho uma dúvida:`,
-      block("PRODUTO", p.name),
-      block("MARCA", p.brand),
-      block("CÓDIGO", p.productCode),
+      [`*${p.name}* - ${p.brand}`, `Ref: ${p.productCode}`, productUrl(p)].join("\n"),
       `Podem me ajudar?`
     ),
 

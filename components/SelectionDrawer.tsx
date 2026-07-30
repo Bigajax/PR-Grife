@@ -7,6 +7,7 @@ import { useSelection } from "@/hooks/useSelection"
 import { useFocusTrap } from "@/hooks/useFocusTrap"
 import { useUtm } from "@/hooks/useUtm"
 import { buildWhatsAppLink, buildOrderMessage } from "@/lib/whatsapp"
+import { isOptionAvailable } from "@/lib/stock"
 import { useProductLookup } from "@/components/CatalogProvider"
 import { formatPrice } from "@/lib/format"
 import { track } from "@/lib/tracking"
@@ -59,8 +60,8 @@ export function SelectionDrawer() {
             <DiamondMark className="h-8 w-8" stroke="#DDD2C3" />
             <p className="font-display text-xl text-black-soft">Sua seleção está vazia.</p>
             <p className="text-sm text-text-gray">
-              Toque no “+” das peças que gostar para montar a sua seleção e enviar tudo de uma vez
-              no WhatsApp.
+              Toque na sacola das peças que gostar para montar a sua seleção e enviar tudo de
+              uma vez no WhatsApp.
             </p>
           </div>
         ) : (
@@ -92,11 +93,15 @@ export function SelectionDrawer() {
                             className="min-h-9 rounded-full border border-border-gray bg-white px-3 text-xs text-black-soft"
                           >
                             <option value="">Tamanho…</option>
-                            {product.availableSizes.map((s) => (
-                              <option key={s} value={s}>
-                                {s}
-                              </option>
-                            ))}
+                            {product.availableSizes.map((s) => {
+                              const esgotado = !isOptionAvailable(product, { size: s })
+                              return (
+                                <option key={s} value={s} disabled={esgotado}>
+                                  {s}
+                                  {esgotado ? " (esgotado)" : ""}
+                                </option>
+                              )
+                            })}
                           </select>
                         </label>
                       )}
@@ -109,11 +114,15 @@ export function SelectionDrawer() {
                             className="min-h-9 rounded-full border border-border-gray bg-white px-3 text-xs text-black-soft"
                           >
                             <option value="">Cor…</option>
-                            {product.availableColors.map((c) => (
-                              <option key={c.name} value={c.name}>
-                                {c.name}
-                              </option>
-                            ))}
+                            {product.availableColors.map((c) => {
+                              const esgotada = !isOptionAvailable(product, { color: c.name })
+                              return (
+                                <option key={c.name} value={c.name} disabled={esgotada}>
+                                  {c.name}
+                                  {esgotada ? " (esgotada)" : ""}
+                                </option>
+                              )
+                            })}
                           </select>
                         </label>
                       )}

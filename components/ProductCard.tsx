@@ -2,13 +2,15 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Eye, MessageCircle } from "lucide-react"
+import { Eye, MessageCircle, ShoppingBag } from "lucide-react"
 import type { Product } from "@/types"
 import { formatPrice } from "@/lib/format"
 import { isOnSale } from "@/lib/catalog"
+import { isOptionAvailable } from "@/lib/stock"
 import { templates } from "@/lib/whatsapp"
 import { FavoriteButton } from "@/components/FavoriteButton"
 import { WhatsAppCta } from "@/components/WhatsAppCta"
+import { useSelection } from "@/hooks/useSelection"
 
 // Um único badge por card, resolvido por hierarquia: desconto > últimas
 // unidades > novo. Destacar tudo é não destacar nada.
@@ -44,13 +46,18 @@ export function ProductCard({
   /** Quando presente, mostra o botão "ver rápido" no canto da imagem. */
   onQuickView?: (product: Product) => void
 }) {
+  const { add, has, openDrawer } = useSelection()
   const soldOut = product.stockStatus === "out_of_stock"
   const sale = isOnSale(product)
   const badge = cardBadge(product)
   const hoverImage = product.images[1]
   const variant = variantLine(product)
   const href = `/produto/${product.slug}`
-  const sizes = compact || soldOut ? [] : product.availableSizes
+  // Nunca oferecer chip de tamanho zerado (estoque por variação).
+  const sizes =
+    compact || soldOut
+      ? []
+      : product.availableSizes.filter((s) => isOptionAvailable(product, { size: s }))
 
   return (
     <article className="group relative flex flex-col">
@@ -139,27 +146,52 @@ export function ProductCard({
         {variant && <p className="mt-1 text-xs text-text-secondary">{variant}</p>}
       </Link>
 
-      {/* CTA do card: a conversão da loja é o WhatsApp. Esgotado vira pedido
-          de aviso de reposição — o card nunca fica sem ação. */}
-      <WhatsAppCta
-        message={soldOut ? templates.aviseMe(product) : templates.produto(product)}
-        event="product_whatsapp_click"
-        payload={{ productId: product.id, placement: "card" }}
-        ariaLabel={`${soldOut ? "Pedir aviso de reposição" : "Pedir no WhatsApp"}: ${product.name}`}
-        className="mt-2.5 flex min-h-10 w-full items-center justify-center gap-1.5 whitespace-nowrap border border-text-primary px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-text-primary transition-colors hover:bg-text-primary hover:text-white"
-      >
-        <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={1.6} />
-        {/* Rótulo num span único: como o link é flex, texto solto + span
-            virariam dois itens com gap no meio. "Pedir" = mesmo verbo da
-            mensagem que abre no WhatsApp ("quero fazer um pedido"). */}
-        {soldOut ? (
-          <span>Avise-me</span>
-        ) : (
-          <span>
-            Pedir<span className="hidden sm:inline"> no WhatsApp</span>
-          </span>
+      {/* CTA do card: a conversão da loja é o WhatsApp; a sacola ao lado monta
+          a seleção para pedir várias peças de uma vez. Esgotado vira pedido de
+          aviso de reposição e a sacola some — o card nunca fica sem ação. */}
+      <div className="mt-2.5 flex items-stretch gap-2">
+        <WhatsAppCta
+          message={soldOut ? templates.aviseMe(product) : templates.produto(product)}
+          event="product_whatsapp_click"
+          payload={{ productId: product.id, placement: "card" }}
+          ariaLabel={`${soldOut ? "Pedir aviso de reposição" : "Pedir no WhatsApp"}: ${product.name}`}
+          className="flex min-h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap border border-text-primary px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-text-primary transition-colors hover:bg-text-primary hover:text-white"
+        >
+          <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={1.6} />
+          {/* Rótulo num span único: como o link é flex, texto solto + span
+              virariam dois itens com gap no meio. "Pedir" = mesmo verbo da
+              mensagem que abre no WhatsApp ("quero fazer um pedido"). */}
+          {soldOut ? (
+            <span>Avise-me</span>
+          ) : (
+            <span>
+              Pedir<span className="hidden sm:inline"> no WhatsApp</span>
+            </span>
+          )}
+        </WhatsAppCta>
+
+        {!soldOut && (
+          <button
+            type="button"
+            onClick={() => {
+              if (!has(product.id)) add(product.id)
+              openDrawer()
+            }}
+            aria-label={
+              has(product.id)
+                ? `${product.name} já está na seleção — abrir`
+                : `Adicionar ${product.name} à seleção`
+            }
+            className={`flex w-11 shrink-0 items-center justify-center border transition-colors ${
+              has(product.id)
+                ? "border-text-primary bg-text-primary text-white"
+                : "border-text-primary text-text-primary hover:bg-text-primary hover:text-white"
+            }`}
+          >
+            <ShoppingBag className="h-4 w-4" aria-hidden="true" strokeWidth={1.6} />
+          </button>
         )}
-      </WhatsAppCta>
+      </div>
     </article>
   )
 }

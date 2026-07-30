@@ -49,13 +49,14 @@ export function FloatingWhatsApp() {
   if (oculto || !visible || keyboardOpen || isOpen) return null
 
   return (
+    // Verde oficial do WhatsApp (#25D366): o canal é reconhecido de longe.
     <div className="fixed bottom-[calc(1.1rem+env(safe-area-inset-bottom))] right-[18px] z-30 md:hidden">
       <WhatsAppCta
         message={templates.informacoesProdutos()}
         event="hero_whatsapp_click"
         payload={{ placement: "floating_mobile" }}
         ariaLabel="Falar com a PR Grife no WhatsApp"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-text-primary text-white shadow-lg shadow-text-primary/30 transition-transform active:scale-95"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 transition-transform active:scale-95"
       >
         <WhatsAppGlyph className="h-6 w-6" />
       </WhatsAppCta>

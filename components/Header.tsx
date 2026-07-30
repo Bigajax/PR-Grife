@@ -140,15 +140,10 @@ export function Header() {
             </span>
           </Link>
 
-          <div className="flex items-center justify-end">
-            <Link
-              href="/admin"
-              aria-label="Minha conta"
-              className="-mr-2.5 flex h-11 w-11 items-center justify-center text-text-primary"
-            >
-              <UserRound className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
-            </Link>
-          </div>
+          {/* Coluna direita vazia de propósito: equilibra a grade e mantém a
+              logo no centro exato. Quando houver conta de cliente, o ícone
+              de perfil volta aqui. */}
+          <div aria-hidden="true" />
         </div>
 
         <div
