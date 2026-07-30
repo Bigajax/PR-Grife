@@ -214,13 +214,13 @@ export function ProductsTable({
                   </p>
                 )}
               </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-1.5 text-xs font-semibold">
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs font-semibold">
                 {p.trackStock && p.variants.some((v) => v.isActive) && (
                   <button
                     type="button"
                     onClick={() => setStockPanel(p)}
                     disabled={busy}
-                    className="border border-border bg-white px-3 py-2 text-accent-strong hover:bg-bg-surface disabled:opacity-50"
+                    className="min-h-10 border border-border bg-white px-3 py-2 text-accent-strong hover:bg-bg-surface disabled:opacity-50"
                   >
                     Estoque
                   </button>
@@ -229,7 +229,7 @@ export function ProductsTable({
                   type="button"
                   onClick={() => setEditing(p)}
                   disabled={busy}
-                  className="border border-border bg-white px-3 py-2 text-text-primary hover:bg-bg-surface disabled:opacity-50"
+                  className="min-h-10 border border-border bg-white px-3 py-2 text-text-primary hover:bg-bg-surface disabled:opacity-50"
                 >
                   Editar
                 </button>
@@ -237,7 +237,7 @@ export function ProductsTable({
                   type="button"
                   onClick={() => run(p.id, () => duplicateProduct(p.id))}
                   disabled={busy}
-                  className="border border-border bg-white px-3 py-2 text-text-primary hover:bg-bg-surface disabled:opacity-50"
+                  className="min-h-10 border border-border bg-white px-3 py-2 text-text-primary hover:bg-bg-surface disabled:opacity-50"
                 >
                   Duplicar
                 </button>
@@ -245,7 +245,7 @@ export function ProductsTable({
                   type="button"
                   onClick={() => run(p.id, () => setArchived(p.id, !p.archivedAt))}
                   disabled={busy}
-                  className="border border-border bg-white px-3 py-2 text-text-primary hover:bg-bg-surface disabled:opacity-50"
+                  className="min-h-10 border border-border bg-white px-3 py-2 text-text-primary hover:bg-bg-surface disabled:opacity-50"
                 >
                   {p.archivedAt ? "Restaurar" : "Arquivar"}
                 </button>
@@ -253,7 +253,7 @@ export function ProductsTable({
                   type="button"
                   onClick={() => setConfirmDelete(p)}
                   disabled={busy}
-                  className="border border-border bg-white px-3 py-2 text-alert hover:bg-bg-surface disabled:opacity-50"
+                  className="min-h-10 border border-border bg-white px-3 py-2 text-alert hover:bg-bg-surface disabled:opacity-50"
                 >
                   Excluir
                 </button>

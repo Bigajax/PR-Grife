@@ -22,13 +22,17 @@ export function Hero() {
     <section className="bg-bg-surface">
       <div className="shell grid items-center gap-10 py-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-20">
         <div>
-          <h1 className="hero-rise font-display text-[26px] font-medium uppercase leading-[1.08] tracking-[0.06em] text-text-primary lg:text-[36px]">
+          {/* text-balance: a pergunta quebra em duas linhas equilibradas no
+              mobile ("O que você / procura hoje?"), nunca com palavra órfã. */}
+          <h1 className="hero-rise font-display text-balance text-[28px] font-medium uppercase leading-[1.1] tracking-[0.06em] text-text-primary lg:text-[36px]">
             {hero.title}
           </h1>
 
-          {/* Selo da casa em dourado — o mesmo ouro do diamante da logo. */}
+          {/* Selo da casa em dourado — o mesmo ouro do diamante da logo.
+              Nunca quebra linha: o corpo escala com a tela (clamp) para caber
+              inteiro até em 320px. */}
           <p
-            className="hero-rise mt-4 text-[13px] font-semibold uppercase tracking-[0.28em] text-[#C2A15D] lg:mt-5 lg:text-sm"
+            className="hero-rise mt-4 whitespace-nowrap text-[clamp(11px,3.4vw,14px)] font-semibold uppercase tracking-[0.22em] text-[#C2A15D] lg:mt-5"
             style={{ animationDelay: "120ms" }}
           >
             {hero.subtitle}

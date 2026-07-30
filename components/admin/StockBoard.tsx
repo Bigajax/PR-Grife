@@ -210,7 +210,66 @@ export function StockBoard({
           </p>
         </div>
       ) : (
-        <div className="mt-2 overflow-x-auto border border-border bg-bg-elevated">
+        <>
+        {/* Mobile: cards empilhados — a tabela exigiria rolagem horizontal. */}
+        <ul className="mt-2 flex flex-col gap-2 md:hidden">
+          {rows.map(({ product, variant, situation: s }) => (
+            <li key={variant.id} className="border border-border bg-bg-elevated p-3">
+              <div className="flex items-center gap-3">
+                {product.thumbnail ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={product.thumbnail} alt="" className="h-12 w-9 shrink-0 border border-border object-cover" />
+                ) : (
+                  <span className="flex h-12 w-9 shrink-0 items-center justify-center border border-dashed border-border text-[9px] text-text-secondary">
+                    s/ foto
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-text-primary">{product.name}</p>
+                  <p className="truncate text-xs text-text-secondary">
+                    {variantLabel(variant.size, variant.color)} · {variant.sku}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className={`text-base font-semibold tabular-nums ${variant.stockQuantity <= 0 ? "text-alert" : "text-text-primary"}`}>
+                    {variant.stockQuantity} un
+                  </p>
+                  <p className={`text-xs ${situationCls[s]}`}>{situationLabel[s]}</p>
+                </div>
+              </div>
+              <div className="mt-2.5 flex gap-1.5 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setMovement({ product, mode: "entry", variantId: variant.id })}
+                  className="min-h-10 flex-1 border border-border bg-white px-2.5 text-success hover:bg-bg-surface"
+                >
+                  Entrada
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMovement({ product, mode: "exit", variantId: variant.id })}
+                  className="min-h-10 flex-1 border border-border bg-white px-2.5 text-text-primary hover:bg-bg-surface"
+                >
+                  Saída
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHistory(product)}
+                  className="min-h-10 flex-1 border border-border bg-white px-2.5 text-text-primary hover:bg-bg-surface"
+                >
+                  Histórico
+                </button>
+              </div>
+            </li>
+          ))}
+          {rows.length === 0 && (
+            <li className="border border-border bg-bg-elevated px-3 py-8 text-center text-sm text-text-secondary">
+              Nenhuma variação com esses filtros.
+            </li>
+          )}
+        </ul>
+
+        <div className="mt-2 hidden overflow-x-auto border border-border bg-bg-elevated md:block">
           <div className="grid min-w-[860px] grid-cols-[3rem_1.6fr_1fr_1fr_4.5rem_4.5rem_7rem_12rem] items-center gap-x-3 border-b border-border bg-bg-surface px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
             <span aria-hidden="true" />
             <span>Produto</span>
@@ -278,6 +337,7 @@ export function StockBoard({
             </p>
           )}
         </div>
+        </>
       )}
 
       {movement && (

@@ -336,7 +336,7 @@ export function ProductForm({
           {rows.length > 0 ? (
             <div>
               <div className="overflow-x-auto border border-border bg-white">
-                <div className="grid min-w-[400px] grid-cols-[6rem_7rem_1fr_3rem] items-center gap-x-3 border-b border-border bg-bg-surface px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                <div className="grid grid-cols-[6rem_7rem_1fr_3rem] items-center gap-x-3 border-b border-border bg-bg-surface px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
                   <span>Tamanho</span>
                   <span>Estoque</span>
                   <span>Ativo</span>
@@ -345,7 +345,7 @@ export function ProductForm({
                 {rows.map((r, i) => (
                   <div
                     key={r.id ?? `nova-${i}`}
-                    className="grid min-w-[400px] grid-cols-[6rem_7rem_1fr_3rem] items-center gap-x-3 border-b border-border px-3 py-2 last:border-b-0"
+                    className="grid grid-cols-[6rem_7rem_1fr_3rem] items-center gap-x-3 border-b border-border px-3 py-2 last:border-b-0"
                   >
                     <input
                       value={r.size}
@@ -385,6 +385,13 @@ export function ProductForm({
                 O estoque salvo aqui vale na hora. Para registrar entrada/saída com motivo e
                 histórico, use a ação Estoque na listagem ou a página Estoque.
               </p>
+              {rows.every((r) => r.stock === 0) && (
+                <p className="mt-2 bg-accent-soft px-3 py-2 text-xs font-medium text-accent-strong">
+                  Todos os tamanhos estão com saldo zero — ao salvar, o produto aparece na vitrine
+                  como {saleMode === "in_stock" ? "Esgotado" : "Encomenda"}. Preencha as
+                  quantidades se houver peças em mãos.
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-xs text-text-secondary">
