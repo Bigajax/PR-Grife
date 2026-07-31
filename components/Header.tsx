@@ -344,7 +344,7 @@ export function Header() {
             message={templates.atendimentoGeral()}
             event="hero_whatsapp_click"
             payload={{ placement: "header" }}
-            className="ml-1.5 hidden items-center rounded-full bg-text-primary px-5 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 lg:inline-flex"
+            className="tap ml-1.5 hidden items-center rounded-full bg-text-primary px-5 py-2.5 text-[13px] font-semibold text-white hover:opacity-90 lg:inline-flex"
           >
             Falar no WhatsApp
           </WhatsAppCta>
@@ -386,7 +386,7 @@ export function Header() {
             )}
             <button
               type="submit"
-              className="shrink-0 rounded-full bg-text-primary px-5 py-2 text-[13px] font-semibold text-white"
+              className="tap shrink-0 rounded-full bg-text-primary px-5 py-2 text-[13px] font-semibold text-white"
             >
               Buscar
             </button>
@@ -450,7 +450,7 @@ export function Header() {
                   <Link
                     href="/catalogo"
                     onClick={closeAll}
-                    className="mt-4 inline-flex min-h-11 items-center rounded-full border border-text-primary px-6 text-[13px] font-semibold text-text-primary transition-colors hover:border-accent hover:text-accent"
+                    className="tap mt-4 inline-flex min-h-11 items-center rounded-full border border-text-primary px-6 text-[13px] font-semibold text-text-primary hover:border-accent hover:text-accent"
                   >
                     Ver todas as peças
                   </Link>
@@ -559,7 +559,7 @@ export function Header() {
             message={templates.atendimentoGeral()}
             event="hero_whatsapp_click"
             payload={{ placement: "menu_mobile" }}
-            className="mt-6 flex min-h-12 items-center justify-center rounded-full bg-text-primary px-6 text-sm font-semibold text-white"
+            className="tap mt-6 flex min-h-12 items-center justify-center rounded-full bg-text-primary px-6 text-sm font-semibold text-white"
           >
             Falar no WhatsApp
           </WhatsAppCta>

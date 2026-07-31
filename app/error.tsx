@@ -21,13 +21,13 @@ export default function GlobalError({ reset }: { error: Error; reset: () => void
           <button
             type="button"
             onClick={reset}
-            className="inline-flex min-h-12 items-center rounded-full bg-black-soft px-7 text-sm font-semibold text-off-white transition-colors hover:bg-graphite"
+            className="tap inline-flex min-h-12 items-center rounded-full bg-black-soft px-7 text-sm font-semibold text-off-white transition-colors hover:bg-graphite"
           >
             Tentar novamente
           </button>
           <Link
             href="/"
-            className="inline-flex min-h-12 items-center rounded-full border border-black-soft px-7 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
+            className="tap inline-flex min-h-12 items-center rounded-full border border-black-soft px-7 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
           >
             Voltar ao início
           </Link>

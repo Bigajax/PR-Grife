@@ -187,7 +187,7 @@ export function QuickViewModal({
                       color: corResolvida,
                     })
                   }
-                  className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-text-primary px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="tap inline-flex min-h-12 w-full items-center justify-center rounded-full bg-text-primary px-6 text-sm font-semibold text-white hover:opacity-90"
                 >
                   Pedir no WhatsApp
                 </a>

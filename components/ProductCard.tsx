@@ -171,7 +171,7 @@ export function ProductCard({
           event="product_whatsapp_click"
           payload={{ productId: product.id, placement: "card" }}
           ariaLabel={`${soldOut ? "Pedir aviso de reposição" : "Pedir no WhatsApp"}: ${product.name}`}
-          className="flex min-h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap border border-text-primary px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-text-primary transition-colors hover:bg-text-primary hover:text-white"
+          className="tap flex min-h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-text-primary px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-text-primary hover:bg-text-primary hover:text-white"
         >
           <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={1.6} />
           {/* Rótulo num span único: como o link é flex, texto solto + span
@@ -198,7 +198,7 @@ export function ProductCard({
                 ? `${product.name} já está na seleção — abrir`
                 : `Adicionar ${product.name} à seleção`
             }
-            className={`flex w-11 shrink-0 items-center justify-center border transition-colors ${
+            className={`tap flex w-11 shrink-0 items-center justify-center rounded-full border ${
               has(product.id)
                 ? "border-text-primary bg-text-primary text-white"
                 : "border-text-primary text-text-primary hover:bg-text-primary hover:text-white"

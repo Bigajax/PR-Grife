@@ -245,7 +245,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
           )}
           <button
             type="submit"
-            className="rounded-full bg-black-soft px-4 py-1.5 text-[13px] font-semibold text-off-white"
+            className="tap rounded-full bg-black-soft px-4 py-1.5 text-[13px] font-semibold text-off-white"
           >
             Buscar
           </button>
@@ -458,7 +458,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
                   <button
                     type="button"
                     onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                    className="mt-1 rounded-full border border-black-soft px-8 py-3 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
+                    className="tap mt-1 rounded-full border border-black-soft px-8 py-3 text-sm font-semibold text-black-soft hover:border-gold-dark hover:text-gold-dark"
                   >
                     Ver mais produtos
                   </button>
@@ -476,7 +476,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="rounded-full border border-black-soft px-6 py-2.5 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
+                    className="tap rounded-full border border-black-soft px-6 py-2.5 text-sm font-semibold text-black-soft hover:border-gold-dark hover:text-gold-dark"
                   >
                     Limpar filtros
                   </button>
@@ -486,7 +486,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
                 {lockedKeys.length > 0 && (
                   <Link
                     href="/catalogo"
-                    className="rounded-full bg-black-soft px-6 py-2.5 text-sm font-semibold text-off-white transition-opacity hover:opacity-90"
+                    className="tap rounded-full bg-black-soft px-6 py-2.5 text-sm font-semibold text-off-white hover:opacity-90"
                   >
                     Explorar o catálogo completo
                   </Link>

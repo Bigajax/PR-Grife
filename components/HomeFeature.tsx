@@ -42,7 +42,7 @@ export function HomeFeature() {
 
             <Link
               href={homeFeature.href}
-              className="mt-7 inline-flex min-h-12 items-center bg-text-primary px-8 text-[13px] font-semibold uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-90"
+              className="tap mt-7 inline-flex min-h-12 items-center rounded-full bg-text-primary px-8 text-[13px] font-semibold uppercase tracking-[0.16em] text-white hover:opacity-90"
             >
               {homeFeature.ctaLabel}
             </Link>

@@ -280,7 +280,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={onConsult}
-            className={`inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold transition-colors ${
+            className={`tap inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold ${
               soldOut
                 ? "border border-black-soft bg-white text-black-soft hover:border-gold-dark hover:text-gold-dark"
                 : "bg-black-soft text-off-white hover:bg-graphite"
@@ -308,7 +308,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
             <button
               type="button"
               onClick={() => add(product.id, size ?? undefined, color ?? undefined)}
-              className={`inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors ${
+              className={`tap inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold ${
                 inSelection
                   ? "border-gold bg-gold/10 text-gold-dark"
                   : "border-border-gray bg-white text-black-soft hover:border-gold"
@@ -329,7 +329,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
             type="button"
             onClick={() => favorites.toggle(product.id)}
             aria-pressed={isFavorite}
-            className={`inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors ${
+            className={`tap inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold ${
               isFavorite
                 ? "border-gold bg-gold/10 text-gold-dark"
                 : "border-border-gray bg-white text-black-soft hover:border-gold"
@@ -346,7 +346,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
             type="button"
             onClick={shareProduct}
             aria-label="Compartilhar produto"
-            className="inline-flex min-h-12 w-12 items-center justify-center rounded-full border border-border-gray bg-white text-black-soft transition-colors hover:border-gold"
+            className="tap inline-flex min-h-12 w-12 items-center justify-center rounded-full border border-border-gray bg-white text-black-soft hover:border-gold"
           >
             <Share2 className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -365,7 +365,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={onConsult}
-          className={`inline-flex min-h-12 flex-1 items-center justify-center rounded-full px-4 text-sm font-semibold ${
+          className={`tap inline-flex min-h-12 flex-1 items-center justify-center rounded-full px-4 text-sm font-semibold ${
             soldOut
               ? "border border-black-soft bg-white text-black-soft"
               : "bg-black-soft text-off-white"

@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import { siteConfig } from "@/data/site.config"
 import { Breadcrumb } from "@/components/Breadcrumb"
 import { CatalogView } from "@/app/catalogo/CatalogView"
+import { DepartmentTabs } from "@/app/catalogo/DepartmentTabs"
 
 export const metadata: Metadata = {
   title: `Ofertas | ${siteConfig.name}`,
@@ -26,6 +27,7 @@ export default function OfertasPage() {
         <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-text-gray">
           Somente peças com preço reduzido de verdade — sem desconto inventado.
         </p>
+        <DepartmentTabs active="ofertas" />
       </div>
 
       <Suspense>

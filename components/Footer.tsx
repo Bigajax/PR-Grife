@@ -96,7 +96,7 @@ export function Footer({ products }: { products: Product[] }) {
             message={templates.atendimentoGeral()}
             event="hero_whatsapp_click"
             payload={{ placement: "footer" }}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-text-primary px-6 text-sm font-semibold text-text-primary transition-colors hover:border-accent hover:text-accent-strong"
+            className="tap inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-text-primary px-6 text-sm font-semibold text-text-primary hover:border-accent hover:text-accent-strong"
           >
             <MessageCircle className="h-4 w-4" aria-hidden="true" />
             WhatsApp
@@ -105,7 +105,7 @@ export function Footer({ products }: { products: Product[] }) {
             href={siteConfig.instagram}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-text-primary px-6 text-sm font-semibold text-text-primary transition-colors hover:border-accent hover:text-accent-strong"
+            className="tap inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-text-primary px-6 text-sm font-semibold text-text-primary hover:border-accent hover:text-accent-strong"
           >
             <InstagramIcon className="h-4 w-4" />
             Instagram

@@ -182,7 +182,7 @@ export function SelectionDrawer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => track("selection_whatsapp_click", { items: resolved.length })}
-                className="flex min-h-12 items-center justify-center rounded-full bg-black-soft px-6 text-sm font-semibold text-off-white transition-colors hover:bg-graphite"
+                className="tap flex min-h-12 items-center justify-center rounded-full bg-black-soft px-6 text-sm font-semibold text-off-white hover:bg-graphite"
               >
                 Enviar seleção no WhatsApp ({resolved.length})
               </a>

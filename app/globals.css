@@ -279,6 +279,29 @@ body.loading {
   display: none;
 }
 
+/* Toque Apple-like nos controles: transição suave e leve escala ao pressionar.
+   Aplicar junto de rounded-full — é a dupla que dá o acabamento de botão. */
+.tap {
+  transition:
+    transform 0.15s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.tap:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap,
+  .tap:active {
+    transition: none;
+    transform: none;
+  }
+}
+
 /* Zoom discreto em imagens de card */
 .img-zoom {
   transition: transform 0.4s ease;

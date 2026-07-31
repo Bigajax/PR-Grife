@@ -45,7 +45,7 @@ export function FavoritesView() {
           </p>
           <Link
             href="/catalogo"
-            className="mt-5 inline-flex min-h-11 items-center rounded-full bg-text-primary px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            className="tap mt-5 inline-flex min-h-11 items-center rounded-full bg-text-primary px-6 text-sm font-semibold text-white hover:opacity-90"
           >
             Explorar o catálogo
           </Link>

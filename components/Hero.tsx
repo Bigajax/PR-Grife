@@ -40,7 +40,7 @@ export function Hero() {
 
           <Link
             href={hero.href}
-            className="hero-rise mt-7 inline-flex min-h-12 items-center border border-text-primary px-8 text-[13px] font-semibold uppercase tracking-[0.16em] text-text-primary transition-colors hover:bg-text-primary hover:text-white"
+            className="hero-rise tap mt-7 inline-flex min-h-12 items-center rounded-full border border-text-primary px-8 text-[13px] font-semibold uppercase tracking-[0.16em] text-text-primary hover:bg-text-primary hover:text-white"
             style={{ animationDelay: "200ms" }}
           >
             {hero.ctaLabel}

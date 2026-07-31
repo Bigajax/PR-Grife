@@ -21,13 +21,13 @@ export default function NotFound() {
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             href="/catalogo"
-            className="inline-flex min-h-12 items-center rounded-full bg-black-soft px-7 text-sm font-semibold text-off-white transition-colors hover:bg-graphite"
+            className="tap inline-flex min-h-12 items-center rounded-full bg-black-soft px-7 text-sm font-semibold text-off-white transition-colors hover:bg-graphite"
           >
             Ver o catálogo
           </Link>
           <Link
             href="/"
-            className="inline-flex min-h-12 items-center rounded-full border border-black-soft px-7 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
+            className="tap inline-flex min-h-12 items-center rounded-full border border-black-soft px-7 text-sm font-semibold text-black-soft transition-colors hover:border-gold-dark hover:text-gold-dark"
           >
             Voltar ao início
           </Link>
