@@ -72,7 +72,7 @@ export function CategoryShowcase() {
               <Link
                 key={item.slug}
                 href={`/catalogo/marca/${item.slug}`}
-                className={`group relative block overflow-hidden rounded-lg bg-bg-elevated ${
+                className={`group relative block overflow-hidden rounded-2xl bg-bg-elevated ${
                   largo ? "col-span-2 aspect-[16/10] lg:aspect-auto" : "aspect-[4/5]"
                 }`}
               >

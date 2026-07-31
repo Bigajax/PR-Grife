@@ -17,7 +17,9 @@ export function HomeDuo() {
             para o olho ler a ordem, sem virar coreografia. */}
         {homeDuo.map((card, i) => (
           <Reveal key={card.href} delay={i * 120}>
-          <Link href={card.href} className="group relative block overflow-hidden">
+          {/* rounded-2xl: mesmo raio dos cards de produto e de marca — a
+              família de cards do site fala uma medida só. */}
+          <Link href={card.href} className="group relative block overflow-hidden rounded-2xl">
             <div className="relative aspect-[4/5] w-full bg-bg-surface">
               <Image
                 src={card.image}

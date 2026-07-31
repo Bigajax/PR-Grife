@@ -55,16 +55,12 @@ export function ProductCard({
   const hoverImage = product.images[1]
   const variant = variantLine(product)
   const href = `/produto/${product.slug}`
-  // O kit é vendido pela foto: o look inteiro montado. O enquadramento padrão
-  // (quadrado com respiro interno) encolheria justamente a única coisa que ele
-  // tem para mostrar, então a foto ocupa o card inteiro.
-  const editorial = product.category === "kits"
-  // Retrato SEMPRE que for kit, inclusive no carrossel. Já tentei deixar o
-  // trilho quadrado para as alturas baterem, mas um recorte quadrado numa foto
-  // 9:16 come 44% da altura: o boné encosta na borda de cima e o tênis na de
-  // baixo, e o look aparece cortado nas duas pontas. Emenda de altura no
-  // trilho é problema menor que decapitar a composição.
-  const retrato = editorial
+  // A foto ocupa o card inteiro, em retrato e com a quina arredondada — na
+  // grade e no carrossel, sem exceção. O enquadramento antigo (quadrado com
+  // object-contain e respiro interno) encolhia foto vertical para o meio do
+  // card e deixava duas tarjas de fundo nas laterais, e quase todo o catálogo
+  // novo foi fotografado em 9:16. Retrato em vez de quadrado porque cortar
+  // 9:16 num quadrado come 44% da altura; em 3:4 sobra um recorte discreto.
   // Nunca oferecer chip de tamanho zerado (estoque por variação).
   const sizes =
     compact || soldOut
@@ -73,9 +69,11 @@ export function ProductCard({
 
   return (
     <article className="group relative flex flex-col">
-      {/* Irmão do link, não filho: tocar no coração não navega. */}
+      {/* Irmão do link, não filho: tocar no coração não navega. O recuo é maior
+          que o antigo (4px) porque, com a quina arredondada em 16px, o coração
+          encostado na borda caía em cima da curva. */}
       {!compact && (
-        <div className="absolute right-1 top-1 z-20">
+        <div className="absolute right-2.5 top-2.5 z-20">
           <FavoriteButton
             productId={product.id}
             productName={product.name}
@@ -84,11 +82,7 @@ export function ProductCard({
         </div>
       )}
 
-      <div
-        className={`relative w-full overflow-hidden bg-bg-surface ${
-          retrato ? "aspect-[3/4]" : "aspect-square"
-        }`}
-      >
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-bg-surface">
         <Link href={href} className="absolute inset-0" aria-label={product.name}>
           {/* Produto publicado sem foto derrubava o next/image em runtime
               ("Image is missing required src"), quebrando a grade inteira por
@@ -100,7 +94,7 @@ export function ProductCard({
               alt={product.name}
               fill
               sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 62vw"
-              className={`${editorial ? "img-zoom object-cover" : "object-contain p-3"} ${
+              className={`img-zoom object-cover ${
                 soldOut ? "opacity-60 saturate-0" : ""
               } ${
                 hoverImage && !soldOut ? "transition-opacity duration-300 group-hover:opacity-0" : ""
@@ -117,7 +111,7 @@ export function ProductCard({
               alt=""
               fill
               sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 62vw"
-              className="object-contain p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             />
           )}
           {badge &&
