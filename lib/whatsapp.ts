@@ -91,10 +91,29 @@ function productSummary(p: Product, size?: string, color?: string): string {
     .join("\n")
 }
 
-// Linha de pagamento: com a forma escolhida na UI, sai qualificada
-// ("Pagamento: Pix"); sem escolha, sai a régua completa da loja.
-function paymentLine(payment?: string): string {
-  return `Pagamento: ${payment ?? siteConfig.paymentText}`
+/**
+ * Forma de pagamento escolhida na UI. `parcelas` só vem quando a opção é
+ * cartão — 1 significa à vista.
+ */
+export type PaymentChoice = {
+  label: string
+  parcelas?: number
+}
+
+/**
+ * Linha de pagamento do pedido. A UI só libera o botão com a forma escolhida,
+ * então na prática ela sempre chega; a régua genérica da loja fica como rede
+ * de segurança para chamadas antigas que ainda não passam o parâmetro.
+ *
+ * No cartão a mensagem diz o número de vezes, que é a informação que o
+ * atendimento precisa para fechar — "Cartão" sozinho obrigaria a perguntar.
+ */
+function paymentLine(payment?: PaymentChoice): string {
+  if (!payment) return `Pagamento: ${siteConfig.paymentText}`
+  if (!payment.parcelas) return `Pagamento: ${payment.label}`
+  return payment.parcelas === 1
+    ? `Pagamento: ${payment.label} à vista`
+    : `Pagamento: ${payment.label} em ${payment.parcelas}x sem juros`
 }
 
 // ── Pedido padronizado ────────────────────────────────────────────────────────
@@ -108,7 +127,7 @@ export type OrderItem = {
   color?: string
 }
 
-export function buildOrderMessage(items: OrderItem[], payment?: string): string {
+export function buildOrderMessage(items: OrderItem[], payment?: PaymentChoice): string {
   const single = items.length === 1
   const blocks = items.map(({ product, size, color }, i) => {
     const summary = productSummary(product, size, color)
@@ -152,7 +171,7 @@ export const templates = {
   informacoesProdutos: () =>
     `Olá! Vim pelo site da ${siteConfig.name} e gostaria de informações sobre os produtos.`,
 
-  produto: (p: Product, size?: string, color?: string, payment?: string) =>
+  produto: (p: Product, size?: string, color?: string, payment?: PaymentChoice) =>
     compose(greeting(p), productSummary(p, size, color), paymentLine(payment), closing(p, size)),
 
   // Peça esgotada: pedido de aviso de reposição.

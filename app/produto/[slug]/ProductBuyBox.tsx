@@ -9,6 +9,8 @@ import { isOnSale } from "@/lib/catalog"
 import { effectiveStatus, isOptionAvailable } from "@/lib/stock"
 import { buildWhatsAppLink, buildOrderMessage, templates } from "@/lib/whatsapp"
 import { siteConfig } from "@/data/site.config"
+
+type PaymentOption = (typeof siteConfig.paymentOptions)[number]
 import { useUtm } from "@/hooks/useUtm"
 import { useSelection } from "@/hooks/useSelection"
 import { useFavorites } from "@/hooks/useFavorites"
@@ -25,8 +27,10 @@ export function ProductBuyBox({ product }: { product: Product }) {
   const [color, setColor] = useState<string | null>(
     product.availableColors.length === 1 ? product.availableColors[0].name : null
   )
-  // Forma de pagamento escolhida — opcional; qualifica a mensagem do pedido.
-  const [payment, setPayment] = useState<string | null>(null)
+  // Forma de pagamento escolhida — OBRIGATÓRIA para fechar o pedido.
+  const [payment, setPayment] = useState<PaymentOption | null>(null)
+  // Parcelas: só existe quando a forma escolhida tem `parcelas` (o cartão).
+  const [parcelas, setParcelas] = useState<number | null>(null)
   const [sizeHint, setSizeHint] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
   const sizesRef = useRef<HTMLFieldSetElement>(null)
@@ -52,12 +56,23 @@ export function ProductBuyBox({ product }: { product: Product }) {
   const selectedStatus = effectiveStatus(product, size, color)
   const onRequest = selectedStatus === "on_request"
 
-  // Cor e tamanho são obrigatórios: sem os dois, o pedido chegaria incompleto
-  // no atendimento. O botão fica desabilitado até a escolha estar feita.
-  const missing = [needsSize && !size ? "o tamanho" : null, needsColor && !color ? "a cor" : null]
-    .filter(Boolean)
-    .join(" e ")
-  const ready = missing.length === 0
+  // Tamanho, cor E forma de pagamento são obrigatórios: sem os três o pedido
+  // chega incompleto e o atendimento gasta uma ida e volta só para perguntar.
+  // O botão fica desabilitado até a escolha estar feita.
+  // No cartão, o número de vezes também é obrigatório — "cartão" sem parcela
+  // não fecha nada.
+  const faltando = [
+    needsSize && !size ? "o tamanho" : null,
+    needsColor && !color ? "a cor" : null,
+    !payment ? "a forma de pagamento" : null,
+    payment?.parcelas && !parcelas ? "em quantas vezes" : null,
+  ].filter(Boolean) as string[]
+  // "a, b e c" — vírgula até o penúltimo, "e" antes do último.
+  const missing =
+    faltando.length > 1
+      ? `${faltando.slice(0, -1).join(", ")} e ${faltando[faltando.length - 1]}`
+      : (faltando[0] ?? "")
+  const ready = faltando.length === 0
 
   const pickSize = (s: string) => {
     setSize(s)
@@ -124,7 +139,9 @@ export function ProductBuyBox({ product }: { product: Product }) {
       ? templates.aviseMe(product, size ?? undefined)
       : buildOrderMessage(
           [{ product, size: size ?? undefined, color: color ?? undefined }],
-          payment ?? undefined
+          payment
+            ? { label: payment.label, parcelas: parcelas ?? undefined }
+            : undefined
         ),
     utm
   )
@@ -245,8 +262,8 @@ export function ProductBuyBox({ product }: { product: Product }) {
         {onRequest && ` — prazo estimado: ${siteConfig.leadTimeText}`}
       </p>
 
-      {/* Forma de pagamento: opcional — escolhida, entra qualificada na
-          mensagem ("Pagamento: Pix"); sem escolha, vai a régua completa. */}
+      {/* Forma de pagamento: obrigatória. A escolhida entra na mensagem
+          ("Pagamento: Cartão em 6x sem juros"), e é o que trava o botão. */}
       {!soldOut && (
         <fieldset className="mt-5">
           <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-text-gray">
@@ -255,20 +272,60 @@ export function ProductBuyBox({ product }: { product: Product }) {
           <div className="mt-2.5 flex flex-wrap gap-2">
             {siteConfig.paymentOptions.map((opt) => (
               <button
-                key={opt}
+                key={opt.id}
                 type="button"
-                onClick={() => setPayment((cur) => (cur === opt ? null : opt))}
-                aria-pressed={payment === opt}
+                onClick={() => {
+                  const igual = payment?.id === opt.id
+                  setPayment(igual ? null : opt)
+                  // Trocar de forma zera a parcela: 6x herdado do cartão não
+                  // pode sobrar pendurado num pedido em Pix.
+                  setParcelas(null)
+                }}
+                aria-pressed={payment?.id === opt.id}
                 className={`min-h-10 rounded-full border px-3.5 text-[13px] font-medium transition-colors ${
-                  payment === opt
+                  payment?.id === opt.id
                     ? "border-black-soft bg-black-soft text-off-white"
                     : "border-border-gray bg-white text-text-gray hover:border-gold"
                 }`}
               >
-                {opt}
+                {opt.label}
               </button>
             ))}
           </div>
+
+          {/* Parcelas: só aparecem na forma que tem `parcelas` no config. */}
+          {payment?.parcelas ? (
+            <div className="mt-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-gray">
+                Em quantas vezes?
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {Array.from({ length: payment.parcelas }, (_, i) => i + 1).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setParcelas((cur) => (cur === n ? null : n))}
+                    aria-pressed={parcelas === n}
+                    aria-label={n === 1 ? "À vista" : `Em ${n} vezes sem juros`}
+                    className={`min-h-10 min-w-11 rounded-full border px-3 text-[13px] font-medium transition-colors ${
+                      parcelas === n
+                        ? "border-black-soft bg-black-soft text-off-white"
+                        : "border-border-gray bg-white text-text-gray hover:border-gold"
+                    }`}
+                  >
+                    {n === 1 ? "À vista" : `${n}x`}
+                  </button>
+                ))}
+              </div>
+              {/* O valor da parcela só aparece com preço na vitrine — nunca
+                  dividir por cima de "a confirmar". */}
+              {parcelas && parcelas > 1 && product.price != null && (
+                <p className="mt-2.5 text-[13px] text-text-gray">
+                  {parcelas}x de {formatPrice(product.price / parcelas)} sem juros
+                </p>
+              )}
+            </div>
+          ) : null}
         </fieldset>
       )}
 

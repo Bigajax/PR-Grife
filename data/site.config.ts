@@ -32,9 +32,21 @@ export const siteConfig = {
     },
   ],
   paymentText: "Pix, dinheiro ou cartão em até 10x sem juros",
-  // Opções clicáveis nos pontos de pedido (PDP e sacola). O rótulo escolhido
-  // entra como "Pagamento: <opção>" na mensagem de WhatsApp.
-  paymentOptions: ["Pix", "Dinheiro", "Cartão em até 10x sem juros"],
+  // Opções clicáveis nos pontos de pedido (PDP e sacola). Escolher é
+  // OBRIGATÓRIO: sem forma de pagamento o pedido chega incompleto e o
+  // atendimento perde uma ida e volta só para perguntar.
+  //
+  // `parcelas` existe só no cartão e é o que abre os botões de "em quantas
+  // vezes". Fica no dado, e não numa checagem por texto ("se o rótulo contém
+  // Cartão"), senão renomear a opção quebraria a tela sem ninguém perceber.
+  // Tipado com `parcelas` opcional em TODAS as opções (e não `as const`): com
+  // const o TS estreita cada item e passa a dizer que "parcelas não existe no
+  // Pix", quebrando qualquer leitura uniforme da lista.
+  paymentOptions: [
+    { id: "pix", label: "Pix" },
+    { id: "dinheiro", label: "Dinheiro" },
+    { id: "cartao", label: "Cartão", parcelas: 10 },
+  ] as { id: string; label: string; parcelas?: number }[],
   // Os três destinos de mapa derivam do MESMO endereço textual — sem
   // coordenadas inventadas: busca (abrir no Maps), rota (dir) e embed (iframe).
   mapsUrl:

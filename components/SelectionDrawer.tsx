@@ -8,6 +8,8 @@ import { useFocusTrap } from "@/hooks/useFocusTrap"
 import { useUtm } from "@/hooks/useUtm"
 import { buildWhatsAppLink, buildOrderMessage } from "@/lib/whatsapp"
 import { siteConfig } from "@/data/site.config"
+
+type PaymentOption = (typeof siteConfig.paymentOptions)[number]
 import { isOptionAvailable } from "@/lib/stock"
 import { useProductLookup } from "@/components/CatalogProvider"
 import { formatPrice } from "@/lib/format"
@@ -19,7 +21,10 @@ import { DiamondMark } from "@/components/Logo"
 export function SelectionDrawer() {
   const { items, isOpen, closeDrawer, remove, update } = useSelection()
   const productById = useProductLookup()
-  const [payment, setPayment] = useState<string | null>(null)
+  // Forma de pagamento e parcelas: obrigatórias para enviar a seleção, mesma
+  // regra da página do produto. `parcelas` só vale para a forma que a tem.
+  const [payment, setPayment] = useState<PaymentOption | null>(null)
+  const [parcelas, setParcelas] = useState<number | null>(null)
   const utm = useUtm()
   const ref = useRef<HTMLDivElement>(null)
   useFocusTrap(ref, isOpen, closeDrawer)
@@ -143,8 +148,7 @@ export function SelectionDrawer() {
             </ul>
 
             <div className="border-t border-border-gray px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-              {/* Forma de pagamento: opcional — escolhida, a mensagem sai
-                  qualificada ("Pagamento: Pix"). */}
+              {/* Forma de pagamento: obrigatória para enviar a seleção. */}
               <fieldset className="pb-3">
                 <legend className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-gray">
                   Como prefere pagar?
@@ -152,40 +156,90 @@ export function SelectionDrawer() {
                 <div className="mt-2 flex flex-wrap gap-2">
                   {siteConfig.paymentOptions.map((opt) => (
                     <button
-                      key={opt}
+                      key={opt.id}
                       type="button"
-                      onClick={() => setPayment((cur) => (cur === opt ? null : opt))}
-                      aria-pressed={payment === opt}
+                      onClick={() => {
+                        setPayment(payment?.id === opt.id ? null : opt)
+                        setParcelas(null)
+                      }}
+                      aria-pressed={payment?.id === opt.id}
                       className={`min-h-9 rounded-full border px-3 text-xs font-medium transition-colors ${
-                        payment === opt
+                        payment?.id === opt.id
                           ? "border-black-soft bg-black-soft text-off-white"
                           : "border-border-gray bg-white text-text-gray hover:border-gold"
                       }`}
                     >
-                      {opt}
+                      {opt.label}
                     </button>
                   ))}
                 </div>
+
+                {payment?.parcelas ? (
+                  <div className="mt-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-gray">
+                      Em quantas vezes?
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {Array.from({ length: payment.parcelas }, (_, i) => i + 1).map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setParcelas((cur) => (cur === n ? null : n))}
+                          aria-pressed={parcelas === n}
+                          aria-label={n === 1 ? "À vista" : `Em ${n} vezes sem juros`}
+                          className={`min-h-9 min-w-10 rounded-full border px-2.5 text-xs font-medium transition-colors ${
+                            parcelas === n
+                              ? "border-black-soft bg-black-soft text-off-white"
+                              : "border-border-gray bg-white text-text-gray hover:border-gold"
+                          }`}
+                        >
+                          {n === 1 ? "À vista" : `${n}x`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </fieldset>
-              <a
-                href={buildWhatsAppLink(
-                  buildOrderMessage(
-                    resolved.map(({ item, product }) => ({
-                      product,
-                      size: item.size,
-                      color: item.color,
-                    })),
-                    payment ?? undefined
-                  ),
-                  utm
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => track("selection_whatsapp_click", { items: resolved.length })}
-                className="tap flex min-h-12 items-center justify-center rounded-full bg-black-soft px-6 text-sm font-semibold text-off-white hover:bg-graphite"
-              >
-                Enviar seleção no WhatsApp ({resolved.length})
-              </a>
+              {/* Mesma trava da página do produto: sem forma de pagamento (e
+                  sem o número de vezes, no cartão) o envio fica bloqueado. */}
+              {payment && !(payment.parcelas && !parcelas) ? (
+                <a
+                  href={buildWhatsAppLink(
+                    buildOrderMessage(
+                      resolved.map(({ item, product }) => ({
+                        product,
+                        size: item.size,
+                        color: item.color,
+                      })),
+                      { label: payment.label, parcelas: parcelas ?? undefined }
+                    ),
+                    utm
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => track("selection_whatsapp_click", { items: resolved.length })}
+                  className="tap flex min-h-12 items-center justify-center rounded-full bg-black-soft px-6 text-sm font-semibold text-off-white hover:bg-graphite"
+                >
+                  Enviar seleção no WhatsApp ({resolved.length})
+                </a>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled
+                    aria-describedby="selecao-pendente"
+                    className="flex min-h-12 w-full cursor-not-allowed items-center justify-center rounded-full bg-black-soft/40 px-6 text-sm font-semibold text-off-white"
+                  >
+                    Enviar seleção no WhatsApp ({resolved.length})
+                  </button>
+                  <p
+                    id="selecao-pendente"
+                    className="mt-2 text-center text-[13px] font-medium text-gold-dark"
+                  >
+                    Escolha {payment ? "em quantas vezes" : "a forma de pagamento"} para enviar.
+                  </p>
+                </>
+              )}
               <p className="mt-2.5 text-center text-xs text-text-gray">
                 Confirmamos disponibilidade, valores e entrega no atendimento.
               </p>
