@@ -39,16 +39,27 @@ export function SelectionDrawer() {
 
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Minha seleção">
+      {/* Véu com desfoque: o escurecimento sozinho ainda deixava a grade de
+          produtos legível atrás e competindo com a seleção. O blur vem de
+          utilitária do Tailwind — `backdrop-filter` escrito à mão no
+          globals.css é descartado pelo Lightning CSS neste projeto. */}
       <button
         type="button"
         aria-label="Fechar minha seleção"
         onClick={closeDrawer}
-        className="absolute inset-0 bg-black-soft/45"
+        className="absolute inset-0 bg-black-soft/45 backdrop-blur-md"
       />
 
+      {/* Painel lateral em TODAS as larguras. No mobile era folha subindo de
+          baixo; agora entra pela direita como no desktop. A largura para em
+          88% no celular de propósito: a tira de página que sobra à esquerda é
+          o que mostra o desfoque e deixa claro que dá para tocar fora para
+          fechar — ocupando 100% o véu não apareceria.
+          O topo respeita a área segura porque, em tela cheia no iPhone, o
+          título ficaria embaixo do notch. */}
       <div
         ref={ref}
-        className="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-2xl bg-off-white sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-full sm:max-w-md sm:rounded-none sm:border-l sm:border-border-gray"
+        className="absolute inset-y-0 right-0 flex w-[88%] max-w-md flex-col border-l border-border-gray bg-off-white pt-[env(safe-area-inset-top)]"
       >
         <div className="flex items-center justify-between border-b border-border-gray px-5 py-4">
           <h2 className="font-display text-2xl font-medium text-black-soft">Minha seleção</h2>
