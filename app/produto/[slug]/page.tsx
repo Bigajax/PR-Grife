@@ -89,7 +89,13 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
               <span className="hairline-gold w-16 shrink-0" aria-hidden="true" />
             </p>
             <h2 className="font-display mt-3 text-3xl font-medium text-black-soft">Você também pode gostar</h2>
-            <div className="mt-8 grid grid-cols-2 gap-px border border-border-gray bg-border-gray md:grid-cols-4">
+            {/* Grade espaçada, igual à do catálogo. Antes era grade de fio de
+                cabelo (gap-px sobre fundo na cor da borda, para os vãos de 1px
+                virarem linhas divisórias): funcionava quando o card tinha fundo
+                branco e a foto vinha encolhida com respiro interno. Com a foto
+                preenchendo o card, as imagens encostavam a 1px e a fileira
+                inteira virava uma faixa contínua, com cara de recorte colado. */}
+            <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
