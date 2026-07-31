@@ -209,7 +209,12 @@ export const siteConfig = {
     title: "PR Grife | Moda Multimarcas de Alto Padrão em Maringá",
     description:
       "Moda masculina multimarcas de alto padrão, curadoria de peças, atendimento personalizado pelo WhatsApp e entrega para todo o Brasil. Conheça a seleção da PR Grife.",
-    url: "https://prgrife.com.br", // TODO_CONFIRMAR — domínio definitivo
+    // Domínio real onde o site está no ar. Antes daqui saía
+    // "https://prgrife.com.br" (marcado TODO_CONFIRMAR), que nunca existiu no
+    // DNS — e como og:image e canonical são URLs absolutas, a prévia de link no
+    // WhatsApp apontava para um host inexistente e chegava sem imagem.
+    // Ao migrar para domínio próprio, troque aqui ou defina NEXT_PUBLIC_SITE_URL.
+    url: "https://usepr-grife.vercel.app",
   },
 }
 

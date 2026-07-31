@@ -26,8 +26,15 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700"],
 })
 
+/**
+ * Base das URLs absolutas do metadata (og:image e canonical). Sai do config,
+ * com NEXT_PUBLIC_SITE_URL por cima para o dia em que houver domínio próprio —
+ * assim dá para apontar o site novo sem novo deploy de código.
+ */
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || siteConfig.metadata.url
+
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.metadata.url),
+  metadataBase: new URL(siteUrl),
   title: siteConfig.metadata.title,
   description: siteConfig.metadata.description,
   alternates: { canonical: "/" },
