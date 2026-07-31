@@ -11,6 +11,7 @@ import { buildWhatsAppLink, buildOrderMessage, templates } from "@/lib/whatsapp"
 import { siteConfig } from "@/data/site.config"
 
 type PaymentOption = (typeof siteConfig.paymentOptions)[number]
+import { SizeGuideModal } from "@/components/SizeGuideModal"
 import { useUtm } from "@/hooks/useUtm"
 import { useSelection } from "@/hooks/useSelection"
 import { useFavorites } from "@/hooks/useFavorites"
@@ -213,12 +214,11 @@ export function ProductBuyBox({ product }: { product: Product }) {
               <span aria-hidden="true">→</span> Escolha um tamanho para consultar esta peça.
             </p>
           )}
-          {guideOpen && (
-            <div className="mt-3 border border-border-gray bg-off-white p-4 text-[13px] leading-relaxed text-text-gray">
-              No atendimento enviamos as medidas exatas desta peça e comparamos com algo que você já
-              usa. [TODO_CONFIRMAR: tabela de medidas oficial da PR Grife]
-            </div>
-          )}
+          <SizeGuideModal
+            open={guideOpen}
+            onClose={() => setGuideOpen(false)}
+            tamanhos={product.availableSizes}
+          />
         </fieldset>
       )}
 
