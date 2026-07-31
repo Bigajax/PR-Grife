@@ -45,8 +45,9 @@ export default async function MarcaPage({
   const item = showcaseBrandsFor(await getCatalog()).find((i) => i.slug === slug)
   if (!item) notFound()
 
+  // Fundo branco, igual às demais telas de listagem — ver app/catalogo/page.tsx.
   return (
-    <main className="bg-bg-base">
+    <main className="bg-white">
       <div className="shell pt-8">
         <Breadcrumb
           items={[

@@ -14,9 +14,13 @@ export const metadata: Metadata = {
 
 // A vitrine. Recebe os filtros pela query string, então um link já filtrado
 // (vindo da home, do header ou colado no WhatsApp) abre no recorte certo.
+// Fundo branco, igual a /ofertas e /novidades — as três telas de listagem
+// falam a mesma língua. A sombra de folhagem continua: é camada fixa em
+// multiply no layout raiz, e sobre o branco ela aparece na força total em vez
+// de se diluir no marfim.
 export default function CatalogoPage() {
   return (
-    <main className="bg-bg-base">
+    <main className="bg-white">
       <div className="shell pt-8">
         <Breadcrumb items={[{ label: "Início", href: "/" }, { label: "Catálogo" }]} />
         <h1 className="font-display mt-4 text-3xl font-medium text-text-primary sm:text-4xl">

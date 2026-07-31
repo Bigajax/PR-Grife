@@ -37,8 +37,9 @@ export default async function DepartamentoPage({
   const dep = departmentBySlug(departamento)
   if (!dep) notFound()
 
+  // Fundo branco, igual às demais telas de listagem — ver app/catalogo/page.tsx.
   return (
-    <main className="bg-bg-base">
+    <main className="bg-white">
       <div className="shell pt-8">
         <Breadcrumb
           items={[

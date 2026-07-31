@@ -301,15 +301,17 @@ body.loading {
     box-shadow 0.3s ease;
 }
 
-/* Alfa alto de propósito: a 0.72 os logos das marcas atravessavam o vidro e
-   brigavam com a navegação. Em 0.85 o que passa é cor e movimento, não forma.
-   O blur em si NÃO mora aqui: o Lightning CSS descarta `backdrop-filter` escrito
-   à mão neste arquivo. Ele vem das utilitárias do Tailwind no componente
-   (backdrop-blur-2xl backdrop-saturate-150), que sobrevivem ao build.          */
+/* O vidro precisa PARECER vidro. Já tentei resolver o vazamento dos logos das
+   marcas subindo o alfa para 0.85, e o efeito sumiu: marfim a 85% sobre uma
+   página clara é indistinguível de opaco. O remédio certo é blur, não opacidade
+   — a 64px (backdrop-blur-3xl no componente) o que passa vira mancha de cor,
+   nunca forma legível, e aí dá para segurar o alfa baixo e ver o vidro.
+   O blur NÃO mora aqui: o Lightning CSS descarta `backdrop-filter` escrito à
+   mão neste arquivo, então ele vem das utilitárias do Tailwind no componente. */
 .header-glass {
-  background-color: rgba(255, 253, 246, 0.85);
+  background-color: rgba(255, 253, 246, 0.6);
   border-bottom-color: transparent;
-  box-shadow: 0 1px 24px rgba(28, 28, 26, 0.07);
+  box-shadow: 0 1px 24px rgba(28, 28, 26, 0.1);
 }
 
 /* Sem backdrop-filter não há vidro, só transparência: volta ao topo opaco. */
