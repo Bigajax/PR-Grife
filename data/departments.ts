@@ -6,7 +6,7 @@ import { categories } from "@/data/categories"
 // categoria (mapa abaixo). Cadastrar categoria nova = adicioná-la aqui e em
 // data/categories.ts; o resto da navegação (header, abas, footer) deriva disto.
 export type Department = {
-  slug: "roupas" | "perfumes" | "acessorios" | "tenis"
+  slug: "roupas" | "perfumes" | "acessorios" | "tenis" | "kits"
   label: string
   /** Texto editorial exibido no topo da página do departamento. */
   description: string
@@ -37,6 +37,12 @@ export const departments: Department[] = [
     label: "Tênis",
     description: "Modelos casuais e versáteis para diferentes momentos.",
     categoryIds: ["tenis"],
+  },
+  {
+    slug: "kits",
+    label: "Kits",
+    description: "O look inteiro montado pela curadoria, pronto para vestir.",
+    categoryIds: ["kits"],
   },
 ]
 

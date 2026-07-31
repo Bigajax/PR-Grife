@@ -18,6 +18,10 @@ export const categories: Category[] = [
   { id: "oculos", label: "Óculos", image: "/images/products/slides-212.jpg" },
   { id: "acessorios", label: "Acessórios", image: "/images/products/slides-212.jpg" },
   { id: "perfumes", label: "Perfumes", image: "/images/products/perfume-le-male.jpg" },
+  // Kit = look inteiro vendido junto (peça de cima, de baixo, calçado e o que
+  // mais estiver na foto). Não é peça: por isso categoria e departamento
+  // próprios, fora da árvore de Roupas.
+  { id: "kits", label: "Kits", image: "/images/products/camiseta-branca.jpg" },
 ]
 
 export const categoryLabel = (id: string) =>

@@ -2,16 +2,20 @@ import Link from "next/link"
 import { brandShowcase } from "@/data/brands"
 import { BrandLogo } from "@/components/BrandLogos"
 
-// São poucas marcas: um trilho mais estreito que a tela abriria um vão visível
-// no meio do laço. Quatro cópias dão cerca de 4900px, o que cobre monitores
-// largos. Só a primeira cópia é navegável — as demais são repetição visual, e
-// sem isso o Tab passaria pela mesma marca quatro vezes.
-const REPETICOES = 4
+// Um trilho mais estreito que a tela abriria um vão visível no meio do laço.
+// Com mais de uma dúzia de marcas cada cópia já passa de 3000px, então duas
+// bastam para cobrir monitores largos — eram quatro quando a faixa tinha 8. Só
+// a primeira cópia é navegável: sem isso o Tab passaria pela mesma marca várias
+// vezes.
+const REPETICOES = 2
 
-// A faixa segue a vitrine curada (data/brands.ts): as 8 marcas confirmadas,
-// com a família Tommy representada uma vez só.
+// A faixa segue a vitrine curada (data/brands.ts), com a família Tommy
+// representada uma vez só. `faixaLogos: false` sai daqui e continua no card da
+// home e na navegação do catálogo — as vitrines são independentes.
+const naFaixa = brandShowcase.filter((item) => item.faixaLogos !== false)
+
 const loop = Array.from({ length: REPETICOES }, (_, volta) =>
-  brandShowcase.map((item) => ({ item, decorativo: volta > 0 }))
+  naFaixa.map((item) => ({ item, decorativo: volta > 0 }))
 ).flat()
 
 type Slide = { item: (typeof brandShowcase)[number]; decorativo: boolean }
@@ -47,9 +51,17 @@ function Track({ items, duplicado = false }: { items: Slide[]; duplicado?: boole
               tabIndex={oculto ? -1 : undefined}
               className="group flex items-center justify-center"
             >
+              {/* Altura FIXA + teto de largura, e os dois são necessários.
+                  Altura fixa porque vários SVGs (Tommy Hilfiger, Dior) só
+                  trazem viewBox, sem dimensão própria: com `max-h` eles
+                  colapsam para 0×0 e somem da faixa. Teto de largura porque a
+                  faixa mistura emblema quase quadrado (crocodilo, estrela) com
+                  wordmark de proporção 12:1 (Carolina Herrera, Dolce &
+                  Gabbana) — sem teto, um deles sozinho ocuparia meia tela.
+                  O object-contain do BrandLogo centraliza o que sobra. */}
               <BrandLogo
                 name={item.name}
-                className="h-12 max-w-32 text-text-primary transition-colors group-hover:text-accent-strong"
+                className="h-11 w-auto max-w-[240px] text-text-primary transition-colors group-hover:text-accent-strong"
               />
             </Link>
           </li>

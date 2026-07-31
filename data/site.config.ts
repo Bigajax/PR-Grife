@@ -134,7 +134,10 @@ export const siteConfig = {
         poster: undefined as string | undefined,
       },
       {
-        src: "/videos/hero-2-v2.mp4",
+        // -v3 = vídeo novo do proprietário. Original: .MOV de 48,9 MB em HEVC
+        // 1080×1920 com trilha de áudio — reencodado pela receita abaixo para
+        // 2,9 MB em H.264, que é o que toca em qualquer navegador.
+        src: "/videos/hero-2-v3.mp4",
         poster: undefined as string | undefined,
       },
       {

@@ -53,7 +53,20 @@ function readFilters(sp: URLSearchParams, locked: CatalogFilters): CatalogFilter
 }
 
 // Rotas dedicadas passam `locked` para fixar um recorte do catálogo.
-export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
+export function CatalogView({
+  locked = {},
+  editorial = false,
+}: {
+  locked?: CatalogFilters
+  /**
+   * Grade larga, de menos colunas. Para recortes em que a foto É o produto —
+   * hoje só os Kits, que são looks inteiros em retrato. Na grade normal, de
+   * até cinco colunas, cada look cai para ~220px e a composição deixa de ser
+   * legível: não dá para ver o que vem no kit, que é a única pergunta que a
+   * pessoa faz nessa página.
+   */
+  editorial?: boolean
+}) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -71,6 +84,28 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
   )
   const results = useMemo(() => queryCatalog(catalog, filters), [catalog, filters])
   const activeCount = countActiveFilters(filters, lockedKeys)
+
+  // Peças do recorte da página (só os filtros travados — departamento, marca
+  // ou categoria), ignorando o que a pessoa escolheu. É daqui que saem as
+  // opções de Tamanho e Cor: mesma regra dos chips de categoria, nunca
+  // oferecer filtro que devolve zero peças. Numa página de Kits, por exemplo,
+  // nenhum produto tem tamanho nem cor — os dois grupos somem.
+  const noRecorte = useMemo(
+    () => queryCatalog(catalog, locked as CatalogFilters),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [catalog]
+  )
+  const sizesNoRecorte = useMemo(() => {
+    const presentes = new Set(noRecorte.flatMap((p) => p.availableSizes))
+    return [...clothingSizes, ...shoeSizes].filter((s) => presentes.has(s))
+  }, [noRecorte])
+  const coresNoRecorte = useMemo(() => allColorsFor(noRecorte), [noRecorte])
+
+  // As duas grades ficam escritas por extenso: o Tailwind não gera classe
+  // montada em runtime. Mobile continua em duas colunas nos dois casos.
+  const gradeClasses = editorial
+    ? "grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 2xl:grid-cols-4"
+    : "grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 
   const { items: selection, openDrawer } = useSelection()
 
@@ -159,18 +194,21 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
       {/* Painel enxuto de propósito: categoria e marca já têm navegação
           própria acima da grade (chips e faixa de logos) — repetir aqui era
           só ruído. Novidades e ofertas têm página no menu. */}
-      <FilterGroup legend="Tamanho">
-        {[...clothingSizes, ...shoeSizes].map((s) => (
-          <Chip key={s} active={filters.tamanho === s} onClick={() => toggleParam("tamanho", s)} compact>
-            {s}
-          </Chip>
-        ))}
-      </FilterGroup>
+      {sizesNoRecorte.length > 0 && (
+        <FilterGroup legend="Tamanho">
+          {sizesNoRecorte.map((s) => (
+            <Chip key={s} active={filters.tamanho === s} onClick={() => toggleParam("tamanho", s)} compact>
+              {s}
+            </Chip>
+          ))}
+        </FilterGroup>
+      )}
 
       {/* Só a bolinha da cor — o nome vai no title/aria e no chip de filtro
           ativo quando selecionada. */}
+      {coresNoRecorte.length > 0 && (
       <FilterGroup legend="Cor">
-        {allColorsFor(catalog).map((c) => (
+        {coresNoRecorte.map((c) => (
           <button
             key={c.name}
             type="button"
@@ -192,6 +230,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
           </button>
         ))}
       </FilterGroup>
+      )}
 
       <FilterGroup legend="Preço">
         {priceRanges.map((r) => (
@@ -420,7 +459,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
           />
 
           {!ready ? (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            <div className={gradeClasses}>
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="animate-pulse bg-white pb-5">
                   <div className="aspect-[4/5] w-full bg-beige-light" />
@@ -432,7 +471,7 @@ export function CatalogView({ locked = {} }: { locked?: CatalogFilters }) {
             </div>
           ) : results.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              <div className={gradeClasses}>
                 {results.slice(0, visible).map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

@@ -11,18 +11,26 @@ import { Carousel } from "@/components/Carousel"
 import { ProductCard } from "@/components/ProductCard"
 import { QuickViewModal } from "@/components/QuickViewModal"
 
-const TOTAL = 10
+/** Quantas peças avulsas completam o trilho depois dos kits. */
+const AVULSAS = 10
 
-// Curadoria manual primeiro (site.config.homeRecommended, por slug), depois
-// destaques e novidades para completar. Slugs inválidos e peças esgotadas caem
+// Ordem: TODOS os kits, depois a curadoria manual (site.config.homeRecommended,
+// por slug) e por fim destaques e novidades para completar. Os kits saem do
+// próprio catálogo, não de uma lista de slugs — kit cadastrado no painel entra
+// aqui sozinho, sem tocar em código. Peças esgotadas e slugs inválidos caem
 // fora, então a vitrine nunca mostra buraco nem link morto.
 function montarLista(products: Product[]): Product[] {
   const disponivel = (p: Product | undefined): p is Product =>
     p != null && p.stockStatus !== "out_of_stock"
 
-  const escolhidos = siteConfig.homeRecommended
-    .map((slug) => products.find((p) => p.slug === slug))
-    .filter(disponivel)
+  const kits = products.filter((p) => p.category === "kits").filter(disponivel)
+
+  const escolhidos = [
+    ...kits,
+    ...siteConfig.homeRecommended
+      .map((slug) => products.find((p) => p.slug === slug))
+      .filter(disponivel),
+  ]
 
   const resto = [...products]
     .filter(disponivel)
@@ -32,16 +40,17 @@ function montarLista(products: Product[]): Product[] {
         Number(b.newArrival ?? false) - Number(a.newArrival ?? false)
     )
 
-  const vistos = new Set(escolhidos.map((p) => p.id))
-  for (const p of resto) {
-    if (escolhidos.length >= TOTAL) break
-    if (!vistos.has(p.id)) {
-      escolhidos.push(p)
-      vistos.add(p.id)
-    }
+  const vistos = new Set<string>()
+  const lista: Product[] = []
+  const teto = kits.length + AVULSAS
+  for (const p of [...escolhidos, ...resto]) {
+    if (lista.length >= teto) break
+    if (vistos.has(p.id)) continue
+    lista.push(p)
+    vistos.add(p.id)
   }
 
-  return escolhidos.slice(0, TOTAL)
+  return lista
 }
 
 // Vitrine curta e horizontal — sem busca, sem filtro, sem paginação.

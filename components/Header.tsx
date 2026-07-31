@@ -12,14 +12,14 @@ import { siteConfig } from "@/data/site.config"
 import { templates } from "@/lib/whatsapp"
 import { queryCatalog, categoryHref, showcaseBrandsFor } from "@/lib/catalog"
 import { useCatalog } from "@/components/CatalogProvider"
-import { departments, categoriesOfDepartment } from "@/data/departments"
+import { departments, categoriesOfDepartment, departmentOfCategory } from "@/data/departments"
 import { formatPrice } from "@/lib/format"
 import { track } from "@/lib/tracking"
 import { useSelection } from "@/hooks/useSelection"
 
 // Conteúdo dos painéis de navegação, derivado de data/departments.ts — a
-// categoria homônima do departamento (perfumes, tenis, acessorios) não vira
-// item próprio: o "Ver tudo" do departamento já é esse link.
+// categoria homônima do departamento (perfumes, tenis, acessorios, kits) não
+// vira item próprio: o "Ver tudo" do departamento já é esse link.
 const navDepartments = departments.map((dep) => ({
   ...dep,
   items: categoriesOfDepartment(dep.slug).filter((c) => c.id !== dep.slug),
@@ -35,6 +35,14 @@ export function Header() {
   const catalog = useCatalog()
   // Marca nova cadastrada no painel entra na navegação automaticamente.
   const navBrands = useMemo(() => showcaseBrandsFor(catalog), [catalog])
+  // Departamento sem peça publicada fica fora do painel — mesma regra das abas
+  // do catálogo. É o que segura a coluna de Kits enquanto eles estão sem preço.
+  const navDeps = useMemo(() => {
+    const comProduto = new Set(
+      catalog.map((p) => departmentOfCategory(p.category)?.slug).filter(Boolean)
+    )
+    return navDepartments.filter((dep) => comProduto.has(dep.slug))
+  }, [catalog])
   const pathname = usePathname()
   const router = useRouter()
   const searchRef = useRef<HTMLInputElement>(null)
@@ -251,10 +259,17 @@ export function Header() {
             label="Catálogo"
             href="/catalogo"
             active={pathname.startsWith("/catalogo")}
-            panelClassName="w-[min(56rem,calc(100vw-4rem))] px-9"
+            // Uma coluna por departamento. Com o quinto (Kits) o painel abre
+            // mais e a grade vira 5 — as duas larguras ficam escritas por
+            // extenso porque o Tailwind não gera classe montada em runtime.
+            panelClassName={`${
+              navDeps.length > 4
+                ? "w-[min(64rem,calc(100vw-4rem))]"
+                : "w-[min(56rem,calc(100vw-4rem))]"
+            } px-9`}
           >
-            <div className="grid grid-cols-4 gap-9">
-              {navDepartments.map((dep) => (
+            <div className={`grid gap-9 ${navDeps.length > 4 ? "grid-cols-5" : "grid-cols-4"}`}>
+              {navDeps.map((dep) => (
                 <div key={dep.slug}>
                   <Link
                     href={`/catalogo/${dep.slug}`}
@@ -502,7 +517,7 @@ export function Header() {
               Catálogo
             </Link>
 
-            {navDepartments.map((dep) =>
+            {navDeps.map((dep) =>
               dep.items.length === 0 ? (
                 <Link
                   key={dep.slug}

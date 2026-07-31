@@ -88,6 +88,14 @@ export function mapVariantRow(row: VariantRow): ProductVariant {
 }
 
 /**
+ * `.in()` vira lista de ids na query string, e o PostgREST derruba a conexão
+ * quando a URL passa do limite do servidor — com ~400 produtos a chamada
+ * falhava inteira e o catálogo perdia TODO o saldo de uma vez. Em lotes de 150
+ * a URL fica com folga; o custo é uma ida a mais ao banco a cada 150 produtos.
+ */
+const VARIANT_BATCH = 150;
+
+/**
  * Busca as variações dos produtos indicados, agrupadas por product_id.
  * Try/catch PRÓPRIO: sem a migration 0002 a tabela não existe e a vitrine
  * precisa seguir de pé — devolve mapa vazio e loga uma vez.
@@ -99,15 +107,24 @@ async function fetchVariantsByProduct(
   const map = new Map<string, ProductVariant[]>();
   if (productIds.length === 0) return map;
   try {
-    let query = anonClient()
-      .from("product_variants")
-      .select("*")
-      .in("product_id", productIds)
-      .order("created_at", { ascending: true });
-    if (onlyActive) query = query.eq("is_active", true);
-    const { data, error } = await query;
-    if (error) throw new Error(error.message);
-    for (const row of (data ?? []) as VariantRow[]) {
+    const batches: string[][] = [];
+    for (let i = 0; i < productIds.length; i += VARIANT_BATCH) {
+      batches.push(productIds.slice(i, i + VARIANT_BATCH));
+    }
+    const results = await Promise.all(
+      batches.map(async (ids) => {
+        let query = anonClient()
+          .from("product_variants")
+          .select("*")
+          .in("product_id", ids)
+          .order("created_at", { ascending: true });
+        if (onlyActive) query = query.eq("is_active", true);
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        return (data ?? []) as VariantRow[];
+      })
+    );
+    for (const row of results.flat()) {
       const list = map.get(row.product_id) ?? [];
       list.push(mapVariantRow(row));
       map.set(row.product_id, list);

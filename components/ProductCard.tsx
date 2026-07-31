@@ -55,6 +55,16 @@ export function ProductCard({
   const hoverImage = product.images[1]
   const variant = variantLine(product)
   const href = `/produto/${product.slug}`
+  // O kit é vendido pela foto: o look inteiro montado. O enquadramento padrão
+  // (quadrado com respiro interno) encolheria justamente a única coisa que ele
+  // tem para mostrar, então a foto ocupa o card inteiro.
+  const editorial = product.category === "kits"
+  // Retrato SEMPRE que for kit, inclusive no carrossel. Já tentei deixar o
+  // trilho quadrado para as alturas baterem, mas um recorte quadrado numa foto
+  // 9:16 come 44% da altura: o boné encosta na borda de cima e o tênis na de
+  // baixo, e o look aparece cortado nas duas pontas. Emenda de altura no
+  // trilho é problema menor que decapitar a composição.
+  const retrato = editorial
   // Nunca oferecer chip de tamanho zerado (estoque por variação).
   const sizes =
     compact || soldOut
@@ -74,17 +84,33 @@ export function ProductCard({
         </div>
       )}
 
-      <div className="relative aspect-square w-full overflow-hidden bg-bg-surface">
+      <div
+        className={`relative w-full overflow-hidden bg-bg-surface ${
+          retrato ? "aspect-[3/4]" : "aspect-square"
+        }`}
+      >
         <Link href={href} className="absolute inset-0" aria-label={product.name}>
-          <Image
-            src={product.thumbnail}
-            alt={product.name}
-            fill
-            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 62vw"
-            className={`object-contain p-3 ${soldOut ? "opacity-60 saturate-0" : ""} ${
-              hoverImage && !soldOut ? "transition-opacity duration-300 group-hover:opacity-0" : ""
-            }`}
-          />
+          {/* Produto publicado sem foto derrubava o next/image em runtime
+              ("Image is missing required src"), quebrando a grade inteira por
+              causa de UM cadastro. O painel já tratava esse caso; aqui não.
+              Agora o card degrada para um selo discreto, como no painel. */}
+          {product.thumbnail ? (
+            <Image
+              src={product.thumbnail}
+              alt={product.name}
+              fill
+              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 62vw"
+              className={`${editorial ? "img-zoom object-cover" : "object-contain p-3"} ${
+                soldOut ? "opacity-60 saturate-0" : ""
+              } ${
+                hoverImage && !soldOut ? "transition-opacity duration-300 group-hover:opacity-0" : ""
+              }`}
+            />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+              Sem foto
+            </span>
+          )}
           {hoverImage && !soldOut && (
             <Image
               src={hoverImage}

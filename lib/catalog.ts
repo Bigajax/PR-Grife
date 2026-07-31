@@ -77,12 +77,21 @@ export const brandsInCatalog = (list: Product[]) =>
 // A vitrine curada (data/brands.ts) mais qualquer marca que exista nos produtos
 // e ainda não tenha card — assim, cadastrar produto de marca nova já a coloca
 // na navegação sem mexer em mais nada.
+/**
+ * Valores que ocupam o campo `brand` mas NÃO são marca: "Sem marca" é o que a
+ * importação da planilha grava quando o nome do produto não denuncia a casa, e
+ * "Multimarcas" é o que um kit recebe quando mistura etiquetas e nenhuma manda
+ * no look. Servem no painel — dá para filtrar e ir corrigindo — mas não podem
+ * virar card, logo nem item de menu na vitrine.
+ */
+const NAO_SAO_MARCA = new Set(["Sem marca", "Multimarcas"])
+
 export function showcaseBrandsFor(list: Product[]): BrandShowcaseItem[] {
   const cobertas = new Set(brandShowcase.flatMap((i) => i.brands))
   return [
     ...brandShowcase,
     ...Array.from(new Set(list.map((p) => p.brand)))
-      .filter((b) => !cobertas.has(b))
+      .filter((b) => !cobertas.has(b) && !NAO_SAO_MARCA.has(b))
       .map((b) => ({ name: b, slug: brandSlug(b), brands: [b] })),
   ]
 }

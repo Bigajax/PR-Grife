@@ -59,7 +59,9 @@ export default async function DepartamentoPage({
       </div>
 
       <Suspense>
-        <CatalogView locked={{ departamento: dep.slug }} />
+        {/* Kits são looks inteiros fotografados em retrato: a foto é o
+            produto, então a grade abre e cabem menos por linha. */}
+        <CatalogView locked={{ departamento: dep.slug }} editorial={dep.slug === "kits"} />
       </Suspense>
     </main>
   )

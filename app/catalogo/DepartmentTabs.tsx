@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { departments } from "@/data/departments"
+import { departments, departmentOfCategory } from "@/data/departments"
 import { getCatalog } from "@/lib/products/db"
 import { isOnSale } from "@/lib/catalog"
 
@@ -9,18 +9,29 @@ import { isOnSale } from "@/lib/catalog"
 //
 // A aba Ofertas só existe enquanto houver peça em oferta de verdade (preço
 // "de" preenchido no painel) e vai em ouro — o mesmo da etiqueta dos cards.
+//
+// Departamento sem nenhuma peça publicada também não ganha aba: é a mesma
+// regra da navegação por marca ("não mostra marca sem produto"). Sem isso,
+// Kits apareceria como aba morta enquanto os kits estão sem preço no painel.
+// A aba do departamento aberto fica de pé mesmo vazia, senão a página em que
+// a pessoa está some da navegação enquanto ela a lê.
 export async function DepartmentTabs({ active }: { active?: string }) {
   const products = await getCatalog()
   const hasOffers = products.some((p) => isOnSale(p))
+  const comProduto = new Set(
+    products.map((p) => departmentOfCategory(p.category)?.slug).filter(Boolean)
+  )
 
   const tabs = [
     { slug: undefined as string | undefined, label: "Todos", href: "/catalogo", oferta: false },
-    ...departments.map((d) => ({
-      slug: d.slug as string | undefined,
-      label: d.label,
-      href: `/catalogo/${d.slug}`,
-      oferta: false,
-    })),
+    ...departments
+      .filter((d) => comProduto.has(d.slug) || d.slug === active)
+      .map((d) => ({
+        slug: d.slug as string | undefined,
+        label: d.label,
+        href: `/catalogo/${d.slug}`,
+        oferta: false,
+      })),
     ...(hasOffers
       ? [{ slug: "ofertas" as string | undefined, label: "Ofertas", href: "/ofertas", oferta: true }]
       : []),
