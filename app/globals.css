@@ -27,6 +27,14 @@
   --color-accent-soft: #f2e2e0;
   --color-alert: #b3261e;
 
+  /* ── Exceção escura: painel de alta perfumaria (components/HomeFeature.tsx) ──
+     A única superfície escura do corpo da página, a pedido do proprietário.
+     Não é #000: o still do frasco é sobre madeira escura, e o preto quente
+     mantém o frasco dentro da mesma cena — o preto puro corta frio contra o
+     marfim e vira um retângulo colado na home. Use só nessa seção.            */
+  --color-noir: #12100d;
+  --color-noir-muted: #a8a094;
+
   /* ── Apelidos legados ──────────────────────────────────────────────────────
      Páginas fora do escopo desta rodada (produto, catálogo por categoria,
      políticas) ainda usam estes nomes. Todos apontam para a paleta acima, então
@@ -277,6 +285,46 @@ body.loading {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Header ao rolar (components/Header.tsx) ─────────────────────────────────
+   No topo o header é opaco, com a linha de borda de sempre. Passados alguns
+   pixels ele vira vidro: marfim translúcido com blur e saturação, de modo que a
+   peça que passa por baixo dê a cor. A borda some e no lugar entra uma sombra
+   rasa — é ela que separa header e conteúdo quando não há mais linha.
+   O vidro é desligado com o menu ou a busca abertos: esses painéis são opacos e
+   um topo translúcido em cima deles lê como emenda.                           */
+.site-header {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Alfa alto de propósito: a 0.72 os logos das marcas atravessavam o vidro e
+   brigavam com a navegação. Em 0.85 o que passa é cor e movimento, não forma.
+   O blur em si NÃO mora aqui: o Lightning CSS descarta `backdrop-filter` escrito
+   à mão neste arquivo. Ele vem das utilitárias do Tailwind no componente
+   (backdrop-blur-2xl backdrop-saturate-150), que sobrevivem ao build.          */
+.header-glass {
+  background-color: rgba(255, 253, 246, 0.85);
+  border-bottom-color: transparent;
+  box-shadow: 0 1px 24px rgba(28, 28, 26, 0.07);
+}
+
+/* Sem backdrop-filter não há vidro, só transparência: volta ao topo opaco. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .header-glass {
+    background-color: var(--color-bg-elevated);
+    border-bottom-color: var(--color-border);
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    transition: none;
+  }
 }
 
 /* Toque Apple-like nos controles: transição suave e leve escala ao pressionar.

@@ -99,8 +99,11 @@ export function ProductCard({
               // Oferta: ouro da casa (mesmo #C2A15D do diamante do logo), no
               // canto superior esquerdo para saltar aos olhos sem brigar com o
               // coração de favoritos (superior direito).
+              // Pílula solta do canto, não etiqueta colada na quina: com raio
+              // total e sombra baixa ela pousa sobre a foto em vez de recortar
+              // o card — é o mesmo acabamento dos botões do site.
               <span
-                className="absolute left-0 top-0 z-10 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-text-primary shadow-sm"
+                className="absolute left-2.5 top-2.5 z-10 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase leading-none tracking-[0.08em] text-text-primary shadow-[0_2px_8px_rgba(28,28,26,0.22)]"
                 style={{
                   background:
                     "linear-gradient(135deg, #E3CD9A 0%, #C2A15D 55%, #A8853F 100%)",
@@ -109,7 +112,9 @@ export function ProductCard({
                 {badge.text}
               </span>
             ) : (
-              <span className="absolute bottom-0 left-0 z-10 bg-text-primary px-2 py-1 text-[11px] font-semibold text-white">
+              // Mesma pílula em grafite. Fica embaixo porque é informativa
+              // ("Novo", "Esgotado"): não disputa a primeira leitura do card.
+              <span className="absolute bottom-2.5 left-2.5 z-10 rounded-full bg-text-primary px-3 py-1.5 text-[11px] font-semibold uppercase leading-none tracking-[0.08em] text-white shadow-[0_2px_8px_rgba(28,28,26,0.22)]">
                 {badge.text}
               </span>
             ))}

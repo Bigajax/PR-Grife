@@ -9,9 +9,15 @@ const { homeFeature } = siteConfig
 // usa o recuo do container, então a coluna da imagem já nasce colada na borda.
 // Sem card, sem borda, sem sombra. A coluna de texto tem exatamente três
 // elementos: título, apoio e botão.
+//
+// Fundo preto (--color-noir): é a única seção escura do corpo da página, e a
+// foto sobre madeira escura se funde nele — a faixa lê como um painel só, não
+// como imagem + caixa de texto. Por isso a paleta inteira do bloco inverte, o
+// botão incluído. O véu botânico é multiply, então não pousa nada aqui: a
+// separação da seção vem do próprio corte de cor.
 export function HomeFeature() {
   return (
-    <section className="bg-bg-base" aria-labelledby="destaque-home">
+    <section className="bg-noir" aria-labelledby="destaque-home">
       <div className="grid md:grid-cols-[0.9fr_1.1fr]">
         {/* Quadro 4:5 = a proporção exata da foto (1024×1280), então o
             object-cover não corta nada. A coluna da imagem é um pouco mais
@@ -31,18 +37,20 @@ export function HomeFeature() {
           <div className="md:max-w-[60%]">
             <h2
               id="destaque-home"
-              className="font-display text-2xl font-medium uppercase leading-tight tracking-[0.04em] text-text-primary sm:text-[28px]"
+              className="font-display text-2xl font-medium uppercase leading-tight tracking-[0.04em] text-bg-base sm:text-[28px]"
             >
               {homeFeature.title}
             </h2>
 
-            <p className="mt-4 text-base leading-relaxed text-text-secondary">
+            <p className="mt-4 text-base leading-relaxed text-noir-muted">
               {homeFeature.lines.join(" ")}
             </p>
 
+            {/* Botão espelhado: no claro é pílula grafite com texto branco;
+                aqui é o inverso exato, mesmo peso e mesmo raio. */}
             <Link
               href={homeFeature.href}
-              className="tap mt-7 inline-flex min-h-12 items-center rounded-full bg-text-primary px-8 text-[13px] font-semibold uppercase tracking-[0.16em] text-white hover:opacity-90"
+              className="tap mt-7 inline-flex min-h-12 items-center rounded-full bg-bg-base px-8 text-[13px] font-semibold uppercase tracking-[0.16em] text-noir hover:opacity-90"
             >
               {homeFeature.ctaLabel}
             </Link>

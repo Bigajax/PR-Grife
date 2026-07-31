@@ -39,11 +39,18 @@ export function HomeDuo() {
                 {card.title}
               </h2>
               <p className="mt-1 text-[15px] text-white">{card.subtitle}</p>
+              {/* Disco, não quadrado: é o mesmo botão redondo dos cards de
+                  marca e das pílulas do site. A seta anda meio passo no hover e
+                  o disco recua no toque — o `tap` mora no <span> porque o alvo
+                  de clique é o card inteiro, então o estado vem do group. */}
               <span
                 aria-hidden="true"
-                className="mt-5 flex h-12 w-12 items-center justify-center bg-white text-text-primary"
+                className="tap mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-white text-text-primary shadow-[0_2px_10px_rgba(28,28,26,0.18)] motion-safe:group-active:scale-95"
               >
-                <ArrowRight className="h-5 w-5" strokeWidth={1.6} />
+                <ArrowRight
+                  className="h-5 w-5 transition-transform motion-safe:group-hover:translate-x-0.5"
+                  strokeWidth={1.6}
+                />
               </span>
             </div>
           </Link>

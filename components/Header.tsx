@@ -42,11 +42,19 @@ export function Header() {
   // Mobile: a linha de busca recolhe suavemente ao rolar para baixo (depois de
   // uma rolagem maior) e volta ao primeiro gesto para cima — nunca some com o
   // menu aberto nem no meio de uma digitação.
+  // O mesmo listener liga o vidro do header (.header-glass) assim que a página
+  // sai do topo — um só scroll handler para as duas coisas.
   const [searchRowHidden, setSearchRowHidden] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const lastY = useRef(0)
   useEffect(() => {
+    // Recarregar no meio da página já entra rolado — sem isto o vidro só
+    // apareceria no primeiro gesto. Um quadro depois da montagem, e não no
+    // corpo do efeito, para o primeiro render continuar igual ao do servidor.
+    const raf = requestAnimationFrame(() => setScrolled(window.scrollY > 8))
     const onScroll = () => {
       const y = window.scrollY
+      setScrolled(y > 8)
       const delta = y - lastY.current
       lastY.current = y
       if (menuOpen || term.trim().length >= 2) {
@@ -60,7 +68,10 @@ export function Header() {
       else if (delta < 0) setSearchRowHidden(false)
     }
     window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener("scroll", onScroll)
+    }
   }, [menuOpen, term])
 
   useEffect(() => {
@@ -106,8 +117,18 @@ export function Header() {
     router.push(q ? `/catalogo?q=${encodeURIComponent(q)}` : "/catalogo")
   }
 
+  // Painel de busca aberto = campo com resultados logo abaixo da barra.
+  const searchPanelOpen = searchOpen || term.trim().length >= 2
+  const glass = scrolled && !menuOpen && !searchPanelOpen
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-bg-elevated pt-[env(safe-area-inset-top)]">
+    <header
+      className={`site-header sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)] ${
+        glass
+          ? "header-glass backdrop-blur-2xl backdrop-saturate-150"
+          : "border-border bg-bg-elevated"
+      }`}
+    >
       {/* ── Mobile: header em duas linhas ────────────────────────────────────
           Linha 1 (58px): menu | logo | conta — grade 1fr/auto/1fr, então o
           centro da logo não se move com a largura dos ícones laterais.
@@ -354,7 +375,7 @@ export function Header() {
       {/* Busca com resultados em tempo real. No mobile o campo é o da segunda
           linha do header (sempre visível): o painel só entra com os resultados
           quando há 2+ caracteres. No desktop, abre com o botão de lupa. */}
-      {(searchOpen || term.trim().length >= 2) && (
+      {searchPanelOpen && (
         <div className="border-t border-border bg-bg-elevated">
           <form
             onSubmit={submitSearch}
