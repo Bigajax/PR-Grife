@@ -34,6 +34,11 @@
      marfim e vira um retângulo colado na home. Use só nessa seção.            */
   --color-noir: #12100d;
   --color-noir-muted: #a8a094;
+  /* O rosé da casa (#b76e79) sobre o preto quente dá 4.95:1 — passa no mínimo
+     da norma, mas em rótulo de 11px com espaçamento largo lê como borrão.
+     Este é o mesmo rosé clareado para superfície escura: 8.2:1, confortável.
+     Usar SÓ sobre --color-noir; sobre o marfim ele some. */
+  --color-accent-on-dark: #d99aa3;
 
   /* ── Apelidos legados ──────────────────────────────────────────────────────
      Páginas fora do escopo desta rodada (produto, catálogo por categoria,
