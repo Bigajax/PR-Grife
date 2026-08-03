@@ -133,10 +133,12 @@ export const brandShowcase: BrandShowcaseItem[] = [
     faixaLogos: false,
   },
   // ── Perfumaria e marcas dos kits ──────────────────────────────────────────
-  // Todas com vitrineHome: false — entram na faixa de logos e na navegação do
-  // catálogo, mas não disputam as vagas dos cards da home, que são da moda.
-  // Xerjoff fica de fora até ter arquivo: a faixa é de logos, e uma marca em
-  // texto no meio delas lê como falha.
+  // TODAS fora das duas vitrines (vitrineHome e faixaLogos false), por pedido
+  // do proprietário: a faixa rotativa é das marcas de moda, que é o que a loja
+  // quer anunciar de relance. Perfumaria continua inteira na navegação do
+  // catálogo (menu Marcas, filtro por marca e /catalogo/marca/[slug]) — nada
+  // aqui tira produto do ar, só decide quem aparece na faixa da home.
+  // Xerjoff segue de fora da lista por não ter arquivo de logo.
   {
     name: "Jean Paul Gaultier",
     slug: "jean-paul-gaultier",
@@ -144,26 +146,35 @@ export const brandShowcase: BrandShowcaseItem[] = [
     vitrineHome: false,
     faixaLogos: false,
   },
-  { name: "Dior", slug: "dior", brands: ["Dior"], vitrineHome: false },
-  { name: "Versace", slug: "versace", brands: ["Versace"], vitrineHome: false },
-  { name: "Rabanne", slug: "rabanne", brands: ["Rabanne"], vitrineHome: false },
+  { name: "Dior", slug: "dior", brands: ["Dior"], vitrineHome: false, faixaLogos: false },
+  { name: "Versace", slug: "versace", brands: ["Versace"], vitrineHome: false, faixaLogos: false },
+  { name: "Rabanne", slug: "rabanne", brands: ["Rabanne"], vitrineHome: false, faixaLogos: false },
   {
     name: "Carolina Herrera",
     slug: "carolina-herrera",
     brands: ["Carolina Herrera"],
     vitrineHome: false,
+    faixaLogos: false,
   },
   {
     name: "Dolce & Gabbana",
     slug: "dolce-gabbana",
     brands: ["Dolce & Gabbana"],
     vitrineHome: false,
+    faixaLogos: false,
   },
-  { name: "Montblanc", slug: "montblanc", brands: ["Montblanc"], vitrineHome: false },
+  {
+    name: "Montblanc",
+    slug: "montblanc",
+    brands: ["Montblanc"],
+    vitrineHome: false,
+    faixaLogos: false,
+  },
   {
     name: "Mercedes-Benz",
     slug: "mercedes-benz",
     brands: ["Mercedes-Benz"],
     vitrineHome: false,
+    faixaLogos: false,
   },
 ]

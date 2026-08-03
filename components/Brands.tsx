@@ -2,12 +2,13 @@ import Link from "next/link"
 import { brandShowcase } from "@/data/brands"
 import { BrandLogo } from "@/components/BrandLogos"
 
-// Um trilho mais estreito que a tela abriria um vão visível no meio do laço.
-// Com mais de uma dúzia de marcas cada cópia já passa de 3000px, então duas
-// bastam para cobrir monitores largos — eram quatro quando a faixa tinha 8. Só
-// a primeira cópia é navegável: sem isso o Tab passaria pela mesma marca várias
-// vezes.
-const REPETICOES = 2
+// Um trilho mais estreito que a tela abriria um vão visível no meio do laço, e
+// a duração da animação é fixa (40s por volta), então o número de logos por
+// cópia também governa a VELOCIDADE. Sobe quando a faixa encolhe: eram duas
+// cópias com a perfumaria dentro (14 marcas), quatro agora que só a moda ficou
+// (6) — mesma ordem de grandeza de logos por trilho, mesmo ritmo. Só a primeira
+// cópia é navegável: sem isso o Tab passaria pela mesma marca várias vezes.
+const REPETICOES = 4
 
 // A faixa segue a vitrine curada (data/brands.ts), com a família Tommy
 // representada uma vez só. `faixaLogos: false` sai daqui e continua no card da
