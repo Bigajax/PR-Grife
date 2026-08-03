@@ -19,7 +19,7 @@ export const faqItems: FaqItem[] = [
   },
   {
     question: "Quais são as formas de pagamento?",
-    answer: "Aceitamos dinheiro, Pix e cartão em até 10 vezes sem juros.",
+    answer: "Aceitamos dinheiro, Pix e cartão em até 6 vezes sem juros.",
   },
   {
     question: "Como funcionam as trocas?",

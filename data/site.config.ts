@@ -31,7 +31,7 @@ export const siteConfig = {
       closes: "13:00",
     },
   ],
-  paymentText: "Pix, dinheiro ou cartão em até 10x sem juros",
+  paymentText: "Pix, dinheiro ou cartão em até 6x sem juros",
   // Opções clicáveis nos pontos de pedido (PDP e sacola). Escolher é
   // OBRIGATÓRIO: sem forma de pagamento o pedido chega incompleto e o
   // atendimento perde uma ida e volta só para perguntar.
@@ -45,7 +45,12 @@ export const siteConfig = {
   paymentOptions: [
     { id: "pix", label: "Pix" },
     { id: "dinheiro", label: "Dinheiro" },
-    { id: "cartao", label: "Cartão", parcelas: 10 },
+    // Teto de parcelas praticado pela loja. É a fonte única: os botões de "em
+    // quantas vezes" (PDP e sacola) contam até aqui, então mudar este número
+    // muda as duas telas. Os textos escritos por extenso ("até 6x sem juros")
+    // ficam em paymentText, no FAQ e na página da loja física — se o teto
+    // mudar de novo, eles vão junto.
+    { id: "cartao", label: "Cartão", parcelas: 6 },
   ] as { id: string; label: string; parcelas?: number }[],
   // Os três destinos de mapa derivam do MESMO endereço textual — sem
   // coordenadas inventadas: busca (abrir no Maps), rota (dir) e embed (iframe).
@@ -113,7 +118,7 @@ export const siteConfig = {
       "Estamos na Avenida Tiradentes, 202, em Maringá. Use o mapa para montar sua rota até a loja.",
     metaTitle: "Loja Física PR Grife em Maringá | Como chegar",
     metaDescription:
-      "Visite a PR Grife na Avenida Tiradentes, 202, em Maringá. Produtos originais, atendimento pelo WhatsApp e pagamento em até 10x sem juros.",
+      "Visite a PR Grife na Avenida Tiradentes, 202, em Maringá. Produtos originais, atendimento pelo WhatsApp e pagamento em até 6x sem juros.",
   },
   // ── Hero ────────────────────────────────────────────────────────────────────
   // Copy fixa: não tem data, estação nem campanha para trocar.

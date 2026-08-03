@@ -191,7 +191,7 @@ export const products: Product[] = [
     fullDescription:
       "Referência noventista da Tommy Jeans: corpo preto, vivos brancos e logo bordado. Combina com jeans claro e tênis branco.",
     price: 649, // TODO_CONFIRMAR — preço demonstrativo
-    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
     images: ["/images/products/jaqueta-track.jpg"],
     thumbnail: "/images/products/jaqueta-track.jpg",
     availableSizes: ["P", "M", "G", "GG"],
@@ -211,7 +211,7 @@ export const products: Product[] = [
     category: "jaquetas",
     shortDescription: "Bomber leve em tom claro, terceira peça sem esforço.",
     price: 549, // TODO_CONFIRMAR — preço demonstrativo
-    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
     images: ["/images/products/bomber-off-white.jpg"],
     thumbnail: "/images/products/bomber-off-white.jpg",
     availableSizes: ["P", "M", "G", "GG"],
@@ -231,7 +231,7 @@ export const products: Product[] = [
     category: "jaquetas",
     shortDescription: "Acolchoada, leve e quente para os dias frios do Sul.",
     price: 699, // TODO_CONFIRMAR — preço demonstrativo
-    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
     images: ["/images/products/puffer-off-white.jpg"],
     thumbnail: "/images/products/puffer-off-white.jpg",
     availableSizes: ["M", "G", "GG"],
@@ -251,7 +251,7 @@ export const products: Product[] = [
     category: "jaquetas",
     shortDescription: "Colarinho baixo e caimento limpo, clássico atemporal.",
     price: 599, // TODO_CONFIRMAR — preço demonstrativo
-    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
     images: ["/images/products/jaqueta-harrington.jpg"],
     thumbnail: "/images/products/jaqueta-harrington.jpg",
     availableSizes: ["P", "M", "G"],
@@ -289,7 +289,7 @@ export const products: Product[] = [
     fullDescription:
       "O tênis que resolve o look: branco de base, detalhes marinho e construção em couro. Vai de calça de alfaiataria a shorts de sarja.",
     price: 799, // TODO_CONFIRMAR — preço demonstrativo
-    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
     images: ["/images/products/tenis-hilfiger.jpg", "/images/products/tenis-hilfiger-box.jpg"],
     thumbnail: "/images/products/tenis-hilfiger.jpg",
     availableSizes: ["38", "39", "40", "41", "42", "43", "44"],
@@ -308,7 +308,7 @@ export const products: Product[] = [
     category: "tenis",
     shortDescription: "Base branca com as listras assinatura da marca.",
     price: 749, // TODO_CONFIRMAR — preço demonstrativo
-    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
     images: ["/images/products/tenis-hilfiger-box.jpg"],
     thumbnail: "/images/products/tenis-hilfiger-box.jpg",
     availableSizes: ["39", "40", "41", "42", "43"],
@@ -364,7 +364,7 @@ export const products: Product[] = [
     fullDescription:
       "Parfum concentrado com saída de lavanda e fundo de baunilha, mel e madeiras. Projeção alta — uma assinatura para ocasiões que pedem presença.",
     price: 899, // TODO_CONFIRMAR — preço demonstrativo
-    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
     images: ["/images/products/perfume-le-male.jpg"],
     thumbnail: "/images/products/perfume-le-male.jpg",
     availableSizes: ["75 ml", "125 ml"],
@@ -382,7 +382,7 @@ export const products: Product[] = [
     category: "perfumes",
     shortDescription: "Doce equilibrado e versátil, do dia ao happy hour.",
     price: 799, // TODO_CONFIRMAR — preço demonstrativo
-    installmentText: "em até 10x sem juros", // TODO_CONFIRMAR
+    installmentText: "em até 6x sem juros", // TODO_CONFIRMAR
     images: ["/images/products/perfume-scandal.jpg"],
     thumbnail: "/images/products/perfume-scandal.jpg",
     availableSizes: ["100 ml"],

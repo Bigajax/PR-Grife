@@ -248,7 +248,7 @@ export default function LojaFisicaPage() {
             <ul className="mt-3 space-y-1 text-sm leading-relaxed text-text-secondary">
               <li>Dinheiro</li>
               <li>Pix</li>
-              <li>Cartão em até 10x sem juros</li>
+              <li>Cartão em até 6x sem juros</li>
             </ul>
           </Reveal>
 
@@ -303,13 +303,13 @@ export default function LojaFisicaPage() {
           <SectionHeading
             eyebrow="Pagamento"
             title="Facilidade para escolher"
-            text="Escolha seus produtos e pague com dinheiro, Pix ou cartão em até 10 vezes sem juros."
+            text="Escolha seus produtos e pague com dinheiro, Pix ou cartão em até 6 vezes sem juros."
           />
           <div className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-5">
             {[
               { icon: Banknote, label: "Dinheiro" },
               { icon: QrCode, label: "Pix" },
-              { icon: CreditCard, label: "Até 10x sem juros" },
+              { icon: CreditCard, label: "Até 6x sem juros" },
             ].map(({ icon: Icon, label }, i) => (
               <Reveal
                 key={label}
