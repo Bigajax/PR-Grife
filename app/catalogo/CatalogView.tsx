@@ -13,6 +13,7 @@ import {
   categoriesWithProducts,
   categoriesWithProductsForBrand,
   showcaseBrandsWithProducts,
+  groupByBrand,
   clothingSizes,
   shoeSizes,
   allColorsFor,
@@ -56,6 +57,7 @@ function readFilters(sp: URLSearchParams, locked: CatalogFilters): CatalogFilter
 export function CatalogView({
   locked = {},
   editorial = false,
+  agruparPorMarca = false,
 }: {
   locked?: CatalogFilters
   /**
@@ -66,6 +68,13 @@ export function CatalogView({
    * pessoa faz nessa página.
    */
   editorial?: boolean
+  /**
+   * Um bloco de grade por marca, com título ("Tênis Tommy Hilfiger"), em vez de
+   * uma grade só. Vem de `agruparPorMarca` no departamento (data/departments.ts).
+   * Só vale enquanto a pessoa não escolheu uma marca: escolhida, a página já é
+   * daquela marca e um título único em cima da grade seria redundante.
+   */
+  agruparPorMarca?: boolean
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -114,6 +123,18 @@ export function CatalogView({
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [sortOpen, setSortOpen] = useState(false)
   const [ready, setReady] = useState(false)
+
+  // Blocos por marca (departamentos com `agruparPorMarca`). Some assim que a
+  // pessoa escolhe uma marca — aí a página inteira já é daquela marca. Agrupa a
+  // FATIA VISÍVEL, e não a lista inteira: assim o "Ver mais produtos" continua
+  // valendo para a página toda, alimentando os blocos conforme ela avança.
+  const gruposPorMarca = useMemo(
+    () =>
+      agruparPorMarca && !filters.marca
+        ? groupByBrand(results.slice(0, visible), catalog)
+        : null,
+    [agruparPorMarca, filters.marca, results, visible, catalog]
+  )
 
   useEffect(() => {
     // Marca hidratação (para trocar o skeleton) e registra a visita ao catálogo.
@@ -293,7 +314,9 @@ export function CatalogView({
 
       {/* Navegação por marca: espelho da vitrine da home. A seleção vive na
           query string (?marca=slug), então troca sem recarregar e convive com
-          os demais filtros. Marca sem produto não aparece. */}
+          os demais filtros. As marcas saem do RECORTE da página, não do
+          catálogo inteiro: em /catalogo/tenis só aparece quem tem tênis, senão
+          a faixa oferece Dior numa página de calçado e devolve zero peças. */}
       {!isLocked("marca") && (
         <div
           className="mt-6 flex items-start gap-3 overflow-x-auto pb-1 no-scrollbar"
@@ -326,7 +349,7 @@ export function CatalogView({
             </span>
           </button>
 
-          {showcaseBrandsWithProducts(catalog).map((item) => {
+          {showcaseBrandsWithProducts(noRecorte).map((item) => {
             const ativa = filters.marca === item.slug || item.brands.includes(filters.marca ?? "")
             return (
               <button
@@ -471,11 +494,49 @@ export function CatalogView({
             </div>
           ) : results.length > 0 ? (
             <>
-              <div className={gradeClasses}>
-                {results.slice(0, visible).map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              {gruposPorMarca ? (
+                <div className="flex flex-col gap-14">
+                  {gruposPorMarca.map((grupo) => (
+                    <section key={grupo.slug ?? "outras"} aria-label={grupo.label}>
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border-gray pb-3">
+                        <h2 className="font-display text-2xl font-medium text-black-soft">
+                          {grupo.label}
+                          <span className="ml-3 align-middle text-[13px] font-sans font-normal text-text-gray">
+                            {grupo.products.length}{" "}
+                            {grupo.products.length === 1 ? "modelo" : "modelos"}
+                          </span>
+                        </h2>
+                        {/* Bloco sem slug é a sobra ("Sem marca"/"Multimarcas"):
+                            não existe filtro que o isole, então também não há
+                            para onde este link levar. */}
+                        {grupo.slug && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setParam("marca", grupo.slug)
+                              track("apply_filter", { key: "marca", value: grupo.slug! })
+                            }}
+                            className="text-[13px] font-semibold text-gold-dark underline-offset-4 hover:underline"
+                          >
+                            Ver só {grupo.label} <span aria-hidden="true">→</span>
+                          </button>
+                        )}
+                      </div>
+                      <div className={`${gradeClasses} mt-6`}>
+                        {grupo.products.map((product) => (
+                          <ProductCard key={product.id} product={product} />
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              ) : (
+                <div className={gradeClasses}>
+                  {results.slice(0, visible).map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
               {visible < results.length && (
                 <div className="mt-10 flex flex-col items-center gap-3">
                   <p className="text-[13px] text-text-gray">

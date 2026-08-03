@@ -61,8 +61,14 @@ export default async function DepartamentoPage({
 
       <Suspense>
         {/* Kits são looks inteiros fotografados em retrato: a foto é o
-            produto, então a grade abre e cabem menos por linha. */}
-        <CatalogView locked={{ departamento: dep.slug }} editorial={dep.slug === "kits"} />
+            produto, então a grade abre e cabem menos por linha.
+            `agruparPorMarca` vem do departamento (Tênis hoje) e quebra a grade
+            em um bloco por marca. */}
+        <CatalogView
+          locked={{ departamento: dep.slug }}
+          editorial={dep.slug === "kits"}
+          agruparPorMarca={dep.agruparPorMarca}
+        />
       </Suspense>
     </main>
   )

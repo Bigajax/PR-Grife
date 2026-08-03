@@ -10,20 +10,17 @@ import { WhatsAppCta } from "@/components/WhatsAppCta"
 import { NavDropdown } from "@/components/NavDropdown"
 import { siteConfig } from "@/data/site.config"
 import { templates } from "@/lib/whatsapp"
-import { queryCatalog, categoryHref, showcaseBrandsFor } from "@/lib/catalog"
+import {
+  queryCatalog,
+  categoryHref,
+  showcaseBrandsFor,
+  showcaseBrandsWithProducts,
+} from "@/lib/catalog"
 import { useCatalog } from "@/components/CatalogProvider"
 import { departments, categoriesOfDepartment, departmentOfCategory } from "@/data/departments"
 import { formatPrice } from "@/lib/format"
 import { track } from "@/lib/tracking"
 import { useSelection } from "@/hooks/useSelection"
-
-// Conteúdo dos painéis de navegação, derivado de data/departments.ts — a
-// categoria homônima do departamento (perfumes, tenis, acessorios, kits) não
-// vira item próprio: o "Ver tudo" do departamento já é esse link.
-const navDepartments = departments.map((dep) => ({
-  ...dep,
-  items: categoriesOfDepartment(dep.slug).filter((c) => c.id !== dep.slug),
-}))
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -35,13 +32,35 @@ export function Header() {
   const catalog = useCatalog()
   // Marca nova cadastrada no painel entra na navegação automaticamente.
   const navBrands = useMemo(() => showcaseBrandsFor(catalog), [catalog])
-  // Departamento sem peça publicada fica fora do painel — mesma regra das abas
-  // do catálogo. É o que segura a coluna de Kits enquanto eles estão sem preço.
+  // Colunas do painel de Catálogo, derivadas de data/departments.ts.
+  //
+  // Departamento sem peça publicada fica fora — mesma regra das abas do
+  // catálogo. É o que segura a coluna de Kits enquanto eles estão sem preço.
+  //
+  // O que vira item depende do corte do departamento: nos agrupados por marca
+  // (Tênis), o menu lista as MARCAS com tênis, que é como a página está
+  // organizada; nos demais, as categorias. A categoria homônima do
+  // departamento (perfumes, tenis, acessorios, kits) nunca vira item próprio —
+  // o "Ver tudo" já é esse link.
   const navDeps = useMemo(() => {
     const comProduto = new Set(
       catalog.map((p) => departmentOfCategory(p.category)?.slug).filter(Boolean)
     )
-    return navDepartments.filter((dep) => comProduto.has(dep.slug))
+    return departments
+      .filter((dep) => comProduto.has(dep.slug))
+      .map((dep) => {
+        const doDepartamento = catalog.filter((p) => dep.categoryIds.includes(p.category))
+        const items = dep.agruparPorMarca
+          ? showcaseBrandsWithProducts(doDepartamento).map((b) => ({
+              key: b.slug,
+              label: b.name,
+              href: `/catalogo/${dep.slug}?marca=${b.slug}`,
+            }))
+          : categoriesOfDepartment(dep.slug)
+              .filter((c) => c.id !== dep.slug)
+              .map((c) => ({ key: c.id, label: c.label, href: categoryHref(c.id) }))
+        return { ...dep, items }
+      })
   }, [catalog])
   const pathname = usePathname()
   const router = useRouter()
@@ -280,9 +299,9 @@ export function Header() {
                   <span className="hairline-gold mt-2.5 block w-12" aria-hidden="true" />
                   <ul className="mt-3.5 flex flex-col gap-2">
                     {dep.items.map((c) => (
-                      <li key={c.id}>
+                      <li key={c.key}>
                         <Link
-                          href={categoryHref(c.id)}
+                          href={c.href}
                           className="text-[13.5px] text-text-primary transition-colors hover:text-accent"
                         >
                           {c.label}
@@ -546,8 +565,8 @@ export function Header() {
                   </Link>
                   {dep.items.map((c) => (
                     <Link
-                      key={c.id}
-                      href={categoryHref(c.id)}
+                      key={c.key}
+                      href={c.href}
                       onClick={closeAll}
                       className="block py-2 text-[14px] text-text-secondary"
                     >

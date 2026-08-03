@@ -11,6 +11,18 @@ export type Department = {
   /** Texto editorial exibido no topo da página do departamento. */
   description: string
   categoryIds: string[]
+  /**
+   * Grade dividida em blocos por marca, um título por marca ("Tênis Tommy
+   * Hilfiger", "Tênis Ankor"), em vez de uma grade única. Para departamento de
+   * uma categoria só, em que a marca é a pergunta que a pessoa faz — é o caso
+   * de Tênis. Em Roupas não serve: lá o corte que importa é camiseta/calça, e
+   * as abas de categoria já fazem isso.
+   *
+   * Os blocos saem dos produtos (lib/catalog.ts → groupByBrand): cadastrar um
+   * tênis de marca nova já cria o bloco dela. Ligar aqui é tudo o que outro
+   * departamento precisa para ganhar o mesmo comportamento.
+   */
+  agruparPorMarca?: boolean
 }
 
 export const departments: Department[] = [
@@ -35,8 +47,9 @@ export const departments: Department[] = [
   {
     slug: "tenis",
     label: "Tênis",
-    description: "Modelos casuais e versáteis para diferentes momentos.",
+    description: "Modelos casuais e versáteis, separados por marca.",
     categoryIds: ["tenis"],
+    agruparPorMarca: true,
   },
   {
     slug: "kits",

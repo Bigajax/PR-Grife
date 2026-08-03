@@ -218,6 +218,43 @@ export function categoriesWithProducts(list: Product[], ids?: string[]): Categor
   )
 }
 
+// ── Agrupamento por marca ─────────────────────────────────────────────────────
+// Usado pelos departamentos marcados com `agruparPorMarca` (hoje Tênis): em vez
+// de uma grade única misturando tudo, cada marca ganha o seu bloco — tênis da
+// Tommy num lugar, os da Ankor em outro.
+//
+// A ordem é a da vitrine curada (data/brands.ts) e os grupos saem dos PRODUTOS,
+// não de uma lista escrita à mão: cadastrar um tênis de marca nova no painel já
+// abre o bloco dela, sem tocar em código. Marca sem peça no recorte não vira
+// bloco vazio.
+//
+// `slug` é null no bloco de sobra — o que a importação gravou como "Sem marca"
+// ou "Multimarcas" (ver NAO_SAO_MARCA). Esse bloco não tem para onde linkar,
+// porque não existe filtro de marca que o isole; ele só junta o que ficou solto
+// em vez de sumir com a peça.
+export type BrandGroup = {
+  label: string
+  slug: string | null
+  products: Product[]
+}
+
+export function groupByBrand(list: Product[], catalogo: Product[] = list): BrandGroup[] {
+  const grupos: BrandGroup[] = []
+  const agrupados = new Set<Product>()
+
+  for (const item of showcaseBrandsFor(catalogo)) {
+    const products = list.filter((p) => item.brands.includes(p.brand))
+    if (products.length === 0) continue
+    products.forEach((p) => agrupados.add(p))
+    grupos.push({ label: item.name, slug: item.slug, products })
+  }
+
+  const sobra = list.filter((p) => !agrupados.has(p))
+  if (sobra.length > 0) grupos.push({ label: "Outras marcas", slug: null, products: sobra })
+
+  return grupos
+}
+
 // Chips da página de marca: só as categorias em que AQUELA marca tem peça.
 export function categoriesWithProductsForBrand(list: Product[], marcaSlug: string): Category[] {
   const names = brandNamesForFilter(marcaSlug, list)
