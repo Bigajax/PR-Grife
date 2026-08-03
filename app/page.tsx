@@ -2,7 +2,7 @@ import { Hero } from "@/components/Hero"
 import { Brands } from "@/components/Brands"
 import { CategoryShowcase } from "@/components/CategoryShowcase"
 import { HomeFeature } from "@/components/HomeFeature"
-import { RecommendedCarousel } from "@/components/RecommendedCarousel"
+import { KitsCarousel } from "@/components/KitsCarousel"
 import { HomeDuo } from "@/components/HomeDuo"
 import { Reveal } from "@/components/Reveal"
 
@@ -22,7 +22,7 @@ export default function Home() {
         <CategoryShowcase />
       </Reveal>
       <Reveal>
-        <RecommendedCarousel />
+        <KitsCarousel />
       </Reveal>
       <Reveal>
         <HomeFeature />

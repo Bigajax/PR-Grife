@@ -13,19 +13,23 @@ import { QuickViewModal } from "@/components/QuickViewModal"
 
 const TOTAL = 10
 
-// Curadoria manual primeiro (site.config.homeRecommended, por slug), depois
-// destaques e novidades para completar. Slugs inválidos e peças esgotadas caem
-// fora, então a vitrine nunca mostra buraco nem link morto.
-function montarLista(products: Product[]): Product[] {
-  const disponivel = (p: Product | undefined): p is Product =>
-    p != null && p.stockStatus !== "out_of_stock"
+/** Só entra no trilho quem é do departamento Kits — o look inteiro, nunca a peça avulsa. */
+const CATEGORIA_KIT = "kits"
 
-  const escolhidos = siteConfig.homeRecommended
+// Curadoria manual primeiro (site.config.homeKits, por slug), depois os demais
+// kits por destaque e novidade. Slugs inválidos, peças esgotadas e qualquer
+// produto que não seja kit caem fora, então a vitrine nunca mostra buraco,
+// link morto nem peça solta no meio dos looks.
+function montarLista(products: Product[]): Product[] {
+  const kitDisponivel = (p: Product | undefined): p is Product =>
+    p != null && p.category === CATEGORIA_KIT && p.stockStatus !== "out_of_stock"
+
+  const escolhidos = siteConfig.homeKits
     .map((slug) => products.find((p) => p.slug === slug))
-    .filter(disponivel)
+    .filter(kitDisponivel)
 
   const resto = [...products]
-    .filter(disponivel)
+    .filter(kitDisponivel)
     .sort(
       (a, b) =>
         Number(b.featured ?? false) - Number(a.featured ?? false) ||
@@ -45,8 +49,9 @@ function montarLista(products: Product[]): Product[] {
 }
 
 // Vitrine curta e horizontal — sem busca, sem filtro, sem paginação.
-// A grade completa continua só em /catalogo.
-export function RecommendedCarousel() {
+// A grade completa continua só em /catalogo. Sem kit cadastrado, a seção
+// desaparece da home em vez de completar o trilho com peças avulsas.
+export function KitsCarousel() {
   const catalog = useCatalog()
   const lista = useMemo(() => montarLista(catalog), [catalog])
   const [quickView, setQuickView] = useState<Product | null>(null)
@@ -56,7 +61,7 @@ export function RecommendedCarousel() {
   return (
     <section className="bg-bg-surface">
       <div className="shell py-12 lg:py-20">
-        <Carousel title="Recomendados para você" colado>
+        <Carousel title="Kits da casa" colado>
           {lista.map((product) => (
             <div
               key={product.id}
@@ -73,18 +78,18 @@ export function RecommendedCarousel() {
               proprietário: nada de painel escuro aqui). */}
           <div className="w-[calc(100%/1.6)] border-l border-border sm:w-[calc(100%/2.6)] lg:w-[calc(100%/4.35)]">
             <Link
-              href="/catalogo"
+              href="/catalogo/kits"
               className="group flex h-full min-h-56 flex-col items-center justify-center gap-5 px-6 py-10 text-center"
             >
               <DiamondMark className="h-8 w-8" />
               <span className="flex flex-col gap-2">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gold-dark">
-                  Toda a vitrine
+                  Look inteiro
                 </span>
                 <span className="font-display text-2xl font-medium leading-tight text-text-primary">
-                  Ver o catálogo
+                  Ver todos
                   <br />
-                  completo
+                  os kits
                 </span>
               </span>
               <span

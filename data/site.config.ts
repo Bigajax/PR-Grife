@@ -179,21 +179,22 @@ export const siteConfig = {
     imageAlt:
       "Frasco de Scandal Pour Homme com tampa em formato de coroa dourada, sobre fundo de madeira escura",
   },
-  // ── Recomendados na home ────────────────────────────────────────────────────
+  // ── Kits na home ────────────────────────────────────────────────────────────
   // Curadoria manual do carrossel, por SLUG de produto (o slug é estável entre
-  // o catálogo estático e o banco; o id não é). A lista é saneada em tempo de
-  // render: slug inexistente ou peça esgotada é descartada, e o que faltar
-  // para 10 é completado com destaques e novidades. Deixar vazio também
-  // funciona.
-  homeRecommended: [
-    "camisa-linho-terracota",
-    "jaqueta-track-tommy",
-    "bomber-off-white",
-    "tenis-hilfiger-branco",
-    "tenis-hilfiger-listras",
-    "bone-aba-curva-bege",
-    "perfume-le-male-elixir",
-    "camiseta-essencial-branca",
+  // o catálogo estático e o banco; o id não é). Só aceita produtos da categoria
+  // "kits": a lista é saneada em tempo de render, e slug inexistente, peça
+  // esgotada ou produto de outra categoria é descartado. O que faltar para 10 é
+  // completado com os demais kits, por destaque e novidade. Deixar vazio
+  // funciona — a ordem passa a ser só destaque/novidade.
+  //
+  // Sem nenhum kit cadastrado, a seção some da home. Cadastre os kits pelo
+  // admin (categoria Kits) para a vitrine voltar a aparecer.
+  homeKits: [
+    "kit-u-s-polo-branco",
+    "kit-marinho-de-verao",
+    "kit-polo-creme-de-verao",
+    "kit-conjunto-creme",
+    "kit-regata-preta",
   ],
   // ── Par de cards editoriais ─────────────────────────────────────────────────
   // Exatamente dois itens. Existe para dar destaque a categorias que não entram
