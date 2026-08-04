@@ -63,7 +63,10 @@ export const brandLogoAssets: Record<string, string> = {
 
 // ── Vitrine de marcas ─────────────────────────────────────────────────────────
 // Fonte única da navegação por marca: seção "Compre por marca" da home, faixa
-// de logos e navegação do catálogo. A ordem aqui é a ordem de exibição.
+// de logos e navegação do catálogo. A ordem aqui é a ordem de exibição, e é
+// por VALOR AGREGADO decrescente — critério do proprietário: a marca mais
+// premium puxa a vitrine. A perfumaria no fim da lista não segue esse critério
+// porque não disputa vitrine nenhuma (vitrineHome e faixaLogos false).
 //
 // `brands` lista os nomes reais em data/products.ts que o card cobre — Tommy
 // Hilfiger e Tommy Jeans são variações da mesma marca e viram um card só.
@@ -95,6 +98,14 @@ export const brandShowcase: BrandShowcaseItem[] = [
     cover: "/images/brands/covers/lacoste-vitrine-v1.webp",
     coverPosition: "55% center",
   },
+  // 2ª posição por pedido do proprietário.
+  {
+    name: "Fred Perry",
+    slug: "fred-perry",
+    brands: ["Fred Perry"],
+    cover: "/images/brands/covers/fred-perry-vitrine-v1.webp",
+    coverPosition: "55% center",
+  },
   {
     name: "Tommy Hilfiger",
     slug: "tommy-hilfiger",
@@ -102,21 +113,25 @@ export const brandShowcase: BrandShowcaseItem[] = [
     cover: "/images/brands/covers/tommy-hilfiger-vitrine-v1.webp",
     coverPosition: "60% center",
   },
+  // Card LARGO da segunda linha (posição 4). Ordem por valor agregado, definida
+  // pelo proprietário.
+  {
+    name: "Acostamento",
+    slug: "acostamento",
+    brands: ["Acostamento"],
+    cover: "/images/brands/covers/acostamento-vitrine-v1.webp",
+    coverPosition: "55% center",
+  },
+  // Fora do card da home por pedido do proprietário; segue na faixa de logos e
+  // na navegação do catálogo. A arte -vitrine-v1 fica guardada para quando
+  // voltar.
   {
     name: "Colcci",
     slug: "colcci",
     brands: ["Colcci"],
     cover: "/images/brands/covers/colcci-vitrine-v1.webp",
     coverPosition: "55% center",
-  },
-  // US Polo antes da Reserva de propósito: na vitrine da home, a 4ª posição
-  // é o card largo da segunda linha — pedido do proprietário.
-  {
-    name: "US Polo",
-    slug: "us-polo",
-    brands: ["US Polo"],
-    cover: "/images/brands/covers/us-polo-vitrine-v1.webp",
-    coverPosition: "left center",
+    vitrineHome: false,
   },
   {
     name: "Reserva",
@@ -125,26 +140,36 @@ export const brandShowcase: BrandShowcaseItem[] = [
     cover: "/images/brands/covers/reserva-vitrine-v1.webp",
     coverPosition: "40% center",
   },
+  // Única arte da vitrine SEM modelo: só o lockup, centrado na largura. Por
+  // isso o corte é "center" nas duas medidas de card, enquanto as outras puxam
+  // para a direita atrás do logo. O "left center" antigo era da arte anterior,
+  // que tinha o modelo à esquerda.
+  {
+    name: "US Polo",
+    slug: "us-polo",
+    brands: ["US Polo"],
+    cover: "/images/brands/covers/us-polo-vitrine-v1.webp",
+    coverPosition: "center",
+  },
+  // Também fora do card da home, junto com a Colcci: a vitrine fechou em seis e
+  // a Ankor é a última por valor agregado. Segue na faixa e no catálogo.
   {
     name: "Ankor",
     slug: "ankor",
     brands: ["Ankor"],
     cover: "/images/brands/covers/ankor-vitrine-v1.webp",
     coverPosition: "40% center",
+    vitrineHome: false,
   },
-  // Acostamento e Fred Perry entram sem capa: a vitrine da home só tem seis
-  // vagas e já estava cheia antes delas, então nunca chegam ao card — ficam na
-  // faixa de logos e na navegação do catálogo, que é o que foi pedido. Se um
-  // dia subirem para as seis primeiras, o card cai no modo sem capa e mostra o
-  // logo oficial; aí vale desenhar uma arte -vitrine-v1 como as de cima.
-  { name: "Acostamento", slug: "acostamento", brands: ["Acostamento"] },
-  { name: "Fred Perry", slug: "fred-perry", brands: ["Fred Perry"] },
+  // Fora das duas vitrines por pedido do proprietário — continua inteira na
+  // navegação do catálogo, como a perfumaria abaixo.
   {
     name: "Biotwo",
     slug: "biotwo",
     brands: ["Biotwo"],
     cover: "/images/brands/covers/biotwo-vitrine-v1.webp",
     coverPosition: "55% center",
+    vitrineHome: false,
     faixaLogos: false,
   },
   // ── Perfumaria e marcas dos kits ──────────────────────────────────────────

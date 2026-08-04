@@ -2,17 +2,23 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, ArrowUpRight } from "lucide-react"
 import { brandShowcase } from "@/data/brands"
+import { BrandLogo } from "@/components/BrandLogos"
 
 // "O que você procura hoje?": as MARCAS da casa como vitrine visual da home.
 // A hierarquia é fixa — um card largo puxa cada linha e dois menores
 // completam; no mobile a mesma ordem vira card largo em largura total +
 // dupla lado a lado, sem carrossel.
 //
-// Os cards vêm da vitrine curada (data/brands.ts), na ordem de lá: os seis
-// primeiros com card na home (vitrineHome !== false) entram, largos nas
-// posições 1 e 4 (Lacoste e US Polo). Clique abre o catálogo já filtrado em
-// /catalogo/marca/<slug> — marca sem SKU cai no estado vazio da página, que
-// tem saída para o catálogo completo.
+// Os cards vêm da vitrine curada (data/brands.ts), na ordem de lá (valor
+// agregado decrescente): entram os que têm card na home (vitrineHome !== false),
+// largos nas posições 1 e 4 (Lacoste e Acostamento). Clique abre o catálogo já
+// filtrado em /catalogo/marca/<slug> — marca sem SKU cai no estado vazio da
+// página, que tem saída para o catálogo completo.
+//
+// MÚLTIPLO DE 3, sempre: cada linha do desktop é um card largo (2 colunas) +
+// dois menores. Um total fora da tabuada deixa buraco na última linha — foi o
+// que aconteceu quando Colcci e Biotwo saíram de uma vitrine de nove e sobraram
+// sete; a Ankor saiu junto para fechar em seis. Mexer aqui é mexer em quem sai.
 const VAGAS = 6
 const cards = brandShowcase.filter((item) => item.vitrineHome !== false).slice(0, VAGAS)
 
@@ -25,10 +31,21 @@ const cards = brandShowcase.filter((item) => item.vitrineHome !== false).slice(0
 const recorteNoLogo: Record<string, string> = {
   "tommy-hilfiger": "86% center",
   colcci: "88% center",
-  "us-polo": "54% center",
+  // A arte da US Polo não tem modelo e traz o lockup no meio, então aqui o
+  // recorte NÃO puxa para a direita como os vizinhos — a janela de ~46% que o
+  // card 4:5 mostra já cai inteira em cima do logo.
+  "us-polo": "center",
   reserva: "82% center",
   ankor: "84% center",
+  // Nas artes novas o lockup está centrado a ~72% da largura; num card 4:5 a
+  // janela mostra ~46% da arte, e é esse par que dá os 90%.
+  "fred-perry": "90% center",
+  acostamento: "90% center",
+  biotwo: "92% center",
 }
+// Nem toda entrada acima está em uso: a Acostamento hoje cai no card largo (que
+// usa coverPosition), e Colcci, Ankor e Biotwo estão fora da vitrine da home.
+// Ficam guardadas calibradas, para não refazer a conta se voltarem.
 
 export function CategoryShowcase() {
   return (
@@ -76,7 +93,7 @@ export function CategoryShowcase() {
                   largo ? "col-span-2 aspect-[16/10] lg:aspect-auto" : "aspect-[4/5]"
                 }`}
               >
-                {item.cover && (
+                {item.cover ? (
                   <Image
                     src={item.cover}
                     alt=""
@@ -93,6 +110,35 @@ export function CategoryShowcase() {
                         : recorteNoLogo[item.slug] ?? "center",
                     }}
                   />
+                ) : (
+                  /* Modo logo — rede de segurança para marca sem arte
+                     -vitrine-v1. Hoje as seis da vitrine têm capa e ninguém cai
+                     aqui, mas sem este ramo o card sairia VAZIO, que foi o que
+                     quase aconteceu quando Acostamento e Fred Perry entraram
+                     antes das artes existirem. O lockup oficial vai sobre o
+                     degradê claro da própria paleta, mesmo registro de bege das
+                     capas. O padding de baixo tira o logo do caminho do nome e
+                     da seta.
+
+                     Os dois tetos trabalham em turnos, e por isso o de largura
+                     é folgado: no lockup deitado do Acostamento (7:1) quem
+                     limita é a LARGURA — apertar aqui derrete a altura para uma
+                     tirinha —, enquanto no lockup empilhado da Fred Perry
+                     (quase 2:1) quem limita é a ALTURA, e ela sozinha já segura
+                     o tamanho. */
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-bg-elevated to-bg-surface px-6 pb-12 sm:pb-14 lg:pb-16"
+                  >
+                    <BrandLogo
+                      name={item.name}
+                      className={`w-auto transition-transform duration-500 group-hover:scale-[1.04] ${
+                        largo
+                          ? "max-h-24 max-w-[70%] lg:max-h-32"
+                          : "max-h-14 max-w-[76%] lg:max-h-20"
+                      }`}
+                    />
+                  </div>
                 )}
 
                 {/* Véu em degradê só na base, onde nome e seta pousam — as
