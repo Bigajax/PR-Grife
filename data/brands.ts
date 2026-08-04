@@ -75,6 +75,11 @@ export const brandLogoAssets: Record<string, string> = {
 // do catálogo usa sempre logo. `coverPosition` desloca o corte da capa
 // (object-position) quando a arte é mais larga que o card.
 // Capas fotográficas extras ficam em /images/brands/covers/ (CDNs oficiais).
+//
+// O -vN no fim do nome da capa é VERSÃO, não enfeite: quem já baixou a arte
+// guarda ela pela URL (navegador, CDN, otimizador do Next), então trocar a
+// imagem mantendo o nome não chega a essas pessoas. Arte nova entra como
+// arquivo novo com o número seguinte, e o `cover` aqui aponta para ele.
 export type BrandShowcaseItem = {
   name: string
   slug: string
@@ -144,11 +149,16 @@ export const brandShowcase: BrandShowcaseItem[] = [
   // isso o corte é "center" nas duas medidas de card, enquanto as outras puxam
   // para a direita atrás do logo. O "left center" antigo era da arte anterior,
   // que tinha o modelo à esquerda.
+  //
+  // -v2, e o número é o que faz a troca aparecer: arte nova SOBRESCRITA no
+  // mesmo nome não chega em ninguém que já tenha a antiga em cache, porque
+  // navegador, CDN e o otimizador de imagem do Next guardam tudo pela URL. É
+  // para isso que serve o sufixo. Trocar arte = subir o número, sempre.
   {
     name: "US Polo",
     slug: "us-polo",
     brands: ["US Polo"],
-    cover: "/images/brands/covers/us-polo-vitrine-v1.webp",
+    cover: "/images/brands/covers/us-polo-vitrine-v2.webp",
     coverPosition: "center",
   },
   // Também fora do card da home, junto com a Colcci: a vitrine fechou em seis e
