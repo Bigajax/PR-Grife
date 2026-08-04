@@ -76,6 +76,8 @@ export const siteConfig = {
     "US Polo",
     "Ankor",
     "Biotwo",
+    "Acostamento", // TODO_CONFIRMAR — sem SKU cadastrado ainda
+    "Fred Perry", // TODO_CONFIRMAR — sem SKU cadastrado ainda
     "Jean Paul Gaultier", // perfumaria — presente no catálogo (p19/p20)
   ],
   // Barra fina do topo. Dois itens, sem caixa alta pesada.

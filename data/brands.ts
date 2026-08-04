@@ -11,7 +11,10 @@
 // Reserva (lockup "Reserva" + pássaro, CDN lojausereserva.vtexassets.com),
 // Colcci (site oficial), US Polo (lockup U.S. POLO ASSN. SINCE 1890, CDN do
 // uspoloassn.com), Ankor (@ankordesign, perfil oficial),
-// Biotwo (@oficialbiotwo, perfil oficial).
+// Biotwo (@oficialbiotwo, perfil oficial),
+// Acostamento (lockup "Acostamento" + lobo — a wordmark bate letra por letra
+// com a do cabeçalho de acostamento.com.br, que sai sem o lobo por ser versão
+// reduzida de header), Fred Perry (lockup coroa de louros + FRED PERRY).
 //
 // Para trocar por um arquivo de melhor qualidade: salve em public/images/brands/ e aponte aqui.
 export const brandLogoAssets: Record<string, string> = {
@@ -26,6 +29,11 @@ export const brandLogoAssets: Record<string, string> = {
   "US Polo": "/images/brands/us-polo.png",
   Ankor: "/images/brands/ankor.png",
   Biotwo: "/images/brands/biotwo.png",
+  Acostamento: "/images/brands/acostamento.svg",
+  // Único lockup EMPILHADO da faixa (coroa em cima, wordmark embaixo) — na
+  // altura fixa de 44px o "FRED PERRY" fica menor que os wordmarks vizinhos.
+  // É o lockup oficial da marca; trocar pela coroa sozinha deixaria anônimo.
+  "Fred Perry": "/images/brands/fred-perry.svg",
 
   // ── Perfumaria e as marcas que entraram com os kits ────────────────────────
   // Baixados do Wikimedia Commons, todos SVG e todos marcados lá como domínio
@@ -124,6 +132,13 @@ export const brandShowcase: BrandShowcaseItem[] = [
     cover: "/images/brands/covers/ankor-vitrine-v1.png",
     coverPosition: "40% center",
   },
+  // Acostamento e Fred Perry entram sem capa: a vitrine da home só tem seis
+  // vagas e já estava cheia antes delas, então nunca chegam ao card — ficam na
+  // faixa de logos e na navegação do catálogo, que é o que foi pedido. Se um
+  // dia subirem para as seis primeiras, o card cai no modo sem capa e mostra o
+  // logo oficial; aí vale desenhar uma arte -vitrine-v1 como as de cima.
+  { name: "Acostamento", slug: "acostamento", brands: ["Acostamento"] },
+  { name: "Fred Perry", slug: "fred-perry", brands: ["Fred Perry"] },
   {
     name: "Biotwo",
     slug: "biotwo",

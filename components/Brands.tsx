@@ -6,7 +6,7 @@ import { BrandLogo } from "@/components/BrandLogos"
 // a duração da animação é fixa (40s por volta), então o número de logos por
 // cópia também governa a VELOCIDADE. Sobe quando a faixa encolhe: eram duas
 // cópias com a perfumaria dentro (14 marcas), quatro agora que só a moda ficou
-// (6) — mesma ordem de grandeza de logos por trilho, mesmo ritmo. Só a primeira
+// (8) — mesma ordem de grandeza de logos por trilho, mesmo ritmo. Só a primeira
 // cópia é navegável: sem isso o Tab passaria pela mesma marca várias vezes.
 const REPETICOES = 4
 
