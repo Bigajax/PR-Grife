@@ -43,6 +43,7 @@ async function main() {
         price: p.price ?? null,
         old_price: p.oldPrice ?? null,
         installment_text: p.installmentText ?? null,
+        payment_override: p.paymentOverride ?? null,
         images: p.images,
         thumbnail: p.thumbnail,
         available_sizes: p.availableSizes,

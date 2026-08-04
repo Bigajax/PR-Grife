@@ -92,16 +92,31 @@ function productSummary(p: Product, size?: string, color?: string): string {
 }
 
 /**
- * Linha de pagamento do pedido: sempre a régua da loja.
+ * Linha de pagamento do pedido.
  *
  * Já foi a forma ESCOLHIDA pelo cliente ("Cartão em 6x sem juros"), com a UI
  * travando o botão até ele decidir. A trava saiu — declarar como vai pagar
- * antes de falar com a loja espantava mais pedido do que poupava pergunta —,
- * e com ela o parâmetro. O atendimento fecha o pagamento na conversa, que é o
- * que o fecho da mensagem já pede.
+ * antes de falar com a loja espantava mais pedido do que poupava pergunta.
+ * O atendimento fecha o pagamento na conversa, que é o que o fecho já pede.
+ *
+ * Sobrou uma regra, e ela é sobre não prometer o que a loja não pratica: peça
+ * com `paymentOverride` (migration 0003) tem condição PRÓPRIA, e a régua da
+ * loja não vale para ela. Numa seleção misturando peça restrita e peça normal,
+ * a régua volta a valer para o pedido, mas as restritas vêm NOMEADAS — só
+ * dizer "em até 6x" apagaria a exceção, e o cliente descobriria na conversa.
  */
-function paymentLine(): string {
-  return `Pagamento: ${siteConfig.paymentText}`
+function paymentLine(items: OrderItem[]): string {
+  const restritas = items.filter(({ product }) => product.paymentOverride)
+  if (restritas.length === 0) return `Pagamento: ${siteConfig.paymentText}`
+
+  const condicoes = new Set(restritas.map(({ product }) => product.paymentOverride!))
+  if (restritas.length === items.length && condicoes.size === 1)
+    return `Pagamento: ${[...condicoes][0]}`
+
+  return [
+    `Pagamento: ${siteConfig.paymentText}`,
+    ...restritas.map(({ product }) => `${product.name}: ${product.paymentOverride}`),
+  ].join("\n")
 }
 
 // ── Pedido padronizado ────────────────────────────────────────────────────────
@@ -138,7 +153,7 @@ export function buildOrderMessage(items: OrderItem[]): string {
       : `Olá! Montei uma seleção na Vitrine Digital da ${siteConfig.name} e quero fazer um pedido:`,
     blocks.join(`\n${DIVIDER}\n`),
     total,
-    paymentLine(),
+    paymentLine(items),
     `Pode confirmar a disponibilidade, os valores e as opções de entrega?`
   )
 }
@@ -160,7 +175,12 @@ export const templates = {
     `Olá! Vim pelo site da ${siteConfig.name} e gostaria de informações sobre os produtos.`,
 
   produto: (p: Product, size?: string, color?: string) =>
-    compose(greeting(p), productSummary(p, size, color), paymentLine(), closing(p, size)),
+    compose(
+      greeting(p),
+      productSummary(p, size, color),
+      paymentLine([{ product: p, size, color }]),
+      closing(p, size)
+    ),
 
   // Peça esgotada: pedido de aviso de reposição.
   aviseMe: (p: Product, size?: string) =>

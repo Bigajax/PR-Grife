@@ -158,10 +158,15 @@ export function ProductBuyBox({ product }: { product: Product }) {
           )}
         </p>
       )}
-      {/* Formas de pagamento da loja — fonte única em site.config. Linha de
-          argumento, não de pergunta: informa a condição sem pedir nada de
-          volta antes do cliente falar com a loja. */}
-      <p className="mt-1.5 text-[13px] font-medium text-black-soft">{siteConfig.paymentText}</p>
+      {/* Condição de pagamento. Linha de argumento, não de pergunta: informa
+          sem pedir nada de volta antes do cliente falar com a loja.
+          A régua da loja (site.config) vale para o catálogo inteiro, MENOS
+          para a peça que tem condição própria — anunciar "6x sem juros" em
+          cima de uma promoção que só fecha no Pix é prometer o que a loja não
+          pratica. Ver migration 0003. */}
+      <p className="mt-1.5 text-[13px] font-medium text-black-soft">
+        {product.paymentOverride ?? siteConfig.paymentText}
+      </p>
 
       {needsSize && (
         <fieldset className="mt-6 scroll-mt-24" id="tamanhos" ref={sizesRef}>

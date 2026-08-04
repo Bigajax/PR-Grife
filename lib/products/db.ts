@@ -44,6 +44,7 @@ export type ProductRow = {
   price: number | string | null;
   old_price: number | string | null;
   installment_text: string | null;
+  payment_override: string | null;
   images: string[];
   thumbnail: string;
   available_sizes: string[];
@@ -148,6 +149,9 @@ export function mapRow(row: ProductRow): Product {
     price: row.price != null ? Number(row.price) : undefined,
     oldPrice: row.old_price != null ? Number(row.old_price) : undefined,
     installmentText: row.installment_text ?? undefined,
+    // Banco anterior à 0003 não tem a coluna: `?? undefined` cobre o nulo E o
+    // ausente, e sem ela a peça simplesmente cai na régua da loja.
+    paymentOverride: row.payment_override ?? undefined,
     images: row.images ?? [],
     thumbnail: row.thumbnail,
     availableSizes: row.available_sizes ?? [],

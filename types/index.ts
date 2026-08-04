@@ -59,7 +59,15 @@ export type Product = {
   price?: number
   /** Preço anterior ("de"). Só exibido riscado quando maior que `price` — nunca inventar desconto. */
   oldPrice?: number
+  /** Nota que COMPLEMENTA a régua da loja, ao lado do preço: "em até 3x sem juros". */
   installmentText?: string
+  /**
+   * Condição de pagamento EXCLUSIVA da peça — "Somente Pix" numa promoção em
+   * que a taxa do cartão comeria a margem. Quando existe, SUBSTITUI a régua da
+   * loja (siteConfig.paymentText) na página do produto e na mensagem do
+   * WhatsApp; sem ela, a régua vale como sempre. Ver migration 0003.
+   */
+  paymentOverride?: string
   images: string[]
   thumbnail: string
   availableSizes: string[]

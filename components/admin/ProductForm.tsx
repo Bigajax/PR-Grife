@@ -62,6 +62,7 @@ export function ProductForm({
   const [price, setPrice] = useState<number | null>(product?.price ?? null)
   const [oldPrice, setOldPrice] = useState<number | null>(product?.oldPrice ?? null)
   const [installmentText, setInstallmentText] = useState(product?.installmentText ?? "")
+  const [paymentOverride, setPaymentOverride] = useState(product?.paymentOverride ?? "")
   const [images, setImages] = useState<string[]>(product?.images ?? [])
   const [colors, setColors] = useState<ProductColor[]>(product?.availableColors ?? [])
   const [stockStatus, setStockStatus] = useState<string>(product?.stockStatus ?? "available")
@@ -132,6 +133,7 @@ export function ProductForm({
       price,
       oldPrice,
       installmentText: installmentText.trim() || null,
+      paymentOverride: paymentOverride.trim() || null,
       images,
       // A vitrine mostra os tamanhos ativos, na ordem das linhas.
       availableSizes: rows.filter((r) => r.isActive).map((r) => r.size),
@@ -464,7 +466,32 @@ export function ProductForm({
             <div>
               <label htmlFor="pf-parc" className={labelCls}>Parcelamento (texto)</label>
               <input id="pf-parc" value={installmentText} onChange={(e) => setInstallmentText(e.target.value)} placeholder="em até 3x sem juros" className={inputCls} />
+              <p className="mt-1 text-xs text-text-secondary">
+                Aparece ao lado do preço e SOMA à régua da loja. Para restringir
+                o pagamento desta peça, use o campo abaixo.
+              </p>
             </div>
+          </div>
+
+          {/* Restrição de pagamento da peça. Campo separado do parcelamento de
+              propósito: um COMPLEMENTA a régua da loja, o outro a SUBSTITUI, e
+              o código precisa saber qual é qual sem adivinhar pelo texto. */}
+          <div>
+            <label htmlFor="pf-pagto" className={labelCls}>
+              Só aceita esta forma de pagamento (opcional)
+            </label>
+            <input
+              id="pf-pagto"
+              value={paymentOverride}
+              onChange={(e) => setPaymentOverride(e.target.value)}
+              placeholder="Somente Pix"
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-text-secondary">
+              {paymentOverride.trim()
+                ? `Esta peça deixa de exibir "${siteConfig.paymentText}" — na página e na mensagem do WhatsApp vale só o que estiver escrito aqui.`
+                : `Vazio: vale a régua da loja (${siteConfig.paymentText}). Preencha só quando a peça tiver condição própria, como uma promoção que não fecha no cartão.`}
+            </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

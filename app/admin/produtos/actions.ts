@@ -68,6 +68,8 @@ const productSchema = z
     price: z.number().positive("Preço deve ser maior que zero").nullable(),
     oldPrice: z.number().positive().nullable(),
     installmentText: z.string().trim().max(60).nullable(),
+    // Condição própria da peça, que SUBSTITUI a régua da loja (migration 0003).
+    paymentOverride: z.string().trim().max(60).nullable(),
     images: z.array(z.string().trim().min(1)).max(8, "Máximo de 8 fotos"),
     availableSizes: z.array(z.string().trim().min(1).max(12)).max(20),
     colors: z.array(colorSchema).max(12),
@@ -114,6 +116,7 @@ function toRow(data: ProductInput) {
     price: data.price,
     old_price: data.oldPrice,
     installment_text: data.installmentText,
+    payment_override: data.paymentOverride,
     images: data.images,
     thumbnail: data.images[0] ?? "",
     available_sizes: data.availableSizes,
