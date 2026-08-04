@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
 import { PRODUCTS_TAG } from "@/lib/products/db";
 import { entryReasons, exitReasons } from "@/lib/stock";
+import { actionErrorMessage } from "@/lib/action-error";
 import type { StockMovement } from "@/types";
 
 /**
@@ -75,7 +76,7 @@ export async function registerMovement(input: MovementInput): Promise<MovementRe
   } catch (e) {
     return {
       ok: false,
-      error: e instanceof Error ? e.message : "Não foi possível registrar a movimentação.",
+      error: actionErrorMessage(e, input, "Não foi possível registrar a movimentação."),
     };
   }
 }

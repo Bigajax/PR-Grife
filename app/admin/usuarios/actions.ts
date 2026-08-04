@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/supabase/server";
 import { supabaseUrl } from "@/lib/supabase/env";
+import { actionErrorMessage } from "@/lib/action-error";
 
 /**
  * Gestão de usuários do painel via API administrativa do Supabase Auth.
@@ -33,10 +34,10 @@ function adminAuth() {
   return createClient(url, serviceKey, { auth: { persistSession: false } }).auth.admin;
 }
 
-function fail(e: unknown): ActionResult {
+function fail(e: unknown, input?: unknown): ActionResult {
   return {
     ok: false,
-    error: e instanceof Error ? e.message : "Não foi possível concluir agora.",
+    error: actionErrorMessage(e, input, "Não foi possível concluir agora."),
   };
 }
 
@@ -56,7 +57,7 @@ export async function setUserPassword(
     if (error) throw new Error(error.message);
     return { ok: true };
   } catch (e) {
-    return fail(e);
+    return fail(e, password);
   }
 }
 
@@ -77,7 +78,7 @@ export async function createUser(
     if (error) throw new Error(error.message);
     return { ok: true };
   } catch (e) {
-    return fail(e);
+    return fail(e, { email, pw: password });
   }
 }
 

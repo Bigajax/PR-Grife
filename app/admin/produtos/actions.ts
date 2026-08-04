@@ -7,6 +7,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { supabaseUrl } from "@/lib/supabase/env";
 import { PRODUCTS_TAG } from "@/lib/products/db";
 import { buildVariantSku } from "@/lib/stock";
+import { actionErrorMessage } from "@/lib/action-error";
 import { categories } from "@/data/categories";
 
 /**
@@ -35,10 +36,10 @@ function bumpCatalog() {
   revalidateTag(PRODUCTS_TAG, { expire: 0 });
 }
 
-function fail(e: unknown): ActionResult {
+function fail(e: unknown, input?: unknown): ActionResult {
   return {
     ok: false,
-    error: e instanceof Error ? e.message : "Não foi possível salvar agora.",
+    error: actionErrorMessage(e, input, "Não foi possível salvar agora."),
   };
 }
 
@@ -69,7 +70,9 @@ const productSchema = z
     oldPrice: z.number().positive().nullable(),
     installmentText: z.string().trim().max(60).nullable(),
     // Condição própria da peça, que SUBSTITUI a régua da loja (migration 0003).
-    paymentOverride: z.string().trim().max(60).nullable(),
+    // Campo novo: `default(null)` para que uma aba aberta desde antes do deploy
+    // — que não tem esse input na tela e não manda a chave — ainda salve.
+    paymentOverride: z.string().trim().max(60).nullable().default(null),
     images: z.array(z.string().trim().min(1)).max(8, "Máximo de 8 fotos"),
     availableSizes: z.array(z.string().trim().min(1).max(12)).max(20),
     colors: z.array(colorSchema).max(12),
@@ -285,7 +288,7 @@ export async function createProduct(
     bumpCatalog();
     return { ok: true, id: row.id };
   } catch (e) {
-    return fail(e);
+    return fail(e, input);
   }
 }
 
@@ -310,7 +313,7 @@ export async function saveProduct(
     bumpCatalog();
     return { ok: true };
   } catch (e) {
-    return fail(e);
+    return fail(e, input);
   }
 }
 
