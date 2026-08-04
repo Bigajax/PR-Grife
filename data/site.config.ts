@@ -31,27 +31,19 @@ export const siteConfig = {
       closes: "13:00",
     },
   ],
-  paymentText: "Pix, dinheiro ou cartão em até 6x sem juros",
-  // Opções clicáveis nos pontos de pedido (PDP e sacola). Escolher é
-  // OBRIGATÓRIO: sem forma de pagamento o pedido chega incompleto e o
-  // atendimento perde uma ida e volta só para perguntar.
+  // Régua de pagamento da loja, em texto corrido. É INFORMAÇÃO, não pergunta:
+  // aparece na página do produto e entra na mensagem do WhatsApp, e em nenhum
+  // dos dois lugares o cliente precisa responder nada.
   //
-  // `parcelas` existe só no cartão e é o que abre os botões de "em quantas
-  // vezes". Fica no dado, e não numa checagem por texto ("se o rótulo contém
-  // Cartão"), senão renomear a opção quebraria a tela sem ninguém perceber.
-  // Tipado com `parcelas` opcional em TODAS as opções (e não `as const`): com
-  // const o TS estreita cada item e passa a dizer que "parcelas não existe no
-  // Pix", quebrando qualquer leitura uniforme da lista.
-  paymentOptions: [
-    { id: "pix", label: "Pix" },
-    { id: "dinheiro", label: "Dinheiro" },
-    // Teto de parcelas praticado pela loja. É a fonte única: os botões de "em
-    // quantas vezes" (PDP e sacola) contam até aqui, então mudar este número
-    // muda as duas telas. Os textos escritos por extenso ("até 6x sem juros")
-    // ficam em paymentText, no FAQ e na página da loja física — se o teto
-    // mudar de novo, eles vão junto.
-    { id: "cartao", label: "Cartão", parcelas: 6 },
-  ] as { id: string; label: string; parcelas?: number }[],
+  // Existiu aqui um `paymentOptions` com Pix/Dinheiro/Cartão e o teto de 6x,
+  // que virava botões clicáveis na PDP e na sacola — e travava o envio até o
+  // cliente escolher. Saiu inteiro: obrigar alguém a declarar como vai pagar
+  // antes de trocar a primeira palavra com a loja custava mais pedido do que
+  // poupava pergunta. Se voltar, volta como campo OPCIONAL.
+  //
+  // O teto de parcelas agora vive só em texto — aqui, no FAQ e na página da
+  // loja física. Se mudar, os três mudam junto.
+  paymentText: "Pix, dinheiro ou cartão em até 6x sem juros",
   // Os três destinos de mapa derivam do MESMO endereço textual — sem
   // coordenadas inventadas: busca (abrir no Maps), rota (dir) e embed (iframe).
   mapsUrl:

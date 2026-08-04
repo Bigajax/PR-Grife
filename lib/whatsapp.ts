@@ -92,28 +92,16 @@ function productSummary(p: Product, size?: string, color?: string): string {
 }
 
 /**
- * Forma de pagamento escolhida na UI. `parcelas` só vem quando a opção é
- * cartão — 1 significa à vista.
- */
-export type PaymentChoice = {
-  label: string
-  parcelas?: number
-}
-
-/**
- * Linha de pagamento do pedido. A UI só libera o botão com a forma escolhida,
- * então na prática ela sempre chega; a régua genérica da loja fica como rede
- * de segurança para chamadas antigas que ainda não passam o parâmetro.
+ * Linha de pagamento do pedido: sempre a régua da loja.
  *
- * No cartão a mensagem diz o número de vezes, que é a informação que o
- * atendimento precisa para fechar — "Cartão" sozinho obrigaria a perguntar.
+ * Já foi a forma ESCOLHIDA pelo cliente ("Cartão em 6x sem juros"), com a UI
+ * travando o botão até ele decidir. A trava saiu — declarar como vai pagar
+ * antes de falar com a loja espantava mais pedido do que poupava pergunta —,
+ * e com ela o parâmetro. O atendimento fecha o pagamento na conversa, que é o
+ * que o fecho da mensagem já pede.
  */
-function paymentLine(payment?: PaymentChoice): string {
-  if (!payment) return `Pagamento: ${siteConfig.paymentText}`
-  if (!payment.parcelas) return `Pagamento: ${payment.label}`
-  return payment.parcelas === 1
-    ? `Pagamento: ${payment.label} à vista`
-    : `Pagamento: ${payment.label} em ${payment.parcelas}x sem juros`
+function paymentLine(): string {
+  return `Pagamento: ${siteConfig.paymentText}`
 }
 
 // ── Pedido padronizado ────────────────────────────────────────────────────────
@@ -127,7 +115,7 @@ export type OrderItem = {
   color?: string
 }
 
-export function buildOrderMessage(items: OrderItem[], payment?: PaymentChoice): string {
+export function buildOrderMessage(items: OrderItem[]): string {
   const single = items.length === 1
   const blocks = items.map(({ product, size, color }, i) => {
     const summary = productSummary(product, size, color)
@@ -150,7 +138,7 @@ export function buildOrderMessage(items: OrderItem[], payment?: PaymentChoice): 
       : `Olá! Montei uma seleção na Vitrine Digital da ${siteConfig.name} e quero fazer um pedido:`,
     blocks.join(`\n${DIVIDER}\n`),
     total,
-    paymentLine(payment),
+    paymentLine(),
     `Pode confirmar a disponibilidade, os valores e as opções de entrega?`
   )
 }
@@ -171,8 +159,8 @@ export const templates = {
   informacoesProdutos: () =>
     `Olá! Vim pelo site da ${siteConfig.name} e gostaria de informações sobre os produtos.`,
 
-  produto: (p: Product, size?: string, color?: string, payment?: PaymentChoice) =>
-    compose(greeting(p), productSummary(p, size, color), paymentLine(payment), closing(p, size)),
+  produto: (p: Product, size?: string, color?: string) =>
+    compose(greeting(p), productSummary(p, size, color), paymentLine(), closing(p, size)),
 
   // Peça esgotada: pedido de aviso de reposição.
   aviseMe: (p: Product, size?: string) =>

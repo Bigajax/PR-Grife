@@ -9,8 +9,6 @@ import { isOnSale } from "@/lib/catalog"
 import { effectiveStatus, isOptionAvailable } from "@/lib/stock"
 import { buildWhatsAppLink, buildOrderMessage, templates } from "@/lib/whatsapp"
 import { siteConfig } from "@/data/site.config"
-
-type PaymentOption = (typeof siteConfig.paymentOptions)[number]
 import { SizeGuideModal } from "@/components/SizeGuideModal"
 import { useUtm } from "@/hooks/useUtm"
 import { useSelection } from "@/hooks/useSelection"
@@ -28,10 +26,6 @@ export function ProductBuyBox({ product }: { product: Product }) {
   const [color, setColor] = useState<string | null>(
     product.availableColors.length === 1 ? product.availableColors[0].name : null
   )
-  // Forma de pagamento escolhida — OBRIGATÓRIA para fechar o pedido.
-  const [payment, setPayment] = useState<PaymentOption | null>(null)
-  // Parcelas: só existe quando a forma escolhida tem `parcelas` (o cartão).
-  const [parcelas, setParcelas] = useState<number | null>(null)
   const [sizeHint, setSizeHint] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
   const sizesRef = useRef<HTMLFieldSetElement>(null)
@@ -57,16 +51,17 @@ export function ProductBuyBox({ product }: { product: Product }) {
   const selectedStatus = effectiveStatus(product, size, color)
   const onRequest = selectedStatus === "on_request"
 
-  // Tamanho, cor E forma de pagamento são obrigatórios: sem os três o pedido
-  // chega incompleto e o atendimento gasta uma ida e volta só para perguntar.
-  // O botão fica desabilitado até a escolha estar feita.
-  // No cartão, o número de vezes também é obrigatório — "cartão" sem parcela
-  // não fecha nada.
+  // Só tamanho e cor travam o botão, e travam porque são o que decide ESTOQUE:
+  // sem eles o atendimento não consegue nem dizer se a peça existe.
+  //
+  // Forma de pagamento já foi requisito aqui e saiu: obrigar o cliente a
+  // declarar como vai pagar antes de trocar a primeira palavra com a loja
+  // espantava mais pedido do que economizava pergunta. O pagamento se acerta na
+  // conversa — o próprio fecho da mensagem pede as formas — e a régua da loja
+  // (siteConfig.paymentText) segue na tela como argumento, não como pergunta.
   const faltando = [
     needsSize && !size ? "o tamanho" : null,
     needsColor && !color ? "a cor" : null,
-    !payment ? "a forma de pagamento" : null,
-    payment?.parcelas && !parcelas ? "em quantas vezes" : null,
   ].filter(Boolean) as string[]
   // "a, b e c" — vírgula até o penúltimo, "e" antes do último.
   const missing =
@@ -138,12 +133,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
   const ctaHref = buildWhatsAppLink(
     soldOut
       ? templates.aviseMe(product, size ?? undefined)
-      : buildOrderMessage(
-          [{ product, size: size ?? undefined, color: color ?? undefined }],
-          payment
-            ? { label: payment.label, parcelas: parcelas ?? undefined }
-            : undefined
-        ),
+      : buildOrderMessage([{ product, size: size ?? undefined, color: color ?? undefined }]),
     utm
   )
 
@@ -168,9 +158,10 @@ export function ProductBuyBox({ product }: { product: Product }) {
           )}
         </p>
       )}
-      {/* Formas de pagamento da loja — fonte única em site.config. */}
+      {/* Formas de pagamento da loja — fonte única em site.config. Linha de
+          argumento, não de pergunta: informa a condição sem pedir nada de
+          volta antes do cliente falar com a loja. */}
       <p className="mt-1.5 text-[13px] font-medium text-black-soft">{siteConfig.paymentText}</p>
-      <p className="mt-1 text-xs text-text-gray">Valor demonstrativo — confirme no atendimento.</p>
 
       {needsSize && (
         <fieldset className="mt-6 scroll-mt-24" id="tamanhos" ref={sizesRef}>
@@ -261,73 +252,6 @@ export function ProductBuyBox({ product }: { product: Product }) {
         {stockLabels[selectedStatus]}
         {onRequest && ` — prazo estimado: ${siteConfig.leadTimeText}`}
       </p>
-
-      {/* Forma de pagamento: obrigatória. A escolhida entra na mensagem
-          ("Pagamento: Cartão em 6x sem juros"), e é o que trava o botão. */}
-      {!soldOut && (
-        <fieldset className="mt-5">
-          <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-text-gray">
-            Como prefere pagar?
-          </legend>
-          <div className="mt-2.5 flex flex-wrap gap-2">
-            {siteConfig.paymentOptions.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => {
-                  const igual = payment?.id === opt.id
-                  setPayment(igual ? null : opt)
-                  // Trocar de forma zera a parcela: 6x herdado do cartão não
-                  // pode sobrar pendurado num pedido em Pix.
-                  setParcelas(null)
-                }}
-                aria-pressed={payment?.id === opt.id}
-                className={`min-h-10 rounded-full border px-3.5 text-[13px] font-medium transition-colors ${
-                  payment?.id === opt.id
-                    ? "border-black-soft bg-black-soft text-off-white"
-                    : "border-border-gray bg-white text-text-gray hover:border-gold"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Parcelas: só aparecem na forma que tem `parcelas` no config. */}
-          {payment?.parcelas ? (
-            <div className="mt-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-gray">
-                Em quantas vezes?
-              </p>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                {Array.from({ length: payment.parcelas }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setParcelas((cur) => (cur === n ? null : n))}
-                    aria-pressed={parcelas === n}
-                    aria-label={n === 1 ? "À vista" : `Em ${n} vezes sem juros`}
-                    className={`min-h-10 min-w-11 rounded-full border px-3 text-[13px] font-medium transition-colors ${
-                      parcelas === n
-                        ? "border-black-soft bg-black-soft text-off-white"
-                        : "border-border-gray bg-white text-text-gray hover:border-gold"
-                    }`}
-                  >
-                    {n === 1 ? "À vista" : `${n}x`}
-                  </button>
-                ))}
-              </div>
-              {/* O valor da parcela só aparece com preço na vitrine — nunca
-                  dividir por cima de "a confirmar". */}
-              {parcelas && parcelas > 1 && product.price != null && (
-                <p className="mt-2.5 text-[13px] text-text-gray">
-                  {parcelas}x de {formatPrice(product.price / parcelas)} sem juros
-                </p>
-              )}
-            </div>
-          ) : null}
-        </fieldset>
-      )}
 
       {/* CTAs */}
       <div className="mt-6 flex flex-col gap-2.5">
