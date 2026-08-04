@@ -1,18 +1,15 @@
 # Logos oficiais das marcas
 
-Coloque aqui os arquivos **oficiais** de logo de cada marca (de preferência **SVG monocromático**;
-PNG com fundo transparente também serve).
+Coloque aqui os arquivos **oficiais** de logo de cada marca. Ordem de preferência:
 
-Nomes sugeridos:
+1. **SVG** — é o formato certo para logo: um arquivo serve em qualquer tamanho, da faixa
+   rotativa (44px de altura) ao card da vitrine, sem borrar.
+2. **WebP com fundo transparente**, quando só existir bitmap. Exporte em **lossless**: logo é
+   arte chapada de borda dura, e WebP com perda suja o contorno. Todo o resto de
+   `public/images/` está em WebP com perda (q82), que é o certo para foto — logo, não.
 
-- `lacoste.svg`
-- `tommy-hilfiger.svg`
-- `tommy-jeans.svg`
-- `reserva.svg`
-- `colcci.svg`
-- `us-polo.svg`
-- `ankor.svg`
-- `biotwo.svg`
+**Não use PNG nem JPG aqui.** O resto da pasta `public/images/` já migrou inteira para WebP;
+a única exceção do projeto é `public/images/hero.jpg`, que serve de og:image.
 
 Depois de salvar o arquivo, abra `data/brands.ts` e descomente/ajuste o caminho da marca
 correspondente. O site troca o placeholder pelo logo oficial automaticamente.

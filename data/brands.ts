@@ -22,13 +22,13 @@ export const brandLogoAssets: Record<string, string> = {
   // Lockup completo: a bandeira com TOMMY em cima e HILFIGER embaixo. O SVG
   // anterior era só a bandeirinha, e na faixa ela ficava anônima ao lado dos
   // wordmarks. Origem no Commons: "Tommy Hilfiger Logo.png" (domínio público).
-  "Tommy Hilfiger": "/images/brands/tommy-hilfiger.png",
-  "Tommy Jeans": "/images/brands/tommy-jeans.png",
+  "Tommy Hilfiger": "/images/brands/tommy-hilfiger.webp",
+  "Tommy Jeans": "/images/brands/tommy-jeans.webp",
   Reserva: "/images/brands/reserva.svg",
   Colcci: "/images/brands/colcci.svg",
-  "US Polo": "/images/brands/us-polo.png",
-  Ankor: "/images/brands/ankor.png",
-  Biotwo: "/images/brands/biotwo.png",
+  "US Polo": "/images/brands/us-polo.webp",
+  Ankor: "/images/brands/ankor.webp",
+  Biotwo: "/images/brands/biotwo.webp",
   Acostamento: "/images/brands/acostamento.svg",
   // Único lockup EMPILHADO da faixa (coroa em cima, wordmark embaixo) — na
   // altura fixa de 44px o "FRED PERRY" fica menor que os wordmarks vizinhos.
@@ -92,21 +92,21 @@ export const brandShowcase: BrandShowcaseItem[] = [
     name: "Lacoste",
     slug: "lacoste",
     brands: ["Lacoste"],
-    cover: "/images/brands/covers/lacoste-vitrine-v1.png",
+    cover: "/images/brands/covers/lacoste-vitrine-v1.webp",
     coverPosition: "55% center",
   },
   {
     name: "Tommy Hilfiger",
     slug: "tommy-hilfiger",
     brands: ["Tommy Hilfiger", "Tommy Jeans"],
-    cover: "/images/brands/covers/tommy-hilfiger-vitrine-v1.png",
+    cover: "/images/brands/covers/tommy-hilfiger-vitrine-v1.webp",
     coverPosition: "60% center",
   },
   {
     name: "Colcci",
     slug: "colcci",
     brands: ["Colcci"],
-    cover: "/images/brands/covers/colcci-vitrine-v1.png",
+    cover: "/images/brands/covers/colcci-vitrine-v1.webp",
     coverPosition: "55% center",
   },
   // US Polo antes da Reserva de propósito: na vitrine da home, a 4ª posição
@@ -115,21 +115,21 @@ export const brandShowcase: BrandShowcaseItem[] = [
     name: "US Polo",
     slug: "us-polo",
     brands: ["US Polo"],
-    cover: "/images/brands/covers/us-polo-vitrine-v1.png",
+    cover: "/images/brands/covers/us-polo-vitrine-v1.webp",
     coverPosition: "left center",
   },
   {
     name: "Reserva",
     slug: "reserva",
     brands: ["Reserva"],
-    cover: "/images/brands/covers/reserva-vitrine-v1.png",
+    cover: "/images/brands/covers/reserva-vitrine-v1.webp",
     coverPosition: "40% center",
   },
   {
     name: "Ankor",
     slug: "ankor",
     brands: ["Ankor"],
-    cover: "/images/brands/covers/ankor-vitrine-v1.png",
+    cover: "/images/brands/covers/ankor-vitrine-v1.webp",
     coverPosition: "40% center",
   },
   // Acostamento e Fred Perry entram sem capa: a vitrine da home só tem seis
@@ -143,7 +143,7 @@ export const brandShowcase: BrandShowcaseItem[] = [
     name: "Biotwo",
     slug: "biotwo",
     brands: ["Biotwo"],
-    cover: "/images/brands/covers/biotwo-vitrine-v1.png",
+    cover: "/images/brands/covers/biotwo-vitrine-v1.webp",
     coverPosition: "55% center",
     faixaLogos: false,
   },

@@ -107,11 +107,11 @@ export const siteConfig = {
     // sufixo de versão — o otimizador guarda o resultado por 4h (ver hero).
     images: {
       main: {
-        src: "/images/loja.jpg",
+        src: "/images/loja.webp",
         alt: "Interior da loja PR Grife em Maringá, com araras de roupas e atendimento no balcão",
       },
       secondary: {
-        src: "/images/atendimento.jpg",
+        src: "/images/atendimento.webp",
         alt: "Entrada da loja PR Grife na Avenida Tiradentes, em Maringá",
       },
     },
@@ -182,7 +182,7 @@ export const siteConfig = {
     // v2 = recorte 4:5 do still panorâmico na resolução original (1024×1280),
     // já na região do frasco — o quadro mostra a imagem inteira, sem corte do
     // object-cover, e o otimizador não joga resolução fora.
-    image: "/images/home-perfumaria-v2.jpg",
+    image: "/images/home-perfumaria-v2.webp",
     imageAlt:
       "Frasco de Scandal Pour Homme com tampa em formato de coroa dourada, sobre fundo de madeira escura",
   },
@@ -211,7 +211,7 @@ export const siteConfig = {
     {
       title: "Acessórios",
       subtitle: "Bonés, cintos e óculos",
-      image: "/images/products/bone-bege.jpg",
+      image: "/images/products/bone-bege.webp",
       imageAlt: "Boné bege sobre superfície clara",
       href: "/catalogo/acessorios",
     },
@@ -220,7 +220,7 @@ export const siteConfig = {
     {
       title: "Tênis",
       subtitle: "Do branco clássico ao statement",
-      image: "/images/products/tenis-hilfiger.jpg",
+      image: "/images/products/tenis-hilfiger.webp",
       imageAlt: "Tênis branco com detalhe marinho sobre superfície clara",
       href: "/catalogo/tenis",
     },

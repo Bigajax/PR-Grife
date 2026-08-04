@@ -45,6 +45,10 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     locale: "pt_BR",
     type: "website",
+    // Único raster que NÃO virou WebP quando o resto de public/images migrou:
+    // og:image é lido por scraper de rede social, não pelo navegador, e o do
+    // WhatsApp é irregular com WebP. Também não pesa no carregamento da página,
+    // então converter não traria ganho nenhum — só risco de prévia sem imagem.
     images: [{ url: "/images/hero.jpg", width: 941, height: 1672 }],
   },
   robots: { index: true, follow: true },
